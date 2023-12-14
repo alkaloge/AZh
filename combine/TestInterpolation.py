@@ -2,6 +2,8 @@
 
 import ROOT
 from array import array
+import AZh.combine.stylesAZh as styles
+
 
 ### interpolation between adjacent bin centers
 ### first argument - real variable
@@ -36,35 +38,34 @@ def interpolateHisto(x,hist):
 if __name__ == "__main__":
 
     ROOT.gROOT.SetBatch(True)
+    styles.InitROOT()
+    styles.SetStyle()
 
-    nbins = 6
-    bins  = [0.0, 1.0, 2.0, 4.0, 5.0, 8.0, 10.0]
-    xbins = [4.0, 2.2, 6.1, 1.6, 5.2, 7.2]
-    ebins = [0.0, 0.1, 0.14, 0.2, 0.3, 0.4]
+    nbins = 11
+    bins  = [0.0, 1.0, 2.0, 4.0, 5.0, 8.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0]
+    xbins = [4.0, 3.6, 3.8, 4.1, 4.3, 4.7,  5.2,  5.0,  4.5,  4.3,  4.3,  4.4]
+    ebins = [0.0, 0.1, 0.1, 0.2, 0.3, 0.4,  0.3,  0.3,  0.4,  0.4,  0.3,  0.3]
     hist = ROOT.TH1D("h1","",nbins,array('d',list(bins)))
-    test_hist = ROOT.TH1D('test_hist','',100,0,10)
+    test_hist = ROOT.TH1D('test_hist','',1000,0,15)
 
     for ib in range(0,nbins):
         hist.SetBinContent(ib+1,xbins[ib])
         hist.SetBinError(ib+1,ebins[ib])
 
-    for ib in range(1,1000):
-        x = 0.01*ib
+    for ib in range(1,15000):
+        x = 0.001*ib
         y,e = interpolateHisto(x,hist)
         test_hist.SetBinContent(test_hist.FindBin(x),y)        
-        #        test_hist.SetBinError(test_hist.FindBin(x),e)
-        # print(x,y)
 
-    hist.GetYaxis().SetRangeUser(0.,10.)
-    hist.SetMarkerStyle(20)
+    styles.InitData(hist)
+    hist.GetYaxis().SetRangeUser(0.,6.)
     hist.SetMarkerSize(1.5)
     hist.SetLineWidth(2)
 
-    test_hist.SetLineColor(2)
-    test_hist.SetLineWidth(2)
+    styles.InitModel(test_hist,2)
 
-    canv = ROOT.TCanvas('canv','',600,600)
+    canv = styles.MakeCanvas('canv','',600,600)
     hist.Draw('e1')
     test_hist.Draw('lsame')
     canv.Update()
-    canv.Print('lin_interp.png')
+    canv.Print('figures/lin_interp.png')

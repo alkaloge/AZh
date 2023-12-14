@@ -27,7 +27,7 @@ def MakeCommand(**kwargs):
             command += '----setParameterRanges r_bbA=-20,50:r_ggA=-20,50 '
         command += '--redefineSignalPOIs r_%s '%(proc) 
     else:
-        command += '%s/HIG-18-023/datacards/AZH%s.txt '%(utils.BaseFolder,mass)
+        command += '%s/HIG-18-023/%s/ws.root '%(utils.BaseFolder,mass)
         command += '--rMin=0.001 --rMax=50. '
     command += '--rAbsAcc 0 --rRelAcc 0.0005 --X-rtd MINIMIZER_analytic '
     command += '--cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 '

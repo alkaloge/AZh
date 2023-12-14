@@ -190,6 +190,6 @@ if __name__ == "__main__":
 
     # creating folders for figures, batch jobs
     pathdir=utils.BaseFolder+'/figures'
-    if not os.path.isdir(): os.system('mkdir figures')
+    if not os.path.isdir(pathdir): os.system('mkdir figures')
     pathdir=utils.BaseFolder+'/jobs'
-    if not os.path.isdir(): os.system('mkdir jobs')
+    if not os.path.isdir(pathdir): os.system('mkdir jobs')

@@ -32,10 +32,10 @@ if __name__ == "__main__":
             print('Creating cards : %s -- category : %s -- mass : %s'%(year,cat,mass))
             command = './make_datacards.py --year %s --btag %s --mass %s --proc %s --outdir %s'%(year,cat,mass,proc,outdir)
             os.system(command)
-        command = 'combineTool.py -M T2W -o "ws.root" -i %s/%s/%s/%s -m %s'%(utils.BaseFolder,outdir,year,mass,mass)
+        command = 'combineTool.py -M T2W -o "ws.root" -i %s/%s/%s -m %s'%(outdir,year,mass,mass)
         os.system(command)
 
-    command = 'combineTool.py -M T2W -o "ws.root" -i %s/%s/Run2/%s -m %s'%(utils.BaseFolder,outdir,mass,mass)
+    command = 'combineTool.py -M T2W -o "ws.root" -i %s/Run2/%s -m %s'%(outdir,mass,mass)
     os.system(command)
 
     print
