@@ -1,8 +1,10 @@
 # A->Zh->(ll)(tautau) : statistical analysis 
 
+This documentation describes  statistical inference package used in the analysis searching for heavy pseudoscalar boson A predicted by the models with extended Higgs sector in the A->Zh->(ee+mm)(tau+tau) decay channel. The search uses ultra-legacy data collected with the CMS detector at the CERN Large Hadron Collider.
+
 ## Installation
 
-The statistical inference of the AZh search results requires [Higgs combination package](https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git),  [CombineHarvester toolkit](https://cms-analysis.github.io/CombineHarvester/index.html)  and  [python analysis code](https://github.com/raspereza/AZh.git). We recommend to download also [datacards of the previous analysis HIG-18-023](https://gitlab.cern.ch/cms-analysis/hig/HIG-18-023).
+The statistical inference of the AZh search results requires [Higgs combination package](https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git),  [CombineHarvester toolkit](https://cms-analysis.github.io/CombineHarvester/index.html)  and  [python analysis code](https://github.com/raspereza/AZh.git). We recommend to download also [datacards of the previous analysis HIG-18-023](https://gitlab.cern.ch/cms-analysis/hig/HIG-18-023) for comparison.
 
 Installation proceeds as follows:
 ```
@@ -62,16 +64,57 @@ Datacards can be produced for all eras, all signal mass points and for both `bta
 ```
 
 For each $year and $mass hypothesis datacards will be put in the folder `datacards/$year/$mass`.
-Datacards for Run2 combination will be output into folders `datacards/Run2/$mass`
+Datacards for Run2 combination will be output into folders `datacards/Run2/$mass`.
 At the next step workspaces to be used by [combine tool](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit), need to be produce. This is done with script [CreateWorkspaces.py](https://github.com/raspereza/AZh/blob/main/combine/CreateWorkspaces.py)
 ```
-./CreateCards.py --year $year
+./CreateWorkspaces.py --year $year
 ```
+Workspace for a single mass point and era is created for the signal model with two processes - `ggA` and `bbA` - by executing the bash script [CreateWorkspace.bash](https://github.com/raspereza/AZh/blob/main/combine/CreateWorkspace.bash), which uses utilities of the [Higgs combination package](https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git).
+For each `$era` and `$mass` workspace is stored in folders `datacards/$era/$mass` under the name `ws.root`. Workspaces for Run2 combination are put in folders `datacards/Run2/$mass` under the same name. Macro `CreateWorkspaces.py`runs over all signal mass points and within a loop calls script `CreateWorkspace.bash` for each mass point. Models implemented in workspaces contain two parameters of interest : rate of the process ggA (r_ggA) and rate of the process bbA (r_bbA).
+
+
+## Creating workspaces for HIG18-023 analysis 
+
+To enable comparison with the published HIG-18-023 analysis, datacards for this analysis need to be also created. It is done using bash script [CombineCards_HIG18023.bash](https://github.com/raspereza/AZh/blob/main/combine/CombineCards_HIG18023.bash). Workspaces for the HIG-18-023 analysis will are put in folders `HIG-18-023/$mass`.
 
 ## Running limits
+
+Example below shows how to compute expected limits on the rate of the process ggA, while rate of the bbA process is set to zero. 
+```
+combine -M AsymptoticLimits -d datacards/Run2/1000/ws.root \ 
+--setParameters r_bbA=0,r_ggA=0 \
+--setParameterRanges r_ggA=-50,50 \ 
+--redefineSignalPOIs r_ggA \
+--freezeParameters r_bbA \
+--rAbsAcc 0 --rRelAcc 0.0005 \ 
+--X-rtd MINIMIZER_analytic \
+--cminDefaultMinimizerStrategy 0 \
+--cminDefaultMinimizerTolerance 0.01 \ 
+--noFitAsimov -t -1 \ 
+-n ".azh_Run2_bbA" -m 1000 \
+```
+In this example, limits are calculated for the combined Run2 analysis and for mass hypothesis of mA = 1000 GeV, implying that workspace is located in folder `datacards/Run2/1000`. The rate of the bbA process is fixed to zero by settings `--setParameters r_bbA=0` and `--freezeParameters r_bbA`. The flags `--noFitAsimov -t -1` instructs combine utility to compute expected limits without fitting signal+background model to data. The flag `-n ".azh_Run2_bbA"` defined the suffix to be assigned to the output root file with the results of limit computation. In this example output root file will be saved under the name `higgsCombine.azh_Run2_ggA.AsymptoticLimits.mH1000.root`. All other parameters steer the fit and limit finding algorithms. One should swap POIs `r_ggA` and `r_bbA` in the command above to compute limit on the rate of bbA process with the rate of ggA fixed to zero. 
+
+To compute limits on the ggA rate while profiling in the fit the rate of bbA process, one has to remove flag  `--freezeParameters r_bbA` and allow parameter `r_bbA` to float freely in a reasonably large range : `--setParameterRanges r_ggA=-50,50:r_bbA=-50,50`.
+
+To compute observed limits one needs to remove the flag `--noFitAsimov -t -1`.
+
+Macro [RunLimits.py](https://github.com/raspereza/AZh/blob/main/combine/RunLimits.py) automatises computation of limits with `combine` utility. It is executed with the following parameters:
+```
+./RunLimits.py --analysis $analysis --era $era --type ${exp,obs} --freezeOtherPOI ${yes,no} --outdir $outdir --mass $mass
+```
+where
+* `$analysis = {azh(AZh),hig18023(HIG18023)}` : if set to `hig18023` or `HIG18023` limits are computed for the HIG18-023 analysis, if set to `azh` or `AZh` - limits are computed for the current analysis. Default = `azh`.
+* `$era = {2016, 2017, 2018, Run2}`; Default = `Run2`.
+* `$type = {exp,obs} ` : expected to observed limits.  Default = `exp`.
+* `--freezeOtherPOI = {yes,no}` : set other POI to zero or float it freely. Default = `yes`.
+* `$outdir ` : folder where results of limit computation will be stored. Default = `limits`.
+ 
 
 ## Running impacts
 
 ## Running GoF tests
 
 ## Running fits
+
+## Running fits with two floating rates: r_ggA and r_bbA
