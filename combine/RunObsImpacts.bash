@@ -12,6 +12,6 @@ fi
 cd $OUTDIR
 rm *
 combineTool.py -M Impacts -d ${CMSSW_BASE}/src/AZh/combine/datacards_${PROC}/Run2/${MASS}/ws.root -m ${MASS} --rMin -10 --rMax 10 --robustFit 1 --doInitialFit 
-combineTool.py -M Impacts -d ${CMSSW_BASE}/src/AZh/combine/datacards_${PROC}/Run2/${MASS}/ws.root -m ${MASS} --rMin -10 --rMax 10 --robustFit 1 --job-mode condor --sub-opts='+JobFlavour = "workday"' --merge 8 --doFits
+combineTool.py -M Impacts -d ${CMSSW_BASE}/src/AZh/combine/datacards_${PROC}/Run2/${MASS}/ws.root -m ${MASS} --rMin -10 --rMax 10 --robustFit 1 --job-mode condor --sub-opts='+JobFlavour = "workday"' --merge 4 --doFits
 cd -
 
