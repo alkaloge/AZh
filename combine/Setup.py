@@ -123,7 +123,7 @@ def RescaleToTauID_2016():
                                 histSys.Write(template+'_'+unc+variation)
             inputfile.Close()
     
-def FixMetUnc():
+def SymmetrizeUnc():
 
     years = utils.years
     cats = utils.azh_cats
@@ -137,36 +137,18 @@ def FixMetUnc():
             nameinput = folder + "/MC_data_"+cat+"_"+year+".root"
             inputfile = ROOT.TFile(nameinput,'update')
             for channel in channels:
-            
-                hist = inputfile.Get(channel+'/data')
-                histToWrite = hist.Clone(channel+'data_obs')
-                inputfile.cd(channel)
-                histToWrite.Write('data_obs')
                 for template in templates:
                     hist = inputfile.Get(channel+'/'+template)
-                    nbins = hist.GetNbinsX()
-                    for ib in range(1,nbins+1):
-                        x = hist.GetBinContent(ib)
-                        if x<0:
-                            print('negative bin %2i :  %7.5f in %s_%s_%s %s'
-                                  %(ib,x,year,cat,channel,template))
-                            hist.SetBinContent(ib,0.)
-                            hist.SetBinError(ib,0.)
-                    inputfile.cd(channel)
-                    hist.Write(template)
                     for unc in uncs:
-                        for variation in variations:
-                            histSys = inputfile.Get(channel+'/'+template+'_'+unc+variation)
-                            if histSys!=None:
-                                for ib in range(1,nbins+1):
-                                    x = histSys.GetBinContent(ib)
-                                    if x<0:
-                                        print('negative bin %2i : %7.5f in %s_%s_%s %s_%s%s'
-                                              %(ib,x,year,cat,channel,template,unc,variation))
-                                        histSys.SetBinContent(ib,0.)
-                                        histSys.SetBinError(ib,0.)
-                                inputfile.cd(channel)
-                                histSys.Write(template+'_'+unc+variation)
+                        hists = {}
+                        hists['central'] = hist
+                        hists['up'] = inputfile.Get(channel+'/'+template+'_'+unc+'Up')
+                        hists['down'] = inputfile.Get(channel+'/'+template+'_'+unc+'Down')
+                        if hists['up']!=None and hists['down']!=None:
+                            utils.symmetrizeUnc(hists)
+                            inputfile.cd(channel)
+                            hists['up'].Write(template+'_'+unc+'Up')
+                            hists['down'].Write(template+'_'+unc+'Down')
             inputfile.Close()
 
 

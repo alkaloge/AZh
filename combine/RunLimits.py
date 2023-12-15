@@ -47,7 +47,6 @@ if __name__ == "__main__":
     parser.add_argument('-analysis','--analysis',dest='analysis',default='azh')
     parser.add_argument('-type','--type',dest='typeLimit',default='Exp',help=""" Type of limit : Exp (exp), or Obs(obs)""")
     parser.add_argument('-freezeOtherPOI','--freezeOtherPOI',dest='freeze',default='yes')
-    parser.add_argument('-indir','--indir',dest='indir',default='datacards')
     parser.add_argument('-outdir','--outdir',dest='outdir',default='limits')
     parser.add_argument('-mass','--mass',dest='mass',default='1000')
     args = parser.parse_args()
@@ -55,7 +54,8 @@ if __name__ == "__main__":
     procs = ['ggA']
 
     year = args.year
-    indir, outdir = args.indir, args.outdir
+    indir = 'datacards'
+    outdir = args.outdir
     analysis = args.analysis
 
     if analysis=='hig18023' or analysis=='HIG18023':
@@ -112,7 +112,10 @@ if __name__ == "__main__":
             command = MakeCommand(analysis=analysis,indir=indir,year=year,expected=Expect,freeze=Freeze,mass=mA,proc=proc,outdir=outdir)
             os.system(command)
             print
-    
+            print('done computation for : year=%s  proc=%s  mass=%s  with the command:'%(year,proc,mA))
+            print(command)
+            print
+
     command='cd '+utils.BaseFolder
     os.system(command)
     

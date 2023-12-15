@@ -8,10 +8,9 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument('-year','--year',dest='year',default='Run2')
-    parser.add_argument('-outdir','--outdir',dest='outdir',default='datacards')
     args = parser.parse_args()
 
-    outdir = args.outdir
+    outdir = 'datacards'
     year = args.year
     masses = utils.azh_masses
 
@@ -27,6 +26,6 @@ if __name__ == "__main__":
         print("Creating workspace in folder %s/%s/%s"%(outdir,year,mA))
         command=utils.BaseFolder+'/CreateWorkspace.bash %s %s %s'%(year,mA,outdir)
         print
-        os.system(command)
+        #os.system(command)
         print
         print

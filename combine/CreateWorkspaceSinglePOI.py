@@ -8,13 +8,12 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('-mass','--mass',dest='mass',default='1000')
     parser.add_argument('-proc','--proc',dest='proc',default='ggA')
-    parser.add_argument('-outdir','--outdir',dest='outdir',default='datacards')
     args = parser.parse_args()
 
     years = utils.years
     cats = utils.azh_cats
     proc = args.proc
-    outdir = args.outdir
+    outdir = 'datacards'
     mass = args.mass
     procs = utils.azh_signals
 
