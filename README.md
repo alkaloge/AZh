@@ -69,13 +69,17 @@ At the next step workspaces to be used by [combine tool](http://cms-analysis.git
 ```
 ./CreateWorkspaces.py --year $year
 ```
-Workspace for a single mass point and era is created for the signal model with two processes - `ggA` and `bbA` - by executing the bash script [CreateWorkspace.bash](https://github.com/raspereza/AZh/blob/main/combine/CreateWorkspace.bash), which uses utilities of the [Higgs combination package](https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git).
-For each `$era` and `$mass` workspace is stored in folders `datacards/$era/$mass` under the name `ws.root`. Workspaces for Run2 combination are put in folders `datacards/Run2/$mass` under the same name. Macro `CreateWorkspaces.py`runs over all signal mass points and within a loop calls script `CreateWorkspace.bash` for each mass point. Models implemented in workspaces contain two parameters of interest : rate of the process ggA (r_ggA) and rate of the process bbA (r_bbA).
+with parameter `$year` being one of three years: 2016, 2017, 2018 or Run2 for combination. Parameter `$year` is set to Run2 by default. Workspace for a single mass point and year is created for the signal model with two processes - `ggA` and `bbA`.  
+Macro `CreateWorkspaces.py` loops over all signal mass points. To produce workspace for one mass point macro it calls bash script [CreateWorkspace.bash](https://github.com/raspereza/AZh/blob/main/combine/CreateWorkspace.bash), which in its turn execuites combine utility of the [Higgs combination package](https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git). For each `$year` and `$mass`, workspace is stored in the folder `datacards/$year/$mass` under the name `ws.root`. Workspaces for Run2 combination are put in folders `datacards/Run2/$mass` under the same name. Models implemented in workspaces contain two parameters of interest (POI): rate of the process ggA (r_ggA) and rate of the process bbA (r_bbA). Running workspaces for one era and especially for Run2 combination may takes time. Be patient.
 
 
 ## Creating workspaces for HIG18-023 analysis 
 
 To enable comparison with the published HIG-18-023 analysis, datacards for this analysis need to be also created. It is done using bash script [CombineCards_HIG18023.bash](https://github.com/raspereza/AZh/blob/main/combine/CombineCards_HIG18023.bash). Workspaces for the HIG-18-023 analysis will are put in folders `HIG-18-023/$mass`.
+
+## Checking shapes and systematic variations of MC templates
+
+Shape and variations of MC templates can be checked with macro []()
 
 ## Running limits
 
@@ -101,11 +105,11 @@ To compute observed limits one needs to remove the flag `--noFitAsimov -t -1`.
 
 Macro [RunLimits.py](https://github.com/raspereza/AZh/blob/main/combine/RunLimits.py) automatises computation of limits with `combine` utility. It is executed with the following parameters:
 ```
-./RunLimits.py --analysis $analysis --era $era --type ${exp,obs} --freezeOtherPOI ${yes,no} --outdir $outdir --mass $mass
+./RunLimits.py --analysis $analysis --year $year --type ${exp,obs} --freezeOtherPOI ${yes,no} --outdir $outdir --mass $mass
 ```
 where
-* `$analysis = {azh(AZh),hig18023(HIG18023)}` : if set to `hig18023` or `HIG18023` limits are computed for the HIG18-023 analysis, if set to `azh` or `AZh` - limits are computed for the current analysis. Default = `azh`.
-* `$era = {2016, 2017, 2018, Run2}`; Default = `Run2`.
+* `$analysis = {hig18023, azh}` : if set to `hig18023` or `HIG18023` limits are computed for the HIG18-023 analysis, if set to `azh` or `AZh` - limits are computed for the current analysis. Default = `azh`.
+* `$year = {2016, 2017, 2018, Run2}`; Default = `Run2`.
 * `$type = {exp,obs} ` : expected to observed limits.  Default = `exp`.
 * `--freezeOtherPOI = {yes,no}` : set other POI to zero or float it freely. Default = `yes`.
 * `$outdir ` : folder where results of limit computation will be stored. Default = `limits`.
