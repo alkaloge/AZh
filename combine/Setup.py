@@ -5,7 +5,7 @@ import os
 import AZh.combine.utilsAZh as utils
 
 ########################################################################
-# new tau ID scale factors for UL2016 are 5% higher than previous ones #
+# new tau ID scale factors for UL2016 are 6% higher than previous ones #
 # updated scale factors have been released in summer 2023              #
 # https://indico.cern.ch/event/1264653                                 #
 # https://twiki.cern.ch/twiki/bin/view/CMS/TauIDRecommendationForRun2  #
@@ -82,13 +82,17 @@ def RescaleToTauID_2016():
     variations = utils.variations
     signals = utils.azh_signals
     folder = utils.BaseFolder+'/root_files'
+    print
+    print('Scaling MC samples for updated tau ID scale factors in UL2016 samples')
+    print('See recommendation in https://twiki.cern.ch/twiki/bin/view/CMS/TauIDRecommendationForRun2')
+    print
 
     for cat in cats:
         nameinput = folder + "/MC_data_"+cat+"_2016.root"
         inputfile = ROOT.TFile(nameinput,'update')
         for channel in channels:
             scale = tauID_UL2016[channel]
-            print('scaling backgrounds in %s category of %s channel by TauID of %5.2f'%(cat,channel,scale))
+            print('scaling backgrounds for UL2016 in %s category of %s channel by TauID SF of %5.2f'%(cat,channel,scale))
             for template in templates:
                 hist = inputfile.Get(channel+'/'+template)
                 hist.Scale(scale)
@@ -108,7 +112,8 @@ def RescaleToTauID_2016():
             inputfile = ROOT.TFile(nameinput,'update')
             for channel in channels:
                 scale = tauID_UL2016[channel]
-                print('scaling backgrounds in %s category of %s channel and mA=%s by TauID of %5.2f'%(cat,channel,mass,scale))
+                print('scaling signals for UL2016 in %s category of %s channel and mA=%s by TauID SF of %5.2f'
+                      %(cat,channel,mass,scale))
                 for template in signals:
                     hist = inputfile.Get(channel+'/'+template)
                     hist.Scale(scale)
@@ -129,10 +134,14 @@ def SymmetrizeUnc():
     cats = utils.azh_cats
     channels = utils.azh_channels
     templates = utils.azh_bkgs
-    unc = Unc
+    uncs = utils.azh_uncs
     masses = utils.azh_masses
     folder = utils.BaseFolder+'/root_files'
+    variations = utils.variations
+    signals = utils.azh_signals
+
     for year in years:
+        print('symmetrizing bkg uncertainties for UL%s'%(year))
         for cat in cats:
             nameinput = folder + "/MC_data_"+cat+"_"+year+".root"
             inputfile = ROOT.TFile(nameinput,'update')
@@ -151,6 +160,23 @@ def SymmetrizeUnc():
                             hists['down'].Write(template+'_'+unc+'Down')
             inputfile.Close()
 
+            for mass in masses:
+                nameinput = folder + "/signal_"+mass+"_"+cat+"_"+year+".root"
+                inputfile = ROOT.TFile(nameinput,'update')
+                for channel in channels:
+                    for template in signals:
+                        hist = inputfile.Get(channel+'/'+template)
+                        for unc in uncs:
+                            hists = {}
+                            hists['central'] = hist
+                            hists['up'] = inputfile.Get(channel+'/'+template+'_'+unc+'Up')
+                            hists['down'] = inputfile.Get(channel+'/'+template+'_'+unc+'Down')
+                            if hists['up']!=None and hists['down']!=None:
+                                utils.symmetrizeUnc(hists)
+                                inputfile.cd(channel)
+                                hists['up'].Write(template+'_'+unc+'Up')
+                                hists['down'].Write(template+'_'+unc+'Down')
+                inputfile.Close()
 
 
 ############
@@ -168,7 +194,10 @@ if __name__ == "__main__":
     FixNegativeBins()
 
     # rescale MC shapes by new tau ID
-    # RescaleToTauID_2016()
+    RescaleToTauID_2016()
+
+    # symmetrize shape uncertainties
+    SymmetrizeUnc()
 
     # creating folders for figures, batch jobs
     pathdir=utils.BaseFolder+'/figures'

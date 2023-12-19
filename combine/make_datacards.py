@@ -3,6 +3,7 @@
 import argparse
 import os
 
+import AZh.combine.utilsAZh as utils
 import CombineHarvester.CombineTools.ch as ch
 import uproot
 
@@ -18,11 +19,10 @@ cats = [
 ]
 
 
-expUnc = [
-#    'unclMET',
-    'tauID0','tauID1','tauID10','tauID11','tauES','efake','mfake','eleES','muES','pileup','l1prefire','eleSmear']
+expUnc = ['unclMET','tauID0','tauID1','tauID10','tauID11','tauES','efake','mfake','eleES','muES','pileup','l1prefire','eleSmear']
 fakeUnc = ['closure1','closure2','closure3','closure4']
 
+# decorrelating instrumental uncs across years
 def DecorrelateUncertainties(cb,year,channel):
     for unc in expUnc:
         cb.cp().RenameSystematic(cb,unc,unc+"_"+year)
@@ -33,20 +33,20 @@ def DecorrelateUncertainties(cb,year,channel):
             cb.cp().channel([channel]).bin_id([ib]).RenameSystematic(cb,unc,unc+"_%s_%s_%s"%(channel,ib_name,year))
 
 parser = argparse.ArgumentParser(description="Datacards producer for AZh analysis")
-parser.add_argument("-mass", "--mass", required=True)
-parser.add_argument("-btag", "--btag", required=True)
-parser.add_argument("-year", "--year", required=True)
-parser.add_argument("-bbb","--bbb", default='auto_mc')
-parser.add_argument("-proc","--proc",default='all')
-parser.add_argument("-outdir","--outdir",default="datacards")
+parser.add_argument("-mass", "--mass", required=True,help=""" mass of A boson """,choices=utils.azh_masses)
+parser.add_argument("-btag", "--btag", required=True,help=""" category : btag or 0btag """,choices=utils.azh_cats)
+parser.add_argument("-year", "--year", required=True,help=""" year : 2016, 2017 or 2018 """,choices=utils.years)
+parser.add_argument("-proc","--proc", required=True,help=""" process to include into the signal model. Available options : aggA, bbA, 2poi""",choices=['bbA','ggA','2poi'])
+parser.add_argument("-no_bbb","--no_bbb", action='store_true',help=""" parameter to drop MC statistical uncertainties""")
 args = vars(parser.parse_args())
 
-year, mass, btag_label, outdir = args["year"], args["mass"], args["btag"], args["outdir"]
-auto_mc = False
-if args["bbb"]=='auto_mc':
-    auto_mc = True
+year, mass, btag_label = args["year"], args["mass"], args["btag"]
+outdir=utils.DatacardsFolder
+auto_mc = True
+if args["no_bbb"]:
+    auto_mc = False
 
-mc_bkgd = [  # TTW, TT, ggHtt, VFBHtt, WHtt, ggHWW, VBFHWW
+mc_bkgd = [ 
     "ggZZ",
     "ZZ",
     "TTZ",
@@ -55,17 +55,24 @@ mc_bkgd = [  # TTW, TT, ggHtt, VFBHtt, WHtt, ggHWW, VBFHWW
     "TTHtt",
     "ZHWW",
     "ggZHWW",
-    "ggHZZ",
+#    "ggHtt", -> cannot produce 4 genuine charged leptons
+#    "VFBHtt", -> cannot produce 4 genuine charged leptons
+#    "WHtt", -> cannot produce 4 genuine charged leptons
+#    "ggHWW", -> cannot produce 4 genuine charged leptons
+#    "ggHZZ", -> negligible
+#    "VBFHWW", -> cannot produce 4 genuine charged leptons
+#    "TTW", -> cannot produce 4 genuine charged leptons
+#    "TT" -> canno produce 4 genuine charged leptons
 ]
 reducible = ["reducible"]
 
 signals = ["bbA","ggA"]
 if args["proc"]=='bbA':
     signals = ['bbA']
-    outdir += '_bbA'
+    outdir = utils.DatacardsFolder+'_bbA'
 if args["proc"]=='ggA':
     signals = ['ggA']
-    outdir += '_ggA'
+    outdir = utils.DatacardsFolder+'_ggA'
 
 cb = ch.CombineHarvester()
 
@@ -107,13 +114,13 @@ if year=='2018':
 #cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_lumi_13TeV_correlated", "lnN", ch.SystMap()(1.006))
 
 # Higgs tau tau PU alphas
-cb.cp().signals().AddSyst(cb, "BR_htt_PU_alphas", "lnN", ch.SystMap()(1.062))
+cb.cp().signals().AddSyst(cb, "BR_htt_PU_alphas", "lnN", ch.SystMap()(1.0062))
 cb.cp().process(["ggHtt", "VBFHtt", "WHtt", "ZHtt", "TTHtt"]).AddSyst(
-    cb, "BR_htt_PU_alphas", "lnN", ch.SystMap()(1.062)
+    cb, "BR_htt_PU_alphas", "lnN", ch.SystMap()(1.0062)
 )
-cb.cp().signals().AddSyst(cb, "BR_htt_PU_mq", "lnN", ch.SystMap()(1.099))
+cb.cp().signals().AddSyst(cb, "BR_htt_PU_mq", "lnN", ch.SystMap()(1.0099))
 cb.cp().process(["ggHtt", "VBFHtt", "WHtt", "ZHtt", "TTHtt"]).AddSyst(
-    cb, "BR_htt_PU_mq", "lnN", ch.SystMap()(1.099)
+    cb, "BR_htt_PU_mq", "lnN", ch.SystMap()(1.0099)
 )
 cb.cp().signals().AddSyst(cb, "BR_htt_THU", "lnN", ch.SystMap()(1.017))
 cb.cp().process(["ggHtt", "VBFHtt", "WHtt", "ZHtt", "TTHtt"]).AddSyst(
@@ -122,27 +129,38 @@ cb.cp().process(["ggHtt", "VBFHtt", "WHtt", "ZHtt", "TTHtt"]).AddSyst(
 
 # Higgs WW PU alphas
 cb.cp().process(["ggHWW", "VBFHWW", "WHWW", "ZHWW", "ggZHWW"]).AddSyst(
-    cb, "BR_hww_PU_alphas", "lnN", ch.SystMap()(1.066)
+    cb, "BR_hww_PU_alphas", "lnN", ch.SystMap()(1.0066)
 )
 cb.cp().process(["ggHWW", "VBFHWW", "WHWW", "ZHWW", "ggZHWW"]).AddSyst(
-    cb, "BR_hww_PU_mq", "lnN", ch.SystMap()(1.099)
+    cb, "BR_hww_PU_mq", "lnN", ch.SystMap()(1.0099)
 )
 cb.cp().process(["ggHWW", "VBFHWW", "WHWW", "ZHWW", "ggZHWW"]).AddSyst(
-    cb, "BR_hww_THU", "lnN", ch.SystMap()(1.099)
+    cb, "BR_hww_THU", "lnN", ch.SystMap()(1.0099)
 )
 
 # CMS_NNLO_ggZZ
 cb.cp().process(["ggZZ"]).AddSyst(cb, "CMS_NNLO_ggZZ", "lnN", ch.SystMap()(1.1))
 
 # CMS electron efficiencies
-syst_map = ch.SystMap("bin_id")([1, 2], 1.06)([3, 4], 1.04)([5, 6], 1.02)([7, 8], 1.0)
+# 2% correlated part and 1% decorrelated
+syst_map = ch.SystMap("bin_id")([1, 2], 1.03)([3, 4], 1.02)([5, 6], 1.01)([7, 8], 1.0)
 cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_e_"+year, "lnN", syst_map)
 cb.cp().signals().AddSyst(cb, "CMS_eff_e_"+year, "lnN", syst_map)
 
+syst_map = ch.SystMap("bin_id")([1, 2], 1.06)([3, 4], 1.04)([5, 6], 1.02)([7, 8], 1.0)
+cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_e_"+year, "lnN", syst_map)
+cb.cp().signals().AddSyst(cb, "CMS_eff_e", "lnN", syst_map)
+
+
 # CMS muon efficiencies
-syst_map = ch.SystMap("bin_id")([5, 7], 1.06)([6, 8], 1.04)([1, 3], 1.02)([2, 4], 1.0)
+# 1.5% correlated and 1% decorrelated
+syst_map = ch.SystMap("bin_id")([5, 7], 1.03)([6, 8], 1.02)([1, 3], 1.01)([2, 4], 1.0)
 cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_m_"+year, "lnN", syst_map)
 cb.cp().signals().AddSyst(cb, "CMS_eff_m_"+year, "lnN", syst_map)
+
+syst_map = ch.SystMap("bin_id")([5, 7], 1.06)([6, 8], 1.04)([1, 3], 1.02)([2, 4], 1.0)
+cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_m_"+year, "lnN", syst_map)
+cb.cp().signals().AddSyst(cb, "CMS_eff_m", "lnN", syst_map)
 
 # refs:
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV
@@ -193,6 +211,7 @@ cb.cp().process(["TTHtt"]).AddSyst(cb, "pdf_Higgs_ttH", "lnN", ch.SystMap()(1.03
 bkgd = mc_bkgd + signals
 bkgd_mod = [b for b in bkgd if "ggHWW" not in b]
 bkgd_tauID = [b for b in bkgd]
+
 #for unc in fakeUnc:
 #    cb.cp().process(reducible).AddSyst(cb, unc, "shape", ch.SystMap()(1.00))
 
@@ -203,14 +222,15 @@ cb.cp().process(bkgd_tauID).AddSyst(cb, "tauID11", "shape", ch.SystMap()(1.00))
 cb.cp().process([b for b in bkgd_mod if ("ggZHWW" not in b)]).AddSyst(
     cb, "tauES", "shape", ch.SystMap()(1.00)
 )
-#cb.cp().process(
-#    [b for b in bkgd if (("ZHWW" not in b) and ("ggZHWW" not in b) and ("WZ" not in b))]
-#).AddSyst(cb, "unclMET", "shape", ch.SystMap()(1.00))
+cb.cp().process(
+    [b for b in bkgd if (("ZHWW" not in b) and ("ggZHWW" not in b) and ("WZ" not in b))]
+).AddSyst(cb, "unclMET", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd).AddSyst(cb, "pileup", "shape", ch.SystMap()(1.00))
 cb.cp().process([b for b in bkgd if ("WZ" not in b)]).AddSyst(
     cb, "l1prefire", "shape", ch.SystMap()(1.00)
 )
-cb.cp().process(bkgd).AddSyst(cb, "eleES", "shape", ch.SystMap()(1.00))
+
+#cb.cp().process(bkgd).AddSyst(cb, "eleES", "shape", ch.SystMap()(1.00)) 
 cb.cp().process(bkgd).AddSyst(cb, "eleSmear", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd).AddSyst(cb, "muES", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd).AddSyst(cb, "efake", "shape", ch.SystMap()(1.00))
@@ -278,7 +298,7 @@ writer.WriteCards('%s/Run2/%s/'%(outdir,mass), cb)
 #writer1.WriteCards('UL_%s/%s/'%(year,mass), cb)
 #writer1.WriteCards('Run2/%s/'%(mass),cb)
 #     'Creating cards : 2016 -- category : btag -- mass : 225'
-print('Done cards for : %s -- category : %s -- mass : %s'%(year,btag_label,mass))
+print('Done cards for %s -- year : %s -- category : %s -- mass : %s'%(proc,year,btag_label,mass))
 print('')
 
 
