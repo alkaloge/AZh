@@ -4,13 +4,16 @@ import AZh.combine.utilsAZh as utils
 import os
 
 def MakeCommandWorkspace(**kwargs):
-    proc = kwargs.get('proc','2poi')
     year = kwargs.get('year','Run2')
     mass = kwargs.get('mass','1000')
-    outdir = kwargs.get('outdir','datacards')
-    command = 'combineTool.py -M T2W -o "ws.root" -i %s_%s/%s/%s -m %s'%(outdir,proc,year,mass,mass)
-    if proc=='2poi':
-        command = 'combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO \'"map=^.*/bbA$:r_bbA[0,-40,40]"\' --PO \'"map=^.*/ggA$:r_ggA[0,-40,40]"\' -i datacards/%s/%s -m %s'%(year,mass,mass)
+    batch = kwargs.get('batch',False)
+
+    command = 'cd %s ; '%(utils.JobFolder)
+    command += 'combineTool.py -M T2W -o "ws.root" -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO \'"map=^.*/bbA$:r_bbA[0,-40,40]"\' --PO \'"map=^.*/ggA$:r_ggA[0,-40,40]"\' -i %s/%s/%s -m %s '%(utils.DatacardsFolder,year,mass,mass)
+    if batch:
+        taskname='workspace_%s_%s'%(year,mass)
+        command += '--job-mode condor --sub-opts=\'+JobFlavour = "workday"\' --task-name %s '%(taskname)
+    command += ' ; cd -'
 
     return command
 
@@ -20,13 +23,9 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('-year','--year',dest='year',default='Run2',help=""" year : 2016 2017 2018 Run2""",choices=utils.years_ext)
     parser.add_argument('-mass','--mass',dest='mass',default='1000',help=""" single mA point, if \'all\' is given as an argument, then workspaces for all masses will be created""",choices=utils.azh_masses_ext)
-    parser.add_argument('-proc','--proc',dest='proc',default='2poi',help=""" proc : ggA, bbA or 2poi """,choices=['ggA','bbA','2poi'])
+    parser.add_argument('-batch','--batch',dest='batch',action='store_true')
     args = parser.parse_args()
 
-    proc = args.proc
-    outdir = utils.DatacardsFolder+'_'+proc
-    if proc=='2poi':
-        outdir = utils.DatacardsFolder
     year = args.year
     masses = []
     if args.mass=='all':
@@ -34,16 +33,23 @@ if __name__ == "__main__":
     else:
         masses.append(args.mass)
 
+    batch=False
+    if args.batch:
+        batch=True
 
-    folder = utils.BaseFolder+'/'+outdir+'/'+year
+    folder = utils.DatacardsFolder+'/'+year
     if not os.path.isdir(folder):
         print ('Folder %s does not exist'%(folder))
         print ('Run first datacard production with script make_datacards.py or CreateCards.py')
         exit(1)
 
+    if not os.path.isdir(utils.JobFolder):
+        command_mkdir='mkdir %s'%(utils.JobFolder)
+        os.system(command_mkdir)
+
     for mA in masses:
         print
-        folder_mass = utils.BaseFolder+'/'+outdir+'/'+year+'/'+mA
+        folder_mass = utils.DatacardsFolder+'/'+year+'/'+mA
         if not os.path.isdir(folder_mass):
             print('Folder %s does not exist'%(folder_mass))
             print ('Run first datacard production with script make_datacards.py or CreateCards.py')
@@ -52,19 +58,23 @@ if __name__ == "__main__":
         ws_file=folder_mass+'/ws.root'
         if os.path.isfile(ws_file):
             rm_command = 'rm '+ws_file
-            print('file exist %s'%(ws_file))
-            print(rm_command)
+            #            print('removing old file %s'%(ws_file))
+            #            print(rm_command)
             os.system(rm_command)
 
         datacard_file=folder_mass+'/combined.txt.cmb'
         if os.path.isfile(datacard_file):
             rm_command = 'rm '+datacard_file
-            print('file exist %s'%(datacard_file))
-            print(rm_command)
+            #            print('removing old file %s '%(datacard_file))
+            #            print(rm_command)
             os.system(rm_command)
 
-        print("Creating workspace in folder %s/%s/%s"%(outdir,year,mA))
+            #        print("Creating workspace in folder %s/%s/%s"%(utils.DatacardsFolder,year,mA))
             
-        command=MakeCommandWorkspace(proc=proc,year=year,mass=mA)
+        command=MakeCommandWorkspace(year=year,mass=mA,batch=batch)
+        if batch: 
+            print('submitting job with command ')
+        else:
+            print('executing command ')
         print(command)
         os.system(command)

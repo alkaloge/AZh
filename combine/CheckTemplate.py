@@ -55,19 +55,19 @@ if __name__ == "__main__":
         print('--analysis : ',analyses)
         print('--cat : ',utils.azh_cats)
         print('--channel : ',utils.azh_channels)
-        print('--xmin : minimum boundary of x axis (default=200)')
-        print('--xmax : maximum boundary of x axis (default=1000')
-        print('--logx : set x axis to logarithmic scale')
-        print('--verbosity : detailed printout')
-        print('--dry_run : dry run with printout of available options')
+        print('--xmin : %s'%('minimum boundary of x axis (default=200)'))
+        print('--xmax : %s'%('maximum boundary of x axis (default=1000'))
+        print('--logx : %s'%('set x axis to logarithmic scale'))
+        print('--verbosity : %s'%('detailed printout'))
+        print('--dry_run : %s'%('dry run with printout of available options'))
         print
         print('Specific info for analysis %s -> '%(analysis))
-        xmasses = utils.hig18023_massses
+        xmasses = utils.hig18023_masses
         xtemplates = utils.hig18023_bkgs
         xtemplates.append('ggA')
         xuncs = utils.hig18023_uncs
         if analysis=='azh':
-            xmasses = utils.azh_massses
+            xmasses = utils.azh_masses
             xtemplates = utils.azh_bkgs
             xtemplates.append(['ggA','bbA'])
             xuncs = utils.azh_uncs

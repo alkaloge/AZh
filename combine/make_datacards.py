@@ -33,10 +33,9 @@ def DecorrelateUncertainties(cb,year,channel):
             cb.cp().channel([channel]).bin_id([ib]).RenameSystematic(cb,unc,unc+"_%s_%s_%s"%(channel,ib_name,year))
 
 parser = argparse.ArgumentParser(description="Datacards producer for AZh analysis")
-parser.add_argument("-mass", "--mass", required=True,help=""" mass of A boson """,choices=utils.azh_masses)
-parser.add_argument("-btag", "--btag", required=True,help=""" category : btag or 0btag """,choices=utils.azh_cats)
 parser.add_argument("-year", "--year", required=True,help=""" year : 2016, 2017 or 2018 """,choices=utils.years)
-parser.add_argument("-proc","--proc", required=True,help=""" process to include into the signal model. Available options : aggA, bbA, 2poi""",choices=['bbA','ggA','2poi'])
+parser.add_argument("-btag", "--btag", required=True,help=""" category : btag or 0btag """,choices=utils.azh_cats)
+parser.add_argument("-mass", "--mass", required=True,help=""" mass of A boson """,choices=utils.azh_masses)
 parser.add_argument("-no_bbb","--no_bbb", action='store_true',help=""" parameter to drop MC statistical uncertainties""")
 args = vars(parser.parse_args())
 
@@ -67,12 +66,6 @@ mc_bkgd = [
 reducible = ["reducible"]
 
 signals = ["bbA","ggA"]
-if args["proc"]=='bbA':
-    signals = ['bbA']
-    outdir = utils.DatacardsFolder+'_bbA'
-if args["proc"]=='ggA':
-    signals = ['ggA']
-    outdir = utils.DatacardsFolder+'_ggA'
 
 cb = ch.CombineHarvester()
 
@@ -230,7 +223,7 @@ cb.cp().process([b for b in bkgd if ("WZ" not in b)]).AddSyst(
     cb, "l1prefire", "shape", ch.SystMap()(1.00)
 )
 
-#cb.cp().process(bkgd).AddSyst(cb, "eleES", "shape", ch.SystMap()(1.00)) 
+cb.cp().process(bkgd).AddSyst(cb, "eleES", "shape", ch.SystMap()(1.00)) 
 cb.cp().process(bkgd).AddSyst(cb, "eleSmear", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd).AddSyst(cb, "muES", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd).AddSyst(cb, "efake", "shape", ch.SystMap()(1.00))
@@ -291,14 +284,6 @@ writer = ch.CardWriter(
 writer.WriteCards('%s/%s/%s/'%(outdir,year,mass), cb)
 writer.WriteCards('%s/Run2/%s/'%(outdir,mass), cb)
 
-#writer1 = ch.CardWriter(
-#    "$TAG/$ANALYSIS_$ERA_$CHANNEL_$MASS.txt",
-#    "$TAG/$ANALYSIS_$ERA_$CHANNEL_$MASS.root",
-#)
-#writer1.WriteCards('UL_%s/%s/'%(year,mass), cb)
-#writer1.WriteCards('Run2/%s/'%(mass),cb)
-#     'Creating cards : 2016 -- category : btag -- mass : 225'
-print('Done cards for %s -- year : %s -- category : %s -- mass : %s'%(proc,year,btag_label,mass))
-print('')
+print('Done cards for year : %s -- category : %s -- mass : %s'%(year,btag_label,mass))
 
 

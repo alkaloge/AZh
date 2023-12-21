@@ -5,7 +5,7 @@ import AZh.combine.utilsAZh as utils
 
 def MakeCommand(**kwargs):
 
-    indir = kwargs.get('indir','datacards')
+    indir = utils.DatacardsFolder
     outdir = kwargs.get('outdir','limits')
     analysis = kwargs.get('analysis','azh')
     year = kwargs.get('year','Run2')
@@ -13,6 +13,7 @@ def MakeCommand(**kwargs):
     proc = kwargs.get('proc','ggA')
     release = kwargs.get('releaseOtherPOI',False)
     mass = kwargs.get('mass','1000')
+    batch = kwargs.get('batch',False)
 
     otherProc = 'bbA'
     if proc=='bbA': otherProc = 'ggA'
@@ -22,15 +23,13 @@ def MakeCommand(**kwargs):
 
     fullpath_out = utils.BaseFolder+'/'+outdir
     command = 'cd %s ; '%(fullpath_out)
-    command += 'combine -M AsymptoticLimits ' 
+    command += 'combineTool.py -M AsymptoticLimits ' 
     if analysis=='azh':
-        command += '-d %s/%s/%s/%s/ws.root '%(utils.BaseFolder,indir,year,mass)
+        command += '-d %s/%s/%s/ws.root '%(indir,year,mass)
         command += '--setParameters r_bbA=0,r_ggA=0 '
         if release:
             command += '--setParameterRanges r_bbA=-30,30:r_ggA=-30,30 '
         else:
-            #            command += '-d %s/%s_%s/%s/%s/ws.root '(utils.BaseFolder,indir,proc,year,mass)
-            #            command += '--rMin=0.001 --rMax=30. '
             command += '--setParameterRanges r_%s=-30,30 '%(proc)
             command += '--freezeParameters r_%s '%(otherProc)
         command += '--redefineSignalPOIs r_%s '%(proc) 
@@ -41,8 +40,11 @@ def MakeCommand(**kwargs):
     command += '--cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 '
     if not obs:
         command += '--noFitAsimov -t -1 '
-    command += '-n ".%s_%s_%s.%s" '%(analysis,year,proc,typ)
-    command += '-m %s'%(mass)
+    command += '-n ".%s_%s_%s" '%(analysis,year,proc)
+    command += '-m %s '%(mass)
+    if batch:
+        taskname='limit_%s_%s_%s_%s'%(year,proc,mass,typ);
+        command += '--job-mode condor --sub-opts=\'+JobFlavour = "workday"\' --task-name %s '%(taskname)
     command += ' ; cd %s'%(utils.BaseFolder)
 
     return command
@@ -51,22 +53,26 @@ if __name__ == "__main__":
 
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('-year','--year',dest='year',default='Run2',help=""" year : 2016, 2017, 2018 or Run2 """,choices=['2016','2017','2018','Run2'])
     parser.add_argument('-analysis','--analysis',dest='analysis',default='azh',help=""" analysis : azh (this) or hig18023 (HIG-18-023)""",choices=['azh','hig18023'])
-    parser.add_argument('-obs','--obs',dest='obs',action='store_true',help=""" Type of limit : Exp (exp), or Obs(obs)""")
+    parser.add_argument('-year','--year',dest='year',required=True,help=""" year : 2016, 2017, 2018 or Run2 """,choices=['2016','2017','2018','Run2'])
+    parser.add_argument('-obs','--obs',dest='obs',action='store_true',help=""" compute observed limits """)
     parser.add_argument('-releaseOtherPOI','--releaseOtherPOI',dest='releaseOtherPOI',action='store_true',help=""" release other POI, for example r_bbA when running limits on r_ggA or vice versa""")
-    parser.add_argument('-outdir','--outdir',dest='outdir',required=True,help=""" output folder to put results of limit computation""")
-    parser.add_argument('-mass','--mass',dest='mass',type=str,default='1000',help=""" tested mass of A boson, if \'all\' is specified, limits are computed for all masses""")
+    parser.add_argument('-outdir','--outdir',dest='outdir',required=True,help=""" output folder to store results of computation""")
+    parser.add_argument('-mass','--mass',dest='mass',type=str,required=True,help=""" tested mass of A boson, if \'all\' is specified, limits are computed for all masses""")
+    parser.add_argument('-batch','--batch',dest='batch',action='store_true')
     args = parser.parse_args()
 
     procs = ['ggA']
 
     year = args.year
-    indir = utils.DatacardsFolder
     outdir = args.outdir
     analysis = args.analysis
     releaseOtherPOI = args.releaseOtherPOI
     obs = args.obs
+
+    batch = False
+    if args.batch:
+        batch = True
 
     if analysis=='hig18023' or analysis=='HIG18023':
         if year!='2016':
@@ -98,11 +104,26 @@ if __name__ == "__main__":
 
     print(type(args.mass))
  
-    fullpath_in = utils.BaseFolder+'/'+indir
-    if not os.path.isdir(fullpath_in):
-        print(fullpath_in)
-        print('input folder %s does not exist'%(indir))
-        exit(1)
+    if analysis=='azh':
+        fullpath_in = utils.DatacardsFolder+'/'+year
+        if not os.path.isdir(fullpath_in):
+            print
+            print(fullpath_in)
+            print('this folder with workspaces does not exist')
+            print('first create datacards and workspaces')
+            print
+            exit(1)
+    else:
+        fullpath_in = utils.BaseFolder+'/HIG-18-023'
+        if not os.path.isdir(fullpath_in):
+            print
+            print(fullpath_in)
+            print('this folder with workspaces does not exist')
+            print('first setup datacards and workspaces for analysis HIG-18-023')
+            print
+            exit(1)
+            
+    
 
     fullpath_out=utils.BaseFolder+'/'+outdir
     if not os.path.isdir(fullpath_out):
@@ -117,25 +138,34 @@ if __name__ == "__main__":
 
     for mA in masses:
         if analysis=='azh':
-            fullpath_ws=utils.BaseFolder+'/'+utils.DatacardsFolder+'/'+year+'/'+mA+'/ws.root'
+            fullpath_ws=utils.DatacardsFolder+'/'+year+'/'+mA+'/ws.root'
             if not os.path.isfile(fullpath_ws):
-                print('Workspace %s does not exist!'%(fullpath_ws))
-                print('Nothing is done for %s and mA=%s'%(fullpath_ws,mA)) 
-                continue
+                print('Workspace does not exist : %s'%(fullpath_ws))
+                print('First create workspaces with macro CreateWorkspaces.py')
+                exit(1)
         else:
-            fullpath_ws=utils.BaseFolder+'/'
+            fullpath_ws=utils.BaseFolder+'/HIG-18-023/'+mA+'/ws.root'
+            if not os.path.isfile(fullpath_ws):
+                print('Workspace does not exist : %s'%(fullpath_ws))
+                print('Nothing is done for year %s and mass %s'%(year,mass))
+                print('First create workspaces for HIG-18-023 analysis with script CombineCards_HIG18023.bash')
+                exit(1)
         for proc in procs:
             print('Running limit : year=%s  proc=%s  mass=%s'%(year,proc,mA))
             command = MakeCommand(analysis=analysis,
-                                  indir=indir,
-                                  year=year,obs=obs,
+                                  year=year,
+                                  obs=obs,
                                   releaseOtherPOI=releaseOtherPOI,
                                   mass=mA,
                                   proc=proc,
-                                  outdir=outdir)
+                                  outdir=outdir,
+                                  batch=batch)
             os.system(command)
             print
-            print('done computation for : year=%s  proc=%s  mass=%s  with the command:'%(year,proc,mA))
+            if batch:
+                print('executed for : year=%s  proc=%s  mass=%s  with the command:'%(year,proc,mA))
+            else:
+                print('submitted to condor for year=%s  proc=%s  mass=%s with the command:'%(year,proc,mA))
             print(command)
             print
 
