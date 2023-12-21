@@ -7,12 +7,11 @@ def MakeCommandImpacts(**kwargs):
     
 
     typ = kwargs.get('typ','exp')
-    rmin = kwargs.get('rMin',-5.0)
-    rmax = kwargs.get('rMax',5.0)
     proc = kwargs.get('proc','ggA')
     mass = kwargs.get('mass','400')
     strategy = kwargs.get('strategy',1)
-    strength = kwargs.get('strength',1.0)
+    r_ggA = kwargs.get('r_ggA','0')
+    r_bbA = kwargs.get('r_bbA','0')
     
     expect = False
     if typ.lower() in 'expcted':
@@ -21,23 +20,25 @@ def MakeCommandImpacts(**kwargs):
     # change to dir where output will be stored
     command = 'cd %s_impacts_%s%s ; '%(typ,proc,mass)
     # perform initial fit and perform likelihood scan for signal strength
-    command += 'combineTool.py -M Impacts -d %s/datacards_%s/Run2/%s/ws.root -m %s '%(utils.BaseFolder,proc,mass,mass)
-    command += '--rMin %5.2f --rMax %5.2f '%(rmin,rmax)
+    command += 'combineTool.py -M Impacts -d %s/datacards/Run2/%s/ws.root -m %s '%(utils.BaseFolder,mass,mass)
     command += '--robustFit 1 --cminDefaultMinimizerTolerance 0.05 '
     command += '--X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO '
     command += '--cminDefaultMinimizerStrategy %1i '%(strategy)
+    command += '--setParameterRanges r_ggA=-20,20:r_bbA=-20,20 '
     if expect:
-        command += '--expectSignal %5.2f -t -1 '%(strength)
+        command += '-t -1 '%(strength)
+        command += '--setParameters r_ggA=%s,r_bbA=%s '%(r_ggA,r_bbA)
+    command += 'redefineSignalPOIs %s '%(proc)
     command += '--doInitialFit ; '
     # run scans of all nuisances; submit jobs to the local batch system
     command += 'combineTool.py -M Impacts -d %s/datacards_%s/Run2/%s/ws.root -m %s '%(utils.BaseFolder,proc,mass,mass)
-    command += '--rMin %5.2f --rMax %5.2f '%(rmin,rmax)
     command += '--robustFit 1 --cminDefaultMinimizerTolerance 0.05 '
     command += '--X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO '
     command += '--cminDefaultMinimizerStrategy %1i '%(strategy)
     if expect:
-        command += '--expectSignal %5.2f -t -1 '%(strength)    
-    command += '--job-mode condor --sub-opts=\'+JobFlavour = "workday"\' --merge 4 --doFits ; '
+        command += '-t -1 '%(strength)
+        command += '--setParameters r_ggA=%s,r_bbA=%s '%(r_ggA,r_bbA)
+    command += '--job-mode condor --sub-opts=\'+JobFlavour = "workday"\' ----merge 4 --doFits ; '%(jobdir)
     # return to the original folder
     command += 'cd ../'
 
@@ -51,9 +52,8 @@ if __name__ == "__main__":
     parser.add_argument('-proc','--proc',dest='proc',default='ggA')
     parser.add_argument('-mass','--mass',dest='mass',default='1000')
     parser.add_argument('-typ','--typ',dest='typ',default='exp')
-    parser.add_argument('-rMin','--rMin',dest='rMin',type=float,default=-5)
-    parser.add_argument('-rMax','--rMax',dest='rMax',type=float,default=5)
-    parser.add_argument('-expectSignal','--expectSignal',dest='strength',type=float,default=1.0)
+    parser.add_argument('-r_ggA','--r_ggA',dest='r_ggA',type=float,default=0.0)
+    parser.add_argument('-r_bbA','--r_bbA',dest='r_bbA',type=float,default=1.0)
     parser.add_argument('-minimizer_strategy','--Minimizer_strategy',dest='strategy',type=int,default=1)
     args = parser.parse_args()
 
@@ -77,8 +77,8 @@ if __name__ == "__main__":
         typ=args.typ,
         strategy=args.strategy,
         strength=args.strength,
-        rMin=args.rMin,
-        rMax=args.rMax)
+        r_ggA=args.rMin,
+        r_bbA=args.rMax)
     
     #print(command)
     os.system(command)

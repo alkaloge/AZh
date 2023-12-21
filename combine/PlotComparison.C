@@ -6,9 +6,10 @@ void PlotComparison(TString Era = "2016", // year
 		    TString CompareTo = "hig18023", // other options : "2017", "2018"
 		    TString folder = "limits", // folder with output of limit computation
 		    TString folder2 = "limits_hig18023", // second folder with output of limit computation
-		    float YMax = 20,
-		    float XMin = 220.,
-		    float XMax = 400.,
+		    TString type = "exp", // expected limit
+		    float YMax = 20, // maximum of Y axis
+		    float XMin = 220., // minimum of X axis
+		    float XMax = 400., // maximum of X axis
 		    bool blindData = true) {
 
 
@@ -89,7 +90,7 @@ void PlotComparison(TString Era = "2016", // year
 
   for (auto mass : masses_azh) {
 
-    TString fileName = folder + "/higgsCombine.azh_"+Era+"_"+Process+".AsymptoticLimits.mH"+mass+".root";
+    TString fileName = folder + "/higgsCombine.azh_"+Era+"_"+Process+"."+type+".AsymptoticLimits.mH"+mass+".root";
     std::cout << fileName << std::endl;
 
     TFile * file = new TFile(fileName);
@@ -141,7 +142,7 @@ void PlotComparison(TString Era = "2016", // year
     TString fileName = folder2 + "/higgsCombine.azh_"+CompareTo+"_"+Process+".AsymptoticLimits.mH"+mass+".root";
     
     if (isHIG18023)
-      fileName = folder2 + "/higgsCombine.hig18023_2016_ggA.AsymptoticLimits.mH"+mass+".root";
+      fileName = folder2 + "/higgsCombine.hig18023_2016_ggA."+type+".AsymptoticLimits.mH"+mass+".root";
     
     TFile * file = new TFile(fileName);
     if (file==NULL||file->IsZombie()) {
