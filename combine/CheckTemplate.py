@@ -24,9 +24,11 @@ if __name__ == "__main__":
     parser.add_argument('-template','--template',dest='templ',default='all')
     parser.add_argument('-sys','--sys',dest='sys',default='all')
     parser.add_argument('-mass','--mass',dest='mass',default='300')
-    parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=0)
-    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=999)
-    parser.add_argument('-verbosity','--verbosity',dest='verb',action='store_true')
+    parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=200)
+    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1000)
+    parser.add_argument('-logx','--logx',dest='logx',action='store_true')
+    parser.add_argument('-dry_run','--dry_run',dest='dry_run',action='store_true')
+    parser.add_argument('-printout','--printout',dest='verbosity',action='store_true')
 
     args = parser.parse_args()
 
@@ -40,7 +42,41 @@ if __name__ == "__main__":
     xmin = args.xmin
     xmax = args.xmax
 
-    verbosity = args.verb!=0
+    verbosity=False
+    if args.verbosity: 
+        verbosity=True
+
+    analyses = ['azh','hig18023']
+    
+    if args.dry_run:
+        print
+        print('Dry run of CheckTemplate.py')
+        print('Arguments ')
+        print('--analysis : ',analyses)
+        print('--cat : ',utils.azh_cats)
+        print('--channel : ',utils.azh_channels)
+        print('--xmin : minimum boundary of x axis (default=200)')
+        print('--xmax : maximum boundary of x axis (default=1000')
+        print('--logx : set x axis to logarithmic scale')
+        print('--verbosity : detailed printout')
+        print('--dry_run : dry run with printout of available options')
+        print
+        print('Specific info for analysis %s -> '%(analysis))
+        xmasses = utils.hig18023_massses
+        xtemplates = utils.hig18023_bkgs
+        xtemplates.append('ggA')
+        xuncs = utils.hig18023_uncs
+        if analysis=='azh':
+            xmasses = utils.azh_massses
+            xtemplates = utils.azh_bkgs
+            xtemplates.append(['ggA','bbA'])
+            xuncs = utils.azh_uncs
+
+        print('--masses : ',xmasses)
+        print('--templates : ',xtemplates)
+        print('--sys : ',xuncs) 
+        exit(1)
+
 
     folder = utils.BaseFolder+'/root_files'
     filename = 'MC_data_'+cat+'_'+year+'.root'
@@ -85,10 +121,12 @@ if __name__ == "__main__":
         prefix = 'x_' 
         dirname = ''
 
-    print
-    print('templates  = ',templates)
-    print('uncertainties = ',uncs)
-    print
+
+    if verbosity:
+        print
+        print('templates  = ',templates)
+        print('uncertainties = ',uncs)
+        print
 
     fullfilename = folder+'/'+filename
     inputfile = ROOT.TFile(fullfilename)
