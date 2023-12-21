@@ -46,13 +46,12 @@ The macro [Setup.py](https://github.com/raspereza/AZh/blob/main/combine/Setup.py
 
 Datacards for one signal mass point are created by macro [make_datacards.py](). It is executed with several parameters:
 ```
-./make_datacards.py --year $year --btag $btag --mass $mass --proc $proc 
+./make_datacards.py --year $year --btag $btag --mass $mass
 ```
 where
 * `$year : {2016, 2017, 2018}`;
 * `$btag : {btag, 0btag}`
 * `$mass :` mass hypothesis
-* `$proc : {ggA,bbA, 2poi}` : specifies signal model. If this argument is set to `ggA`, then only ggA process is considered as signal and other process is ignored. If argument is set to `bbA`, then only `bbA` process is considered as signal and other is ignored. Option `$proc` is set to `2poi` by default, meaning that both processes are included in the signal model and datacards are produced with 2 parameters of interest (POI): rate of ggA process (r_ggA) and rate of bbA process (r_bbA). User is forced to specified above four parameters.
 
 Datacards for a given year and mass are stored in the folder
 * `datacards/$year/$mass` : for signal model with 2 POIs;
@@ -74,17 +73,15 @@ For each $year and $mass hypothesis datacards will be put in the folder `datacar
 Datacards for Run2 combination will be output into folders `datacards/Run2/$mass`.
 At the next step workspaces to be used by [combine tool](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit), need to be produce. This is done with script [CreateWorkspaces.py](https://github.com/raspereza/AZh/blob/main/combine/CreateWorkspaces.py)
 ```
-./CreateWorkspaces.py --year $year --mass $mass --proc $proc 
+./CreateWorkspaces.py --year $year --mass $mass 
 ```
 where
 * `$year` : 2016, 2017, 2018 or Run2 for combination. Parameter `$year` is set to Run2 by default. 
 * `$mass` : mA (default = 1000). One can produce workspaces for all mass points in sequence by setting `$mass` to `all` 
-* `$proc` : `ggA`, `bbA` or `2poi` (default is `2poi`)
 
+For each $year and $mass workspaces are put in the folder `datacards/$year/$mass` under the name `ws.root`. Workspaces for Run2 combination are put in folders `datacards/Run2/$mass` under the same name. 
 
-When `$proc` is set to `2poi` workspaces are created for the signal model with two processes - `ggA` and `bbA`, and put in the folder `datacards/$year/$mass` under the name `ws.root`. Workspaces for Run2 combination are put in folders `datacards/Run2/$mass` under the same name. 
-
-Models with signal model containing only one process () workspaces contain two parameters of interest (POI): rate of the process ggA (r_ggA) and rate of the process bbA (r_bbA). Running workspaces for one era and especially for Run2 combination may takes time. Be patient.
+Signal model includes two  parameters of interest (POI): rate of the process ggA (r_ggA) and rate of the process bbA (r_bbA). Running workspaces for one era and especially for Run2 combination may takes time. Be patient.
 
 ## Creating workspaces for HIG18-023 analysis 
 
@@ -184,10 +181,12 @@ Impacts of nuisances parameters on the signal strength along with their postfit 
 ```
 combineTool.py -M Impacts -d ${CMSSW_BASE}/src/AZh/combine/datacards/Run2/300/ws.root -m 300 --redefineSignalPOIs r_ggA --setParameters r_ggA=1,r_bbA=0 --setParameterRanges r_ggA=-10,10:r_bbA=-10,10 --robustFit 1 --cminDefaultMinimizerTolerance 0.05 --X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO --cminDefaultMinimizerStrategy 1 -t -1 --doInitialFit
 ```
-The combine utility takes as an input combined Run 2 workspace created for mA=300 GeV and performs fit and likelihood scan of r_ggA (rate of ggA is define as POI with argument `--redefineSignalPOIs r_ggA`) using Asimov dataset (flags `-t -1`) built for signal+background model with r_ggA set to 1 and r_bbA set to 0 (`--setParameters r_ggA=1,r_bbA=0`). When running fit on data, one should drop flags `-t -1`. After the first step, the likelihood scan of all nuisance parameters is performed:
+The combine utility takes as an input combined Run 2 workspace created for mA=300 GeV and performs fit and likelihood scan of r_ggA (rate of ggA is define as POI with argument `--redefineSignalPOIs r_ggA`) using Asimov dataset (flags `-t -1`) built for signal+background model with r_ggA set to 1 and r_bbA set to 0 (`--setParameters r_ggA=1,r_bbA=0`). To perform fit on data remove flags `-t -1`. After the first step, the likelihood scan of all nuisance parameters is performed:
 ```
 combineTool.py -M Impacts -d ${CMSSW_BASE}/src/AZh/combine/datacards/Run2/300/ws.root -m 300 --redefineSignalPOIs r_ggA --setParameters r_ggA=1,r_bbA=0 --setParameterRanges r_ggA=-10,10:r_bbA=-10,10 --robustFit 1 --cminDefaultMinimizerTolerance 0.05 --X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO --cminDefaultMinimizerStrategy 1 -t -1 --job-mode condor --sub-opts='+JobFlavour = "workday"' --merge 4 --doFits
 ```
+Again, to perform scans on data one has to remove flags `-t -1`.
+
 Since this procedure is time consuming, the task of running likelihood scan for all parameters is parallelised by submitting jobs to batch system (`--job-mode condor --sub-opts='+JobFlavour = "workday"'`). In the example above each job will perform scan of 4 nuisances parameters (`--merge 4`). Once all jobs are finished, results are collected into json file and summary plot with diagnostis of nuisance parameters (impacts on signal strength r_ggA, postfit values and uncertainties) is create:
 ```
 combineTool.py -M Impacts -d ${CMSSW_BASE}/src/AZh/combine/datacards/Run2/300/ws.root --redefineSignalPOIs r_ggA -m 300 -o impacts.json
@@ -196,7 +195,7 @@ plotImpacts.py -i impacts.json -o impacts
 ```
 In the example above, the summary plot will be contained in pdf file `impacts.pdf`.
 
-
 ## Running GoF tests
+
 
 ## Running fits
