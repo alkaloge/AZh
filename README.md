@@ -18,7 +18,7 @@ git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsA
 cd HiggsAnalysis/CombinedLimit
 git checkout v8.2.0
 cd ../..
-git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
+git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester -b 102x
 git clone https://github.com/raspereza/AZh.git AZh
 scramv1 b -j 4
 ```
@@ -321,15 +321,11 @@ mv higgsCombine.obs.GoodnessOfFit.mH300.root gof_obs.root
 The histogram of test-statistics in ensemble of toys is then compared with the value of test-statistics in data and p-value, quantifying compatibility of data with the model, is computed as integral in the distribution of toys from the actual observed value up to infinity. RooT macro [Compatibility.C](https://github.com/raspereza/AZh/blob/main/combine/Compatibility.C) visualises the procedure
 ```
 void Compatibility(
-     TString folder = "GoF", \\ folder with results
-     TString Name = "A#rightarrow Zh#rightarrow (ee+#mu#mu)(#tau#tau) (Run2)", \\ legend
+     TString folder = "GoF", \\ folder, where RooT files with test-statistics reside 
+     TString Name = "A#rightarrow Zh#rightarrow (ee+#mu#mu)(#tau#tau) (Run2)", \\ legend on the plot
      int bins = 60, \\ number of bins in the distribution of toys)
 ```
 
-
-
 ## Closure test of the reducible background 
 
-Validation of reducible background is performed in the sideband region with same-sign tau-lepton candidates. The validation is based on GoF test performed on background templates and data distributions in this sideband region.  
-
-Datacards for closure test
+Validation of reducible background is performed in the sideband region with same-sign tau-lepton candidates. Validation is based on GoF test performed on background templates and data distributions in this sideband region. Datacards for validation are produced with the python script (MakeClosureCards.py)[https://github.com/raspereza/AZh/blob/main/combine/MakeClosureCards.py]
