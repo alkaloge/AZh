@@ -1,15 +1,24 @@
 #include "HttStylesNew.cc"
 
-void Compatibility(TString folder = "GoF_ClosureTest_Run2",
-		   TString model = 'saturated',
-		   TString legend = "SS region (Run2)",
-		   int bins = 60) {
+void Compatibility(
+		   TString folder = "GoF_Run2_mA300", // folder with RooT files
+		   TString Algo = "saturated", // algorithm
+		   TString legend = "A#rightarrow Zh (Run2)", // legend
+		   int bins = 60 // number of bins in the histogram of toys
+		   ) {
   
 
   SetStyle();
   gStyle->SetOptStat(0);
 
   TFile * fileObs = new TFile(folder+"/gof_obs.root");
+  if (fileObs==NULL||fileObs->IsZombie()) {
+    TString fullpath = folder+"/gof_obs.root";
+    std::cout << "file does not exist : " << fullpath << std::endl;
+    std::cout << "Make sure that you have run GoF test and saved output in the folder " << std::endl; 
+    std::cout << folder << std::endl;
+    return;
+  }
   double obs;
   float xMax = -1;
   float xMin = 1e+10;
@@ -20,6 +29,14 @@ void Compatibility(TString folder = "GoF_ClosureTest_Run2",
   if (obs>xMax) xMax = obs;
 
   TFile * file = new TFile(folder+"/gof_exp.root");  
+  if (file==NULL||file->IsZombie()) {
+    TString fullpath = folder+"/gof_exp.root";
+    std::cout << "file does not exist : " << fullpath << std::endl;
+    std::cout << "Make sure that you have run GoF test and saved output in the folder " << std::endl; 
+    std::cout << folder << std::endl;
+    return;
+  }
+
   double limit;
 
   TTree * tree = (TTree*)file->Get("limit");
@@ -30,14 +47,19 @@ void Compatibility(TString folder = "GoF_ClosureTest_Run2",
   float count = 0;
   float Entries = 0;
   for (int i=0; i<entries; ++i) {
+    tree->GetEntry(i);
     if (limit>xMax) xMax = limit;
     if (limit<xMin) xMin = limit;
+    Entries += 1.0;
     if (limit>obs) {
       count += 1.0;
     }
   }
 
-  TH1F * chi2 = new TH1F("chi2",Name,bins,xmin,xmax);
+  float xlower = 0.9*xMin;
+  float xupper = 1.2*xMax;
+
+  TH1F * chi2 = new TH1F("chi2",legend,bins,xlower,xupper);
   InitSignal(chi2);
   chi2->SetLineStyle(1);
   chi2->SetLineWidth(2);
@@ -94,6 +116,6 @@ void Compatibility(TString folder = "GoF_ClosureTest_Run2",
   tex->Draw();
 
   canv->Update();
-  canv->Print("gof_"+channel+"_"+Algo+".png");
+  canv->Print(folder+"/gof_"+Algo+".png");
 
 }
