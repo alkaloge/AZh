@@ -1,20 +1,44 @@
 #include "HttStylesNew.cc"
 #include "CMS_lumi.C"
 
-void PlotComparison(TString Era1 = "Run2", // year2 
-		    TString Era2 = "Run2", // year2
-		    TString Process = "bbA", // process
-		    TString folder1 = "limits", // folder with output of limit computation
-		    TString folder2 = "limits_2POIs", // second folder with output of limit computation
-		    TString leg1 = "r_{ggA}=0",
-		    TString leg2 = "r_{ggA} profiled",
-		    float YMax = 15, // maximum of Y axis
-		    float XMin = 225., // minimum of X axis
-		    float XMax = 2000., // maximum of X axis
-		    bool blindData = true) {
+void PlotComparisonHig18023(TString Era = "2016", // year 
+			    TString Process = "ggA", // process
+			    TString CompareTo = "hig18023", // HIG-18-023
+			    TString folder = "limits", // folder with output of limit computation
+			    TString folder2 = "limits_hig18023", // HIG-18-023 folder
+			    float YMax = 20, // maximum of Y axis
+			    float XMin = 220., // minimum of X axis
+			    float XMax = 400., // maximum of X axis
+			    bool blindData = true) {
 
+  std::vector<TString> masses_azh = {"225","275","300","325","350","375","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
 
-  std::vector<TString> masses = {"225","275","300","325","350","375","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
+  std::vector<TString> masses_hig18023 = {"220","240","260","280","300","350","400"};
+
+  std::vector<TString> masses2 = masses_hig18023;
+  bool isHIG18023 = true;
+  if (CompareTo=="2017"||CompareTo=="2018") {
+    masses2 = masses_azh;
+    isHIG18023 = false;
+    std::cout << "-----------------------------------------" << std::endl;
+    //    std::cout << "Comparing " << Era << " and " CompareTo << " for process " << Process << std::endl;
+    std::cout << "-----------------------------------------" << std::endl;
+    std::cout << std::endl;    
+
+  }
+  else if (CompareTo=="hig18023") {
+    masses2 = masses_hig18023;
+    isHIG18023 = true;
+    std::cout << "----------------------------------" << std::endl;
+    std::cout << "Comparing to the HIG18-023 analysis" << std::endl;
+    std::cout << "-----------------------------------" << std::endl;
+    std::cout << std::endl;
+  }
+  else {
+    std::cout << std::endl;
+    std::cout << "Unknown option for comparison : " << CompareTo << std::endl;
+      
+  }
 
   std::map<TString,TString> lumiLabel = {
     {"Run2","Run 2, 138 fb^{-1}"},
@@ -23,7 +47,7 @@ void PlotComparison(TString Era1 = "Run2", // year2
     {"UL_2016","2016, 36.3 fb^{-1}"}
   };
 
-  lumi_13TeV = lumiLabel[Era1];
+  lumi_13TeV = lumiLabel[Era];
 
   float scale = 1;
 
@@ -62,9 +86,9 @@ void PlotComparison(TString Era1 = "Run2", // year2
 
   int counter = 0;
 
-  for (auto mass : masses) {
+  for (auto mass : masses_azh) {
 
-    TString fileName = folder1 + "/higgsCombine.azh_"+Era1+"_"+Process+".AsymptoticLimits.mH"+mass+".root";
+    TString fileName = folder + "/higgsCombine.azh_"+Era+"_"+Process+".AsymptoticLimits.mH"+mass+".root";
     //    std::cout << fileName << std::endl;
 
     TFile * file = new TFile(fileName);
@@ -111,9 +135,12 @@ void PlotComparison(TString Era1 = "Run2", // year2
 
   int counter_H = 0;
   std::cout << std::endl;
-  for (auto mass : masses) {
+  for (auto mass : masses2) {
     
-    TString fileName = folder2 + "/higgsCombine.azh_"+Era2+"_"+Process+".AsymptoticLimits.mH"+mass+".root";
+    TString fileName = folder2 + "/higgsCombine.azh_"+CompareTo+"_"+Process+".AsymptoticLimits.mH"+mass+".root";
+    
+    if (isHIG18023)
+      fileName = folder2 + "/higgsCombine.hig18023_2016_ggA.AsymptoticLimits.mH"+mass+".root";
     
     TFile * file = new TFile(fileName);
     if (file==NULL||file->IsZombie()) {
@@ -258,16 +285,17 @@ void PlotComparison(TString Era1 = "Run2", // year2
 
   TLegend * leg = new TLegend(0.40,0.60,0.70,0.80);
   leg->SetFillColor(0);
-  leg->SetTextSize(0.045);
+  leg->SetTextSize(0.035);
   leg->SetBorderSize(0);
   if (!blindData) 
     leg->AddEntry(obsG,"Observed","lp");
-  leg->AddEntry(expG,leg1,"l");
-  leg->AddEntry(expH,leg2,"l");
+  leg->AddEntry(expG,"Expected (this analysis)","l");
+  leg->AddEntry(expH,"Expected (HIG-18-023)");
   //  leg->AddEntry(innerBand,"#pm1#sigma Expected","f");
   //  leg->AddEntry(outerBand,"#pm2#sigma Expected","f");
   leg->Draw();
 
+  lumi_13TeV = "2016, 36.3 fb^{-1}";
   extraText = "Internal";
   writeExtraText = true;
   CMS_lumi(canv,4,33); 
@@ -277,6 +305,6 @@ void PlotComparison(TString Era1 = "Run2", // year2
   canv->Update();
   //  TString suffix(fileList);
   //  canv->Print("BR_"+suffix+".pdf","Portrait pdf");
-  canv->Print("figures/Limits_"+Process+"_"+Era1+"_2POIs.png");
+  canv->Print("figures/Limits_"+Process+"_"+Era+"_ComparedTo_"+CompareTo+".png");
 
 }
