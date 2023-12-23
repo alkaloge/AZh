@@ -1,16 +1,15 @@
 #!/bin/bash
-folder=${CMSSW_BASE}/src/AZh/combine/datacards/Run2/300
+year=$1
+mass=$2
+folder=${CMSSW_BASE}/src/AZh/combine/datacards/${year}/${mass}
 jobdir=${CMSSW_BASE}/src/AZh/combine/jobs
-#outdir=$2
-#if [ ! -d "$outdir" ]; then
-#    mkdir $outdir
-#else 
 cd GoF
-#combineTool.py -M GoodnessOfFit -d ${folder}/ws.root --setParameters r_ggA=1,r_bbA=0 -m 300 --algo saturated -n .test
-for i in {1..2}
+rm *
+combineTool.py -M GoodnessOfFit -d ${folder}/ws.root -m ${mass} --setParameters --algo saturated -n .obs
+for i in {1..5}
 do
     random=$RANDOM
     echo random seed $random
-    combineTool.py -M GoodnessOfFit -d ${folder}/ws.root --toysFreq -m 300 --algo saturated -n .test_exp -t 10 -s ${random} --setParameters r_ggA=1,r_bbA=0 --job-mode condor --task-name gof.${random} --sub-opts='+JobFlavour = "workday"' 
+    combineTool.py -M GoodnessOfFit -d ${folder}/ws.root --toysFreq -m ${mass} --algo saturated -n .exp -t 2 -s ${random} --job-mode condor --task-name exp.${random} --sub-opts='+JobFlavour = "workday"' 
 done
 cd -
