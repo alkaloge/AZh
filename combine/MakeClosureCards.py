@@ -6,107 +6,25 @@ import argparse
 import AZh.combine.stylesAZh as styles
 import AZh.combine.utilsAZh as utils
 import CombineHarvester.CombineTools.ch as ch
-import uproot
 
+def PlotSS(rootfile,**kwargs):
 
-uncs_bins = {
-    'bin1' : (  0, 400,0.10),
-    'bin2' : (400, 700,0.10),
-    'bin3' : (700,2500,0.10),
-}
+    year = kwargs.get('year','Run2')
+    channel = kwargs.get('channel','all')
 
-def getUnc(x):
-    unc = 0
-    if x<400: unc = 0.10
-    elif x<700: unc = 0.10
-    else: unc = 0.10
-    return unc
+    h_data = rootfile.Get(channel+'/data_obs')
+    h_reducible = rootfile.Get(channel+'/reducible')
+    h_irreducible = rootfile.Get(channel+'/irreducible')
 
-def PlotSys(chan,hists,sysName):
-
-
-    hist = hists['reducible_'+sysName+'Up'].Clone('Central')
-    histUp = hists['reducible_'+sysName+'Up'].Clone('Up')
-    histDown = hists['reducible_'+sysName+'Down'].Clone('Down')
-    nbins = hist.GetNbinsX()
-    for ib in range(1,nbins+1):
-        x = hists['reducible'].GetBinContent(ib)
-        e = hists['reducible'].GetBinError(ib)
-        hist.SetBinContent(ib,x)
-        hist.SetBinError(ib,e)
-
-    styles.InitData(hist)
-    styles.InitData(histUp)
-    styles.InitData(histDown)
-
-    histUp.SetMarkerSize(0)
-    histUp.SetLineColor(1)
-    histUp.SetMarkerColor(1)
-    histUp.SetLineStyle(1)
-
-    histUp.SetMarkerSize(0)
-    histUp.SetLineColor(2)
-    histUp.SetMarkerColor(2)
-    histUp.SetLineStyle(1)
-
-    histDown.SetMarkerSize(0)
-    histDown.SetLineColor(4)
-    histDown.SetMarkerColor(4)
-    histDown.SetLineStyle(1)
-    
-    styles.zeroBinErrors(histUp)
-    styles.zeroBinErrors(histDown)
-
-    ymax = hist.GetMaximum()
-    if histUp.GetMaximum()>ymax: ymax = histUp.GetMaximum()
-    if histDown.GetMaximum()>ymax: ymax = histDown.GetMaximum()
-    hist.GetYaxis().SetRangeUser(0.,1.5*ymax)
-
-    canv = styles.MakeCanvas('canv','',500,500)
-    hist.Draw("e1")
-    histUp.Draw("hsame")
-    histDown.Draw("hsame")
-
-    leg = ROOT.TLegend(0.6,0.6,0.9,0.9)
-    styles.SetLegendStyle(leg)
-    leg.SetTextSize(0.045)
-    leg.SetHeader(chan+':'+sysName)
-    leg.AddEntry(hist,'central','lp')
-    leg.AddEntry(histUp,'Up','l')
-    leg.AddEntry(histDown,'Down','l')
-    leg.Draw()
-
-    canv.SetLogx(True)
-    canv.Update()
-    canv.Print("figures/SS_systematics_%s_%s.png"%(chan,sysName))
-    del canv
-
-    print
-    print
-    print('Channel',chan,'uncertainty',sysName)
-    nbins = hist.GetNbinsX()
-    for i in range(1,nbins+1):
-        x = hist.GetBinContent(i)
-        xup = histUp.GetBinContent(i)
-        xdown = histDown.GetBinContent(i)
-        low = hist.GetBinLowEdge(i)
-        high = hist.GetBinLowEdge(i+1)
-        print('[%4i,%4i]   %7.5f   %7.5f   %7.5f'%(int(low),int(high),x,xup,xdown))
-    print
-    print
-    
-
-def Plot(chan,hists):
-    data = hists['data_obs'].Clone('h_data')
-    reducible = hists['reducible'].Clone('h_reducible')
-    irreducible = hists['irreducible'].Clone('h_irreducible')
+    data = h_data.Clone('h_data')
+    reducible = h_reducible.Clone('h_reducible')
+    irreducible = h_irreducible.Clone('h_irreducible')
     reducible.Add(reducible,irreducible)
     h_tot = reducible.Clone('h_tot')
 
-    styles.InitData(data)
-    data.SetLineColor(1)
-    styles.InitHist(reducible,"","",ROOT.TColor.GetColor("#c6f74a"),1001)
-    styles.InitHist(irreducible,"","",ROOT.TColor.GetColor("#FFCCFF"),1001)
+    styles.InitData(data,"m(4l) [GeV]","Events")
+    styles.InitHist(reducible,"m(4l) [GeV]","Events",ROOT.TColor.GetColor("#c6f74a"),1001)
+    styles.InitHist(irreducible,"m(4l) [GeV]","Events",ROOT.TColor.GetColor("#FFCCFF"),1001)
     styles.InitTotalHist(h_tot)
 
     utils.zeroBinErrors(reducible)
@@ -122,19 +40,15 @@ def Plot(chan,hists):
     if h_tot.GetMaximum()>ymax: 
         ymax = h_tot.GetMaximum()
 
-    data.GetXaxis().SetLabelSize(0.05)
-    data.GetYaxis().SetLabelSize(0.05)
-    data.GetXaxis().SetTitleOffset(1.0)
-    data.GetYaxis().SetTitleOffset(1.2)
-    data.GetXaxis().SetTitleSize(0.06)
-    data.GetYaxis().SetTitleSize(0.06)
-    
-    data.GetXaxis().SetTitle('m(ll#tau#tau) (GeV)')
-    data.GetYaxis().SetTitle('Events / bin')
+    reducible.GetYaxis().SetRangeUser(0.,1.2*ymax)
+    reducible.GetXaxis().SetNdivisions(505)
+    reducible.GetXaxis().SetNoExponent()
+    reducible.GetXaxis().SetMoreLogLabels()
 
+
+    canv_name = 'canv_'+year+'_'+channel
     canv = styles.MakeCanvas('canv','',500,500) 
-    data.Draw('e1')
-    reducible.Draw('hsame')
+    reducible.Draw('h')
     irreducible.Draw('hsame')
     h_tot.Draw('e2same')
     data.Draw('e1same')
@@ -142,69 +56,89 @@ def Plot(chan,hists):
     leg = ROOT.TLegend(0.65,0.45,0.9,0.7)
     styles.SetLegendStyle(leg)
     leg.SetTextSize(0.04)
-    leg.SetHeader(styles.chan_map[chan]+' channel')
+    leg.SetHeader(styles.chan_map[channel])
     leg.AddEntry(data,'data','lp')
     leg.AddEntry(reducible,'reducible','f')
     leg.AddEntry(irreducible,'irreducible','f')
     leg.Draw()
-    styles.CMS_label(canv,era='Run2')
+
+    styles.CMS_label(canv,era=year)
+
     canv.SetLogx(True)
+    canv.RedrawAxis()
     canv.Update()
-    canv.Print('figures/SS_closure_'+chan+'.png')
-    del canv
+    canv.Print('figures/SS_closure_'+channel+'_'+year+'.png')
+
+
 
 def quasiSignal(hist):
     hist_sig = hist.Clone('sig')
     nbins = hist.GetNbinsX()
     for ib in range(1,nbins+1):
-        hist_sig.SetBinContent(ib,0.001)
-        hist_sig.SetBinError(ib,0.0001)    
+        hist_sig.SetBinContent(ib,0.0001)
+        hist_sig.SetBinError(ib,0.00001)    
     return hist_sig
 
 
-def setReducibleUncertainty(chan,hist):
+def setReducibleUncertainty(h_inputs,**kwargs):
+
+    year=kwargs.get('year','2018')
+    channel=kwargs.get('channel','et')
     print 
-    print('creating systematic templates of reducible background',chan)
-    hists = {}
-    nbins = hist.GetNbinsX()
-    nameWithUnc = hist.GetName()+'_withUnc'
-    histWithUnc = hist.Clone(nameWithUnc)
-    for unc in uncs_bins:
-        ntuple = uncs_bins[unc]
-        nameUp = hist.GetName()+'_'+chan+'_'+unc+'Up'
-        histUp = hist.Clone(nameUp)
-        nameDown = hist.GetName()+'_'+chan+'_'+unc+'Down'
-        histDown = hist.Clone(nameDown)        
-        for ib in range(1,nbins+1):
-            x = hist.GetBinContent(ib)
-            centre = hist.GetBinCenter(ib)
-            xup = x
-            xdown = x
-            if centre>ntuple[0] and centre<ntuple[1]:
-                xup = x*(1.0 + ntuple[2])
-                xdown = x/(1.0 + ntuple[2])
-            histUp.SetBinContent(ib,xup)
-            histDown.SetBinContent(ib,xdown)
-        hists[nameUp] = histUp
-        hists[nameDown] = histDown
-        print
-
-#    for ib in range(1,nbins+1):
-#        x = hist.GetBinContent(ib)
-#        center = hist.GetBinCenter(ib)
-#        uncert = x*getUnc(center)
-#        histWithUnc.SetBinContent(ib,x)
-#        histWithUnc.SetBinError(ib,uncert)
-
+    print('systematics for reducible background in year %s and channel %s '%(year,channel))
     print
 
-    hists[nameWithUnc] = histWithUnc
-    return hists
-                
+    hist_fake = h_inputs['reducible']
+    hist_ss_app = h_inputs['ss_application']
 
-def saveRooTFile(chan,hists,rootfile):
-    rootfile.mkdir(chan)
-    rootfile.cd(chan)
+    name='%s_%s'%(year,channel)
+    hist_ss_app_rebin = utils.rebinHisto(hist_ss_app,utils.bins_fakes,name)
+    hist_reducible_rebin = utils.rebinHisto(hist_fake,utils.bins_fakes,name)
+    hist_sys=hist_ss_app_rebin.Clone('hist_sys'+name)
+    nbins_sys=hist_sys.GetNbinsX()
+
+    hists = {}
+    lower_edge=hist_sys.GetBinLowEdge(1)
+    upper_edge=hist_sys.GetBinLowEdge(nbins_sys+1)
+
+    for ib in range(1,nbins_sys+1):
+        error = hist_ss_app_rebin.GetBinError(ib)
+        x_ss_app = hist_ss_app_rebin.GetBinContent(ib)
+        x_reducible = hist_reducible_rebin.GetBinContent(ib)
+        x_max = max(x_ss_app,x_reducible)
+        maximal = max(x_max,error)
+        sys=1.0
+        if maximal>0:
+            sys=error/maximal                            
+        hist_sys.SetBinContent(ib,sys)
+        hist_sys.SetBinError(ib,0.)
+        binname='bin%1i'%(ib)
+        hist_sys.GetXaxis().SetBinLabel(ib,binname)
+        nameUp = 'reducible_'+channel+'_'+binname+'_'+year+'Up'
+        nameDown = 'reducible_'+channel+'_'+binname+'_'+year+'Down'
+        hists[nameUp] = hist_fake.Clone(nameUp)
+        hists[nameDown] = hist_fake.Clone(nameDown)
+
+    nbins=hist_fake.GetNbinsX()
+    for ib in range(1,nbins+1):
+        center=hist_fake.GetBinCenter(ib)
+        x=hist_fake.GetBinContent(ib)
+        bin_sys=hist_sys.FindBin(center)
+        binname=hist_sys.GetXaxis().GetBinLabel(bin_sys)
+        sys=hist_sys.GetBinContent(bin_sys)
+        x_down=max(0.,x/(1.0+sys))
+        x_up=max(0.,x*(1.0+sys))
+        nameUp = 'reducible_'+channel+'_'+binname+'_'+year+'Up'
+        nameDown = 'reducible_'+channel+'_'+binname+'_'+year+'Down'
+        hists[nameDown].SetBinContent(ib,x_down)
+        hists[nameUp].SetBinContent(ib,x_up)
+        print('%s  %6.3f %6.3f %6.3f'%(binname,x,x_down,x_up))
+
+    return hists                
+
+def saveRooTFile(channel,hists,rootfile):
+    rootfile.mkdir(channel)
+    rootfile.cd(channel)
     for hist in hists:
         hists[hist].Write(hist)
 
@@ -219,76 +153,115 @@ def fixNegativeBins(hists):
                 hist.SetBinError(ib,0.)
 
 
-def makedatacards(chan,rootfile):
+def makedatacards(rootfile,**kwargs):
+    
+    year = kwargs.get('year','2016')
+    channel = kwargs.get('channel','tt')
+
     hists = {}
-    foldername=os.getenv('CMSSW_BASE')+'/src/AZh/combine/root_files'
-    inputfilename=foldername+'/'+chan+'_0_m4l_cons_SS.root'
+    inputfilename=utils.BaseFolder+'/root_files/'+channel+'_comb_m4l_cons_SS_'+year+'.root'
     inputrootfile=ROOT.TFile(inputfilename)
     data = inputrootfile.Get('data')
     reducible = inputrootfile.Get('reducible')
     irreducible = inputrootfile.Get('irreducible')
+    ss_application = inputrootfile.Get('ss_application')
     hists['data_obs'] = data
     hists['reducible'] = reducible
     hists['irreducible'] = irreducible
     fixNegativeBins(hists)
     hists['sig'] = quasiSignal(irreducible)
-    hists_reducible = setReducibleUncertainty(chan,reducible)
+    histsR = {}
+    histsR['ss_application'] = ss_application
+    histsR['reducible'] = reducible
+    hists_reducible = setReducibleUncertainty(histsR,year=year,channel=channel)
     for hist in hists_reducible:
         hists[hist] = hists_reducible[hist]
 
-    saveRooTFile(chan,hists,rootfile)
-    Plot(chan,hists)
-    for unc in uncs_bins:
-        uncert = chan + '_' + unc
-        PlotSys(chan,hists,uncert)
+    saveRooTFile(channel,hists,rootfile)
 
+############
+### MAIN ###
+############
 if __name__ == "__main__":
 
+    ROOT.gROOT.SetBatch(True)
     styles.InitROOT()
-    styles.SetStyle()
-    filename = os.getenv('CMSSW_BASE')+'/src/AZh/combine/root_files/ss_closure.root'
-    rootfile = ROOT.TFile(filename,'recreate')
-    for chan in ['em','et','mt','tt']:
-        makedatacards(chan,rootfile)
-    rootfile.Close()
+    styles.SetStyle()     
 
-    cats = [
-        (1,'em'),
-        (2,'et'),
-        (3,'mt'),
-        (4,'tt')
-    ]    
+    if os.path.isdir('ClosureTest'):
+        os.system('rm -rf ClosureTest')
 
-    uncbins = ['bin1','bin2','bin3']
+    os.system('mkdir ClosureTest')
 
-    cb = ch.CombineHarvester()
 
-    cb.AddObservations(['*'],['azh_closure'],['2018'],['SS'],cats)
-    cb.AddProcesses(['*'],['azh_closure'],['2018'],['SS'],['sig'],cats,True)
-    cb.AddProcesses(['*'],['azh_closure'],['2018'],['SS'],['reducible','irreducible'],cats,False)
+    bins = utils.bins_fakes
+    newbins = len(bins)-1
+    fake_uncs = []
+    for ib in range(1,newbins+1):
+        fake_uncs.append('bin%1i'%(ib))
+
+
+    for year in utils.years:
+        filename = utils.BaseFolder+'/root_files/m4l_SS_'+year+'.root'
+        rootfile = ROOT.TFile(filename,'recreate')
+        for channel in ['em','et','mt','tt']:
+            makedatacards(rootfile,year=year,channel=channel)
+        rootfile.Close()
+
+        cats = [
+            (1,'em'),
+            (2,'et'),
+            (3,'mt'),
+            (4,'tt')
+        ]    
+
+
+        cb = ch.CombineHarvester()
+
+        cb.AddObservations(['*'],['azh_closure'],[year],['SS'],cats)
+        cb.AddProcesses(['*'],['azh_closure'],[year],['SS'],['sig'],cats,True)
+        cb.AddProcesses(['*'],['azh_closure'],[year],['SS'],['reducible','irreducible'],cats,False)
     
-    cb.cp().process(['irreducible']).AddSyst(cb,'norm_bkgs','lnN',ch.SystMap()(1.15))
-    cb.cp().process(['sig']).AddSyst(cb,'norm_sig','lnN',ch.SystMap()(1.10))
-    for cat in cats:
-        ib = cat[0]
-        ib_name = cat[1]
-        for unc in uncs_bins:
-            cb.cp().process(['reducible']).bin_id([ib]).AddSyst(cb,ib_name+'_'+unc,'shape',ch.SystMap()(1.0))
+        # conservative uncertainties
+        cb.cp().process(['irreducible']).AddSyst(cb,'norm_bkgs','lnN',ch.SystMap()(1.15))
+        cb.cp().process(['sig']).AddSyst(cb,'norm_sig','lnN',ch.SystMap()(1.10))
 
-    cb.AddDatacardLineAtEnd("* autoMCStats 0")
+        for cat in cats:
+            ib = cat[0]
+            ib_name = cat[1]
+            for unc in fake_uncs:
+                cb.cp().process(['reducible']).bin_id([ib]).AddSyst(cb,ib_name+'_'+unc+'_'+year,'shape',ch.SystMap()(1.0))
 
-    cb.cp().backgrounds().ExtractShapes(filename, '$BIN/$PROCESS', '$BIN/$PROCESS_$SYSTEMATIC')
-    cb.cp().signals().ExtractShapes(filename, '$BIN/$PROCESS', '$BIN/$PROCESS_$SYSTEMATIC')
+        cb.AddDatacardLineAtEnd("* autoMCStats 0")
+
+        cb.cp().backgrounds().ExtractShapes(filename, '$BIN/$PROCESS', '$BIN/$PROCESS_$SYSTEMATIC')
+        cb.cp().signals().ExtractShapes(filename, '$BIN/$PROCESS', '$BIN/$PROCESS_$SYSTEMATIC')
     
-    os.system('rm -rf ClosureTest')
-    writer = ch.CardWriter(
-        "$TAG/$ANALYSIS_$CHANNEL_$BIN.txt",
-        "$TAG/$ANALYSIS_$CHANNEL_$BIN.root")
-    writer.SetWildcardMasses([])
-    writer.SetVerbosity(0);
-    writer.WriteCards('ClosureTest/all',cb)
-    os.system('./CreateWorkspacesClosure.bash')
-    print
-    print
-    print('Datacards for closure test of fake background model in the SS region have created...')
-    print
+
+        writer = ch.CardWriter(
+            "$TAG/$ANALYSIS_$ERA_$CHANNEL_$BIN.txt",
+            "$TAG/$ANALYSIS_$ERA_$CHANNEL_$BIN.root")
+        writer.SetWildcardMasses([])
+        writer.SetVerbosity(0);
+        writer.WriteCards('ClosureTest/Run2',cb)
+        writer.WriteCards('ClosureTest/%s'%(year),cb)
+        writer.WriteCards('ClosureTest/$BIN',cb)
+        print
+        print
+        print('Datacards is SS region for year %s created'%(year))
+        print
+    
+    # merging files per one year
+    for channel in ['em','et','mt','tt']:
+        if os.path.isfile('ClosureTest/azh_closure_Run2_SS_%s.root'%(channel)):
+            command = 'rm ClosureTest/azh_closure_Run2_SS_%s.root'%(channel)
+            os.system(command)
+        command = 'hadd ClosureTest/azh_closure_Run2_SS_%s.root ClosureTest/%s/*.root'%(channel,channel)
+        os.system(command)
+        rootfile = ROOT.TFile('ClosureTest/azh_closure_Run2_SS_%s.root'%(channel))
+        PlotSS(rootfile,year='Run2',channel=channel)
+        rootfile.Close()
+        command = 'combineTool.py -M T2W -o "ws.root" -i ClosureTest/%s '%(channel)
+        os.system(command)
+    command = 'combineTool.py -M T2W -o "ws.root" -i ClosureTest/Run2 '
+    os.system(command)

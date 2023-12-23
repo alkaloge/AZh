@@ -22,10 +22,9 @@ if __name__ == "__main__":
     parser.add_argument('-cat','--cat',dest='cat',default='0btag',choices=['0btag','btag'])
     parser.add_argument('-channel','--channel',dest='chan',default='mmtt',choices=utils.azh_channels)
     parser.add_argument('-template','--template',dest='templ',default='all')
-    parser.add_argument('-sys','--sys',dest='sys',default='all')
     parser.add_argument('-mass','--mass',dest='mass',default='300')
     parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=200)
-    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1000)
+    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=2000)
     parser.add_argument('-logx','--logx',dest='logx',action='store_true')
     parser.add_argument('-dry_run','--dry_run',dest='dry_run',action='store_true')
     parser.add_argument('-printout','--printout',dest='verbosity',action='store_true')
@@ -37,10 +36,10 @@ if __name__ == "__main__":
     cat = args.cat
     channel = args.chan
     templ = args.templ
-    sys = args.sys
     mass = args.mass
     xmin = args.xmin
     xmax = args.xmax
+    logx = args.logx
 
     verbosity=False
     if args.verbosity: 
@@ -84,35 +83,33 @@ if __name__ == "__main__":
     prefix = ''
     
     templates = []
-    uncs = []
+    uncs = utils.azh_uncs
+    fake_uncs = utils.azh_fakeuncs
     unc_postfix = ''
+    higgs_chan = utils.azh_higgs_channels[channel]
 
     analysis_type = 0
 
-    if sys.lower()=='all':
-        uncs = utils.azh_uncs
-    else:
-        uncs = [sys]
-
-    if templ.lower()=='all':
+    if templ=='all':
         templates = utils.azh_bkgs
-        templates.remove('reducible')
     else:
         templates = [templ]
 
-    if analysis.lower()=='azh':
+    if analysis=='root':
+        fake_uncs = ['bin1','bin2','bin3']
+    elif analysis=='azh':
         analysis_type = 1
         folder = os.getenv('CMSSW_BASE') + '/src/AZh/combine/datacards/Run2/'+mass
         filename = 'azh_'+year+'_'+cat+'_'+channel+'_'+mass+'.root'
         unc_postfix = '_'+year
-        if templ.lower()=='all':
+        fake_uncs = [higgs_chan+'_bin1',higgs_chan+'_bin2',higgs_chan+'_bin3']
+        if templ=='all':
             for sig in utils.azh_signals:
                 templates.append(sig+mass)
     if analysis.lower()=='hig18023':
         analysis_type = 2
-        if sys.lower()=='all':
-            uncs = utils.hig18023_uncs
-        if templ.lower()=='all':
+        uncs = utils.hig18023_uncs
+        if templ.lower=='all':
             templates = utils.hig18023_bkgs
             templates.remove('data_FR')
             templates.append('AZH'+mass)
@@ -136,7 +133,7 @@ if __name__ == "__main__":
         print('file %s not found'%(fullfilename))
         exit(1)
 
-
+    print
     for xt in templates:
         template=xt
         if templ=='bbA' or templ=='ggA' or templ=='AZH':
@@ -145,7 +142,12 @@ if __name__ == "__main__":
         if hist==None:
             print('template %s not found in folder %s'%(template,dirname))
             continue
-        for unc in uncs:
+        systematics=uncs
+        if xt=='reducible':
+            if analysis=='root' or analysis=='azh':
+                systematics=fake_uncs
+            
+        for unc in systematics:
             histUp = hist
             histDown = hist
             if unc.lower()!='none':
@@ -168,14 +170,15 @@ if __name__ == "__main__":
                                verbosity=verbosity,
                                xmin=xmin,
                                xmax=xmax,
-                               logx=False)
+                               logx=logx)
 
 
-    print
     print
     print('year = %s : category = %s : channel = %s'%(year,cat,channel))
     print('plots are produced for templates ',templates)
-    print('and systematic uncertainties ',uncs)
-    print('from input file : %s'%(fullfilename))
+    print('uncertainties in MC samples  ',uncs)
+    if analysis=='root' or analysis=='azh':
+        print('uncertainties in reducible background ',fake_uncs)
+    print('input RooT file : %s'%(fullfilename))
     print('output figures are put put in the folder %s'%(utils.FiguresFolder))
     print

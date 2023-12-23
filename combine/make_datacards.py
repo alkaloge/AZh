@@ -20,7 +20,19 @@ cats = [
 
 
 expUnc = ['unclMET','tauID0','tauID1','tauID10','tauID11','tauES','efake','mfake','eleES','muES','pileup','l1prefire','eleSmear']
-fakeUnc = ['closure1','closure2','closure3','closure4']
+
+fakeUnc = ['bin1','bin2','bin3']
+
+h_channel_map={
+    'eeem' : 'em',
+    'eeet' : 'et',
+    'eemt' : 'mt',
+    'eett' : 'tt',
+    'mmem' : 'em',
+    'mmet' : 'et',
+    'mmmt' : 'mt',
+    'mmtt' : 'tt'
+}
 
 # decorrelating instrumental uncs across years
 def DecorrelateUncertainties(cb,year,channel):
@@ -30,7 +42,8 @@ def DecorrelateUncertainties(cb,year,channel):
         for cat in cats:
             ib = cat[0]
             ib_name = cat[1]
-            cb.cp().channel([channel]).bin_id([ib]).RenameSystematic(cb,unc,unc+"_%s_%s_%s"%(channel,ib_name,year))
+            h_channel = h_channel_map[ib_name]
+            cb.cp().channel([channel]).bin_id([ib]).RenameSystematic(cb,unc,"%s_%s_%s"%(h_channel,unc,year))
 
 parser = argparse.ArgumentParser(description="Datacards producer for AZh analysis")
 parser.add_argument("-year", "--year", required=True,help=""" year : 2016, 2017 or 2018 """,choices=utils.years)
@@ -205,8 +218,8 @@ bkgd = mc_bkgd + signals
 bkgd_mod = [b for b in bkgd if "ggHWW" not in b]
 bkgd_tauID = [b for b in bkgd]
 
-#for unc in fakeUnc:
-#    cb.cp().process(reducible).AddSyst(cb, unc, "shape", ch.SystMap()(1.00))
+for unc in fakeUnc:
+    cb.cp().process(reducible).AddSyst(cb, unc, "shape", ch.SystMap()(1.00))
 
 cb.cp().process(bkgd_tauID).AddSyst(cb, "tauID0", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd_tauID).AddSyst(cb, "tauID1", "shape", ch.SystMap()(1.00))

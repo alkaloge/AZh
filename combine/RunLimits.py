@@ -102,7 +102,6 @@ if __name__ == "__main__":
                 exit(1)
         masses.append(args.mass)
 
-    print(type(args.mass))
  
     if analysis=='azh':
         fullpath_in = utils.DatacardsFolder+'/'+year

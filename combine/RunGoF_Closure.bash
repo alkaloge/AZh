@@ -1,80 +1,17 @@
 #!/bin/bash
-# $1 : channel
-# $2 : algo
-
-channel=${1}
-ws=ws
-algo=${2}
-dir=${CMSSW_BASE}/src/AZh/combine
-inputdir=${dir}/ClosureTest/${channel}
-outputdir=${dir}/GoF 
-jobname=GoF_${channel}_${ws}_${algo}_obs
-cat > ${dir}/jobs/${jobname}.sh <<EOF1
-#!/bin/sh
-source /cvmfs/cms.cern.ch/cmsset_default.sh
-export SCRAM_ARCH=slc6_amd64_gcc700
-cd ${CMSSW_BASE}/src
-cmsenv
-cd ${outputdir}
-ulimit -s unlimited
-combine -M GoodnessOfFit -d ${inputdir}/${ws}.root -m 125 --algo ${algo} -n .Closure_${channel}_${algo}.obs
-EOF1
-chmod u+x ${dir}/jobs/${jobname}.sh
-cat > ${dir}/jobs/${jobname}.submit << EOF2
-+RequestRuntime=3000
-
-RequestMemory = 2000
-
-executable = ${dir}/jobs/${jobname}.sh
-
-transfer_executable = True
-universe            = vanilla
-getenv              = True
-Requirements        = OpSysAndVer == "CentOS7"
-
-output              = ${dir}/jobs/${jobname}.out
-error               = ${dir}/jobs/${jobname}.error
-log                 = ${dir}/jobs/${jobname}.log
-
-queue
-EOF2
-chmod u+x ${dir}/jobs/${jobname}.submit
-condor_submit ${dir}/jobs/${jobname}.submit
-
-for i in {1..50}
+sample=$1
+folder=${CMSSW_BASE}/src/AZh/combine/ClosureTest/${sample}
+jobdir=${CMSSW_BASE}/src/AZh/combine/jobs
+#outdir=$2
+#if [ ! -d "$outdir" ]; then
+#    mkdir $outdir
+#else 
+cd GoF
+combineTool.py -M GoodnessOfFit -d ${folder}/ws.root  -m 300 --algo saturated -n .$sample
+for i in {1..2}
 do
-    jobname=GoF_${ws}_${channel}_${algo}_${i}
     random=$RANDOM
-    cat > ${dir}/jobs/${jobname}.sh << EOF3
-#!/bin/sh
-source /cvmfs/cms.cern.ch/cmsset_default.sh
-export SCRAM_ARCH=slc6_amd64_gcc700
-cd ${CMSSW_BASE}/src
-cmsenv
-cd ${outputdir}
-ulimit -s unlimited
-combine -M GoodnessOfFit -d ${inputdir}/${ws}.root --toysFreq -m 125 --algo ${algo} -n .Closure_${channel}_${algo}_${i}.exp -t 20 -s ${random}
-EOF3
-    chmod u+x ${dir}/jobs/${jobname}.sh
-    cat > ${dir}/jobs/${jobname}.submit << EOF4
-+RequestRuntime=6000
-
-RequestMemory = 2000
-
-executable = ${dir}/jobs/${jobname}.sh
-
-transfer_executable = True
-universe            = vanilla
-getenv              = True
-Requirements        = OpSysAndVer == "CentOS7"
-
-output              = ${dir}/jobs/${jobname}.out
-error               = ${dir}/jobs/${jobname}.error
-log                 = ${dir}/jobs/${jobname}.log
-
-queue
-EOF4
-    chmod u+x ${dir}/jobs/${jobname}.submit
-    condor_submit ${dir}/jobs/${jobname}.submit
+    echo random seed $random
+    combineTool.py -M GoodnessOfFit -d ${folder}/ws.root --toysFreq -m 300 --algo saturated -n .test_exp -t 10 -s ${random} --setParameters r_ggA=1,r_bbA=0 --job-mode condor --task-name gof.${random} --sub-opts='+JobFlavour = "workday"' 
 done
-
+cd -

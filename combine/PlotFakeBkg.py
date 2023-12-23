@@ -11,10 +11,9 @@ import os
 def ComparePlots(hists,**kwargs):
 
     year = kwargs.get('year','2018')
-    btag = kwargs.get('btag','0btag')
+    cat = kwargs.get('cat','comb')
     channel = kwargs.get('channel','tt')
     charge  = kwargs.get('charge','OS')
-
     h_model   = hists['model']
     h_relaxed = hists['relaxed']
 
@@ -52,7 +51,7 @@ def ComparePlots(hists,**kwargs):
     h_model.Draw('h')
     h_relaxed.Draw('hsame')
 
-    legTit = '%s %s %s'%(btag,channel,charge)
+    legTit = '%s %s %s'%(cat,channel,charge)
     leg = ROOT.TLegend(0.65,0.65,0.9,0.85)
     styles.SetLegendStyle(leg)
     leg.SetHeader(legTit)
@@ -64,7 +63,7 @@ def ComparePlots(hists,**kwargs):
     canv.SetLogx(True)
     canv.RedrawAxis()
     canv.Update()
-    canv.Print('figures/%s_%s_%s_%s'%(year,btag,channel,charge))
+    canv.Print('figures/%s_%s_%s_%s.png'%(year,cat,channel,charge))
 
 ############
 ### MAIN ###
@@ -75,36 +74,35 @@ if __name__ == "__main__":
     styles.InitROOT()
     styles.SetStyle()
 
-    parser = argparse.ArgumentParser(description="Check datacards")
-    parser.add_argument('-year','--year',dest='year',required=True,choices=utils.years,help="""year : 2016, 2017 or 2018""")
-    parser.add_argument('-channel','--channel',dest='channel',required=True,choices=['em','et','mt','tt'],help=""" channel : em, et, mt and tt""")
-    parser.add_argument('-btag','--btag',dest='btag',action='store_true',help=""" btag category """)
+    parser = argparse.ArgumentParser(description="Plot reducible background")
+    parser.add_argument('-year','--year',dest='year',required=True,help="""year : 2016, 2017, 2018 or Run2""",choices=['2016','2017','2018','Run2'])
+    parser.add_argument('-channel','--channel',dest='channel',required=True,help=""" channel : em, et, mt, tt""",choices=['em','et','mt','tt'])
+    parser.add_argument('-cat','--cat',dest='cat',required=True,help=""" category : 0btag, btag, comb """,choices=['0btag','btag','comb'])
     parser.add_argument('-same_sign','--same_sign',dest='ss',action='store_true',help=""" SS sideband""")
     args = parser.parse_args()
 
-    bins = [200,300,550,2000]
+    bins = [200,400,700,2000]
 
     histnames=['reducible','irreducible','ss_relaxed']
     year = args.year
     channel = args.channel
-    btag='0'
-    btag_leg = '0btag'
-    if args.btag: 
-        btag='1'
-        btag_leg = 'btag'
-
+    cat = args.cat
     charge='OS'
     if args.ss: 
         charge='SS'
+        print
+        print('Same sign region -> cat is set to \'comb\'')
+        print
+        cat='comb'
         histnames.append('ss_application')
         histnames.append('data')
     else:
         histnames.append('os_application')
         
     print
-    print('      %s %sbtag  %s  %s '%(year,btag,channel,charge))
+    print('      %s  %s  %s  %s '%(year,cat,channel,charge))
     print
-    filename = 'root_files/%s_%s_m4l_cons_%s_%s.root'%(channel,btag,charge,year)
+    filename = 'root_files/%s_%s_m4l_cons_%s_%s.root'%(channel,cat,charge,year)
     print(filename)
     print
     rootfile = ROOT.TFile(filename)
@@ -132,5 +130,5 @@ if __name__ == "__main__":
     
     histosToPlot['relaxed'] = utils.rebinHisto(hists['reducible'],bins,'relaxed')
 
-    ComparePlots(histosToPlot,year=year,btag=btag_leg,channel=channel,charge=charge)
+    ComparePlots(histosToPlot,year=year,cat=cat,channel=channel,charge=charge)
 

@@ -2,7 +2,7 @@
 PROC=$1
 MASS=$2
 TYPE=$3
-DIR=${TYPE}_impacts_${PROC}${MASS}
+DIR=impacts_${PROC}${MASS}_${TYPE}
 if [ ! -d "$DIR" ]; then
     echo directory does not exist : $DIR
     exit

@@ -178,6 +178,89 @@ def SymmetrizeUnc():
                                 hists['down'].Write(template+'_'+unc+'Down')
                 inputfile.Close()
 
+def ReducibleSystematics():
+
+    print
+    years = utils.years
+    z_channels = ['ee','mm']
+    h_channels = ['em','mt','et','tt']
+    cats = utils.azh_cats
+    for year in years:
+        for cat in cats:
+            rootname='%s/root_files/MC_data_%s_%s.root'%(utils.BaseFolder,cat,year)
+            rootfile=ROOT.TFile(rootname,'update')
+            if rootfile==None:
+                print('file %s not found'%(rootname))
+                exit(1)
+            for z_channel in z_channels:
+                for h_channel in h_channels:
+                    channel = z_channel+h_channel                    
+                    print('constructing systematics for reducible background : %s %s %s'%(year,cat,channel))
+                    nameroot_reducible = '%s/root_files/%s_comb_m4l_cons_OS_%s.root'%(utils.BaseFolder,h_channel,year)
+                    root_reducible = ROOT.TFile(nameroot_reducible)
+                    if root_reducible==None:
+                        print('file %s not found'%(root_reducible))
+                        exit(1)
+                    hist_os_app = root_reducible.Get('os_application') 
+                    hist_reducible = root_reducible.Get('reducible')
+                    name='%s_%s_%s'%(year,cat,channel)
+                    hist_os_app_rebin = utils.rebinHisto(hist_os_app,utils.bins_fakes,name)
+                    name='%s_%s_%s'%(year,cat,channel)
+                    hist_reducible_rebin = utils.rebinHisto(hist_reducible,utils.bins_fakes,name)
+                    name='sys_%s_%s_%s'%(year,cat,channel)
+                    hist_sys=hist_os_app_rebin.Clone(name)
+                    nbins_sys=hist_sys.GetNbinsX()
+                    hist_fake = rootfile.Get(channel+'/reducible')
+
+                    hist_fake_sys = {}
+                    lower_edge=hist_sys.GetBinLowEdge(1)
+                    upper_edge=hist_sys.GetBinLowEdge(nbins_sys+1)
+
+                    for ib in range(1,nbins_sys+1):
+                        error = hist_os_app_rebin.GetBinError(ib)
+                        x_os_app = hist_os_app_rebin.GetBinContent(ib)
+                        x_reducible = hist_reducible_rebin.GetBinContent(ib)
+                        x_max = max(x_os_app,x_reducible)
+                        maximal = max(x_max,error)
+                        sys=1.0
+                        if maximal>0:
+                            sys=error/maximal                            
+                        hist_sys.SetBinContent(ib,sys)
+                        hist_sys.SetBinError(ib,0.)
+                        binname='bin%1i'%(ib)
+                        hist_sys.GetXaxis().SetBinLabel(ib,binname)
+                        nameUp = 'reducible_'+binname+'Up'
+                        nameDown = 'reducible_'+binname+'Down'
+                        hist_fake_sys[nameUp] = hist_fake.Clone(nameUp)
+                        hist_fake_sys[nameDown] = hist_fake.Clone(nameDown)
+
+                    nbins=hist_fake.GetNbinsX()
+                    for ib in range(1,nbins+1):
+                        center = hist_fake.GetBinCenter(ib)
+                        if center<lower_edge:
+                            center = lower_edge + 0.1
+                        if center>upper_edge:
+                            center = upper_edge - 0.1
+                        x = hist_fake.GetBinContent(ib)
+                        bin_sys = hist_sys.FindBin(center)
+                        binname = hist_sys.GetXaxis().GetBinLabel(bin_sys)
+                        sys = hist_sys.GetBinContent(bin_sys)
+                        x_down = max(0.,x/(1.0+sys))
+                        x_up = max(0.,x*(1.0+sys))
+                        nameUp = 'reducible_'+binname+'Up'
+                        nameDown = 'reducible_'+binname+'Down'
+                        hist_fake_sys[nameDown].SetBinContent(ib,x_down)
+                        hist_fake_sys[nameUp].SetBinContent(ib,x_up)
+                        
+                    rootfile.cd(channel)
+                    for hist in hist_fake_sys:
+                        hist_fake_sys[hist].Write(hist)
+
+                    root_reducible.Close()
+            rootfile.Close()
+    print
+    print('done constructing systematics for reducible background')
+    print
 
 ############
 ### MAIN ###
@@ -198,6 +281,10 @@ if __name__ == "__main__":
 
     # symmetrize shape uncertainties
     SymmetrizeUnc()
+
+    # constructing systematic templates 
+    # for reducible background
+    ReducibleSystematics()
 
     # creating folders for figures, batch jobs
     pathdir=utils.BaseFolder+'/figures'

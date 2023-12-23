@@ -17,18 +17,17 @@ if __name__ == "__main__":
     styles.InitROOT()
     styles.SetStyle()
 
-    parser = argparse.ArgumentParser(description="Check datacards")
+    parser = argparse.ArgumentParser(description="Plotting final discriminants")
     parser.add_argument('-analysis','--analysis',dest='analysis',default='azh')
     parser.add_argument('-year','--year',dest='year',default='2016')
     parser.add_argument('-cat','--cat',dest='cat',default='0btag')
     parser.add_argument('-channel','--channel',dest='channel',default='mmtt')
-    parser.add_argument('-mass','--mass',dest='mass',default='300')
+    parser.add_argument('-mass','--mass',dest='mass',required=True)
     parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=200)
     parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1000)
-    parser.add_argument('-logx','--logx',dest='logx',type=bool,default=True)
-    parser.add_argument('-blind','--blind',dest='blind',type=bool,default=False)
+    parser.add_argument('-logx','--logx',dest='logx',action='store_true')
+    parser.add_argument('-unblind','--unblind',dest='unblind',action='store_true')
     args = parser.parse_args()
-
 
     analysis = args.analysis
     year = args.year
@@ -94,8 +93,9 @@ if __name__ == "__main__":
             channels = [channel]
             channel_legend=channel
 
-    blind = args.blind;
-    logx = args.logx;
+    blind = True 
+    if args.unblind: blind = False
+    logx = args.logx
 
     templates = ['data','other_bkg','reducible_bkg','ZZ_bkg','tot_bkg','ggA']
     templates_bkg = ['other_bkg','reducible_bkg','ZZ_bkg']
