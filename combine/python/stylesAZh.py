@@ -9,7 +9,8 @@ chan_map = {
     'em' : '#tau_{e}#tau_{#mu}',
     'et' : '#tau_{e}#tau_{h}',
     'mt' : '#tau_{#mu}#tau_{h}',
-    'tt' : '#tau_{h}#tau_{h}'
+    'tt' : '#tau_{h}#tau_{h}',
+    'all' : ''
 }
 
 fullchan_map = {
@@ -20,7 +21,8 @@ fullchan_map = {
     'mmem' : '(#mu#mu)(#tau_{e}#tau_{#mu})',
     'mmet' : '(#mu#mu)(#tau_{e}#tau_{h})',
     'mmmt' : '(#mu#mu)(#tau_{#mu}#tau_{h})',
-    'mmtt' : '(#mu#mu)(#tau_{h}#tau_{h})'
+    'mmtt' : '(#mu#mu)(#tau_{h}#tau_{h})',
+    'all'  : ''
 }
 
 eraLumiLabel = {
@@ -156,15 +158,16 @@ def MakeCanvas(name,title,dX,dY):
   
     return canvas
 
-def InitModel(hist,color):
+def InitModel(hist,color,style):
     hist.SetFillStyle(0)
-    hist.SetLineStyle(1)
+    hist.SetLineStyle(style)
     hist.SetLineWidth(2)
     hist.SetLineColor(color)
     hist.SetMarkerStyle(0)
     hist.SetMarkerSize(0)
-    hist.SetMarkerColor(0)
+    hist.SetMarkerColor(color)
     
+
 
 def InitHist(hist, xtit, ytit, color, style):
     hist.SetXTitle(xtit)
@@ -174,7 +177,7 @@ def InitHist(hist, xtit, ytit, color, style):
     hist.SetFillColor(color )
     hist.SetFillStyle(style )
     hist.SetTitleSize  (0.055,"Y")
-    hist.SetTitleOffset(1.200,"Y")
+    hist.SetTitleOffset(1.400,"Y")
     hist.SetLabelOffset(0.014,"Y")
     hist.SetLabelSize  (0.040,"Y")
     hist.SetLabelFont  (42   ,"Y")
@@ -189,17 +192,38 @@ def InitHist(hist, xtit, ytit, color, style):
     hist.GetYaxis().SetTitleFont(42)
     hist.GetXaxis().SetTitleFont(42)
     hist.SetTitle("")  
+    hist.GetXaxis().SetNdivisions(505)
 
 def InitTotalHist(hist):
     hist.SetFillStyle(3013);
     hist.SetFillColor(1);
     hist.SetMarkerStyle(21);
     hist.SetMarkerSize(0);
+    hist.GetXaxis().SetNdivisions(505)
 
-def InitData(hist):
+
+def InitData(hist,xtit,ytit):
+    hist.SetXTitle(xtit)
+    hist.SetYTitle(ytit)
     hist.SetMarkerStyle(20)
-    hist.SetMarkerSize(1.3)
+    hist.SetMarkerSize(1.6)
+    hist.SetLineColor(1)
+    hist.SetMarkerColor(1)
     hist.SetLineWidth(2)
+    hist.SetTitleSize  (0.055,"Y")
+    hist.SetTitleOffset(1.400,"Y")
+    hist.SetLabelOffset(0.014,"Y")
+    hist.SetLabelSize  (0.040,"Y")
+    hist.SetLabelFont  (42   ,"Y")
+    hist.SetTitleSize  (0.055,"X")
+    hist.SetTitleOffset(1.300,"X")
+    hist.SetLabelOffset(0.014,"X")
+    hist.SetLabelSize  (0.050,"X")
+    hist.SetLabelFont  (42   ,"X")
+    hist.GetYaxis().SetTitleFont(42)
+    hist.GetXaxis().SetTitleFont(42)
+    hist.SetTitle("")  
+
 
 def InitRatioHist(hist):
     hist.GetXaxis().SetLabelOffset(0.04)
