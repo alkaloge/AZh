@@ -1,14 +1,14 @@
 # A->Zh->(ll)(tautau) : statistical analysis 
 
-This documentation describes  statistical inference package used in the analysis searching for heavy pseudoscalar boson A predicted by the models with extended Higgs sector in the A->Zh->(ee+mm)(tau+tau) decay channel. The search uses ultra-legacy data collected with the CMS detector at the CERN Large Hadron Collider.
+This documentation describes statistical analysis package used in the search for heavy pseudoscalar boson A in the A->Zh->(ee+mm)(tau+tau) decay channel. The search uses ultra-legacy data collected with the CMS detector during Run2 of the CERN Large Hadron Collider in years 2016-2018.
 
 ## Installation
 
-The statistical inference of the AZh search results requires [Higgs combination package](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit), [CombineHarvester toolkit](https://cms-analysis.github.io/CombineHarvester/index.html)  and  [python analysis code](https://github.com/raspereza/AZh.git). We recommend to download also [datacards of the previous analysis HIG-18-023](https://gitlab.cern.ch/cms-analysis/hig/HIG-18-023) for comparison. The code uses as input RooT files containing distributions of the final discriminant - 4-lepton mass reconstructed with the FastMTT algorithm, m(4l) - for data, MC background and signal templates and data-driven background with jets misidentified as leptons. The inputs have been provided by Justin Gage Dezoort. For convenience the RooT files have been moved from [original repository](https://github.com/GageDeZoort/azh_coffea/tree/main/src/notebooks/root_for_combine) to [the repository](https://github.com/raspereza/AZh/tree/main/combine/root_files/backup) of statistical analysis code.
+The statistical analysis of the A->Zh search results requires [Higgs combination package](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit), [CombineHarvester toolkit](https://cms-analysis.github.io/CombineHarvester/index.html) and [python analysis code](https://github.com/raspereza/AZh.git). We recommend to download also [datacards of the previous analysis HIG-18-023](https://gitlab.cern.ch/cms-analysis/hig/HIG-18-023) for comparison. The code uses as inputs RooT files containing observed and predicted distributions of the final discriminant - 4-lepton mass reconstructed with the FastMTT algorithm, m(4l). Histograms are provided for data, MC background and signal sample, and data-driven background with jets misidentified as leptons. The inputs have been provided by Justin Gage Dezoort. For convenience the RooT files have been moved from the [original repository](https://github.com/GageDeZoort/azh_coffea/tree/main/src/notebooks/root_for_combine) to [this repository](https://github.com/raspereza/AZh/tree/main/combine/root_files/backup).
 
-We advise users to consult documentation of the [Combine package](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit) and [CombineHarvester toolkit](https://cms-analysis.github.io/CombineHarvester/index.html) for detailed information on the statistical methods employed in CMS. 
+We advise users of this package to consult documentation of the [Combine package](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit) and [CombineHarvester toolkit](https://cms-analysis.github.io/CombineHarvester/index.html) for detailed information on the statistical methods employed in CMS. 
 
-Installation proceeds as follows:
+Installation of the package proceeds as follows:
 ```
 export SCRAM_ARCH=slc7_amd64_gcc700
 cmsrel CMSSW_10_6_13
@@ -23,11 +23,11 @@ git clone https://github.com/raspereza/AZh.git AZh
 scramv1 b -j 4
 ```
 
-Root files with shapes to be used as inputs for datacards producer, are located in the folder [$CMSSW_BASE/src/AZh/combine/root_files](https://github.com/raspereza/AZh/tree/main/combine/root_files)
+RooT files with shapes to be used as inputs for datacards producer, are originally stored in the backup folder [$CMSSW_BASE/src/AZh/combine/root_files/backup](https://github.com/raspereza/AZh/tree/main/combine/root_files/backup). At the stage of setting up environment their copies are place in the folder [$CMSSW_BASE/src/AZh/combine/root_files/backup](https://github.com/raspereza/AZh/tree/main/combine/root_files/backup).
 
-After installation is complete change to the directory [$CMSSW_BASE/src/AZh/combine](https://github.com/raspereza/AZh/tree/main/combine). All scripts will be run from this directory.
+After installation is complete, change to the directory [$CMSSW_BASE/src/AZh/combine](https://github.com/raspereza/AZh/tree/main/combine). All scripts will be run in this directory.
 
-Retrieve datacards of the HIG-18-023 analysis:
+Download datacards of the HIG-18-023 analysis from gitlab repo:
 ```
 cd $CMSSW_BASE/src/AZh/combine
 git clone https://gitlab.cern.ch/cms-analysis/hig/HIG-18-023/datacards.git HIG-18-023/datacards
@@ -38,24 +38,24 @@ Then execute macro [Setup.py](https://github.com/raspereza/AZh/blob/main/combine
 ./Setup.py
 ```
 
-The macro [Setup.py](https://github.com/raspereza/AZh/blob/main/combine/Setup.py) performs the following actions :
-1. It erges RooT files with data and background templates into one since [CombineHarvester](https://cms-analysis.github.io/CombineHarvester/index.html) is looking for data distributions and background templates in the same file.
+The macro performs the following actions :
+1. For each year (2016, 2017 and 2018) it merges separate RooT files with data and background templates into one file since [CombineHarvester](https://cms-analysis.github.io/CombineHarvester/index.html) is looking for data distributions and background templates in the same RooT file.
 2. It fixes bins with negative content in signal and backgroun templates.
 3. It creates in the current directory subfolders `figures` and `jobs` where various plots (png files) and batch job scripts will be placed.
-4. The code builds systematic variations of the reducible background templates. These systematic variations are largely driven by statistical uncertainties in templates obtained by applying fake factor method to the sample, where identification criteria for one or both tau leptons assigned to H->tautau decay are inverted. This samples is reffered to as "application region". Statistical uncertainties are derived in three bins in m(4l) : [200,400,700,2000] GeV, and applied to the reducible background templates.
-The sample of same-sign tau lepton candidates passing relaxed identification conditions, is used to model shape of the reducible background, with corresponding template being normalized to yield predicted by the fake factor method.
-5. The script also rescales MC templates of year 2016 to account for more updated (more accurately measured) tau Id scale factors. 
+4. The code builds systematic variations of the reducible background templates. These systematic variations are largely driven by statistical uncertainties in templates obtained by applying fake factor method to the sample, where identification criteria for one or both tau leptons assigned to H->tautau decay are inverted. This sample is referred to as "application region". Statistical uncertainties are derived in three bins in m(4l) : [200,400,700,2000] GeV, and applied to the reducible background templates.
+The data sample of same-sign tau lepton candidates passing relaxed identification conditions, is used to model shape of the reducible background, with corresponding template being normalized to the yield predicted in application region.
+5. The script also rescales MC templates of year 2016 to account for updated (more accurately measured) tau Id scale factors. 
 
-TAU POG has released [updated tau ID scale factors] in summer 2023. It turned out that for UL2016 samples new scale factors  
-are about 6% higher than previous ones in wide range of tau pT from 20 up to 100 GeV. To account for this effect MC templates are scaled by 
+TAU POG has released [updated tau ID scale factors](https://twiki.cern.ch/twiki/bin/view/CMS/TauIDRecommendationForRun2#Corrections_for_the_DeepTauv2p1) in summer 2023. It turned out that for UL2016 samples new scale factors are about 6% higher than previous ones in wide range of tau pT from 20 up to 100 GeV. To account for this effect MC templates are scaled by 
 * 6% in mmet, mmmt, eeet and eemt channels; 
 * 12% in eett and mmtt channels.
-Templates in eeem and mmem channels are left intact. For UL2017 and UL2018 samples, old measurements are comparable to the new ones. Therefore nothing is done for UL2017 and UL2018 templates.
 
+Templates in eeem and mmem channels are left intact. For UL2017 and UL2018 samples, previous measurements of tau ID efficiency are comparable to the new ones. Therefore nothing is done for UL2017 and UL2018 templates.
 
 ## Creation of datacards and workspaces
 
-Datacards for one signal mass point are created by macro [make_datacards.py](). It is executed with several parameters:
+Datacards are created by macro [make_datacards.py](https://github.com/raspereza/AZh/blob/main/combine/make_datacards.py). It is executed as follows:
+
 ```
 ./make_datacards.py --year $year --btag $btag --mass $mass
 ```
@@ -63,16 +63,13 @@ where
 * `$year : {2016, 2017, 2018}`;
 * `$btag : {btag, 0btag}`
 * `$mass :` mass hypothesis
-
-Datacards for a given year and mass are stored in the folder
-* `datacards/$year/$mass` : for signal model with 2 POIs;
-* `datacards_$proc/$year/$mass` : for signal model with only one process `$proc={bbA,ggA}`.
+Datacards for a given year and mass hypothesis are stored in the folder
+* `datacards/$year/$mass`
 
 Combined Run2 datacards are put in folders 
 * `datacards/Run2/$mass` : for signal model with 2 POIs;
-* `datacards_$proc/Run2/$mass` : for signal model with only one process `$proc={bbA,ggA}`.
 
-By default datacards are created with option `* autoMCStats 0` meaning that bin-by-bin MC statistical uncertainties are automatically included into uncertainty model. To disable MC this option, script should be run with additional flag `--no_bbb`
+By default datacards are created with option `* autoMCStats 0` meaning that bin-by-bin MC statistical uncertainties are automatically included into uncertainty model. To disable this option, script should be run with additional flag `--no_bbb`
 
 Datacards can be produced for all years and all mass points in one go by executing script [CreateCards.py](https://github.com/raspereza/AZh/blob/main/combine/CreateCards.py)
 ```
@@ -80,27 +77,27 @@ Datacards can be produced for all years and all mass points in one go by executi
 ```
 Running datacards for all years and mass points may take awhile.
 
-For each $year and $mass hypothesis datacards will be put in the folder `datacards/$year/$mass`.
-Datacards for Run2 combination will be output into folders `datacards/Run2/$mass`.
-At the next step [RooT workspaces](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/tutorial2020/exercise/#d-workspaces) for [multidimensional signal model](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/tutorial2023/parametric_exercise/#building-the-models) need to be produce. This is done with script [CreateWorkspaces.py](https://github.com/raspereza/AZh/blob/main/combine/CreateWorkspaces.py)
+At the next step [RooWorkspaces](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/tutorial2020/exercise/#d-workspaces) for [multisignal model](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/tutorial2023/parametric_exercise/#building-the-models) need to be produced. This is done with script [CreateWorkspaces.py](https://github.com/raspereza/AZh/blob/main/combine/CreateWorkspaces.py)
 ```
 ./CreateWorkspaces.py --year $year --mass $mass 
 ```
 where
-* `$year` : 2016, 2017, 2018 or Run2 for combination. Parameter `$year` is set to Run2 by default. 
-* `$mass` : mA (default = 1000). One can produce workspaces for all mass points in sequence by setting `$mass` to `all` 
-Additional (optional) flag `--batch` can be used to send jobs to the condor batch system. One job per mass point will be submited, which will accelerate the task of producing workspaces for all mass point for a given year. 
+* `$year` : 2016, 2017, 2018 or Run2 for combination (default=Run2). 
+* `$mass` : mA (default = 1000). One can produce workspaces for all mass points in one go by setting `$mass` to `all` 
+Additional (optional) flag `--batch` can be used to send jobs to the condor batch system. One job per mass point will be submited, which will accelerate the task of creating workspaces. 
 
-For each $year and $mass workspaces are put in the folder `datacards/$year/$mass` under the name `ws.root`. Workspaces for Run2 combination are put in folders `datacards/Run2/$mass` under the same name. 
+For each $year and $mass, workspaces are put in the folder `datacards/$year/$mass` under the name `ws.root`. Workspaces for Run2 combination are put in folders `datacards/Run2/$mass` under the same name. 
 
-Signal model includes two  parameters of interest (POI): rate of the process ggA (r_ggA) and rate of the process bbA (r_bbA). Running workspaces for one all mass points interactively is time consuming, especially for combined Run2 datacards. Therefore it is recommended in this case to submit jobs to the condor batch system by raising flag `--batch`, for example
+Signal model includes two  parameters of interest (POI): rate of the process ggA (r_ggA) and rate of the process bbA (r_bbA). 
+
+Running workspaces for all masses interactively is time consuming, especially for combined Run2 datacards. Therefore it is recommended to submit jobs to the batch system by raising flag `--batch`, for example
 ```
 ./CreateWorkspaces.py --year Run2 --mass all --batch
 ```
 
 ## Creating workspaces for HIG18-023 analysis 
 
-To enable comparison with the published HIG-18-023 analysis, datacards for this analysis need to be also created. It is done using bash script [CombineCards_HIG18023.bash](https://github.com/raspereza/AZh/blob/main/combine/CombineCards_HIG18023.bash). Workspaces for the HIG-18-023 analysis will are put in folders `HIG-18-023/$mass`.
+To enable comparison with the published HIG-18-023 analysis, corresponding datacards and workspaces need to be also created. It is done using bash script [CombineCards_HIG18023.bash](https://github.com/raspereza/AZh/blob/main/combine/CombineCards_HIG18023.bash). Workspaces for the HIG-18-023 analysis will be put in folders `HIG-18-023/$mass`.
 
 ## Checking shapes and systematic variations of MC templates
 
@@ -336,9 +333,10 @@ cd ../
 The histogram of test-statistics in ensemble of toys is then compared with the value of test-statistics in data and p-value, quantifying compatibility of data with the model, is computed as integral in the distribution of toys from the actual observed value up to infinity. RooT macro [Compatibility.C](https://github.com/raspereza/AZh/blob/main/combine/Compatibility.C) visualises the procedure
 ```
 void Compatibility(
-     TString folder = "GoF_Run2_ggA300", \\ folder, where RooT files with test-statistics reside 
-     TString legend = "A#rightarrow#Zh (Run2)" \\ legend
-     int bins = 60, \\ number of bins in the histogram of toys
+     TString folder = "GoF_Run2_mA300", // folder with RooT files
+     TString Algo = "saturated", // algorithm
+     TString legend = "A#rightarrow Zh (Run2)", // legend
+     int bins = 60 // number of bins in the histogram of toys
      ) {
 ```
 
@@ -346,7 +344,7 @@ void Compatibility(
 
 Validation of reducible background is performed in the sideband region with same-sign tau-lepton candidates. Validation is based on GoF test performed on background templates and data distributions in this sideband region. To enhance statistics btag and 0btag categories, as well Z->ee and Z->mumu decays are combined into one distribution per di-tau channel and year. In total 12 separate distributions are considered in the test : 4 decay modes of tau pairs (em, et, mt and tt) x 3 data-taking periods    
 
-Datacards for validation are produced with the python script (MakeClosureCards.py)[https://github.com/raspereza/AZh/blob/main/combine/MakeClosureCards.py]. It will make directory  $CMSSW_BASE/src/AZh/combine/ClosureTest, where various subfolders will be created to store datacards for individial data taking periods (2016, 2017, 2018) and di-tau modes (em, et, mt and tt). The combined Run2 workspaces are put in subfolder Run2. The macro will also plot distributions of m(4l) in the SS sideband for individual channels combining Run2 data. The plots are output in files `SS_closure_${channel}_Run2.png`, where `$channel={em, et, mt, tt}`. 
+Datacards for validation are produced with the python script [MakeClosureCards.py](https://github.com/raspereza/AZh/blob/main/combine/MakeClosureCards.py). It will make directory  $CMSSW_BASE/src/AZh/combine/ClosureTest, where various subfolders will be created to store datacards for individial data taking periods (2016, 2017, 2018) and di-tau modes (em, et, mt and tt). The combined Run2 workspaces are put in subfolder Run2. The macro will also plot distributions of m(4l) in the SS sideband for individual channels combining Run2 data. The plots are output in files `SS_closure_${channel}_Run2.png`, where `$channel={em, et, mt, tt}`. 
 
 The GoF tests can be done with the bash script [RunGoF_Closure.bash](https://github.com/raspereza/AZh/blob/main/combine/RunGoF_Closure.bash)
 ```
@@ -374,6 +372,6 @@ cp higgsCombine.obs.GoodnessOfFit.mH300.root gof_obs.root
 hadd gof_exp.root higgsCombine.exp.GoodnessOfFit*root
 ```
 
-The RooT macro (Compatibility.C)[https://github.com/raspereza/AZh/blob/main/combine/Compatibility.C] can be used at the end to display results of GoF test.
+The RooT macro [Compatibility.C](https://github.com/raspereza/AZh/blob/main/combine/Compatibility.C) can be used at the end to plot results of GoF test.
  
 
