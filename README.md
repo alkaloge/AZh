@@ -30,7 +30,7 @@ After installation is complete change to the directory [$CMSSW_BASE/src/AZh/comb
 Retrieve datacards of the HIG-18-023 analysis:
 ```
 cd $CMSSW_BASE/src/AZh/combine
-git clone https://gitlab.cern.ch/cms-analysis/hig/HIG-18-023 HIG-18-023
+git clone https://gitlab.cern.ch/cms-analysis/hig/HIG-18-023/datacards.git HIG-18-023/datacards
 ```
 
 Then execute macro [Setup.py](https://github.com/raspereza/AZh/blob/main/combine/Setup.py)
@@ -93,7 +93,10 @@ Additional (optional) flag `--batch` can be used to send jobs to the condor batc
 
 For each $year and $mass workspaces are put in the folder `datacards/$year/$mass` under the name `ws.root`. Workspaces for Run2 combination are put in folders `datacards/Run2/$mass` under the same name. 
 
-Signal model includes two  parameters of interest (POI): rate of the process ggA (r_ggA) and rate of the process bbA (r_bbA). Running workspaces for one all mass points interactively is time consuming, especially for combined Run2 datacards. Therefore it is recommended in this case to submit jobs to the condor batch system by setting flag `--batch`.
+Signal model includes two  parameters of interest (POI): rate of the process ggA (r_ggA) and rate of the process bbA (r_bbA). Running workspaces for one all mass points interactively is time consuming, especially for combined Run2 datacards. Therefore it is recommended in this case to submit jobs to the condor batch system by raising flag `--batch`, for example
+```
+./CreateWorkspaces.py --year Run2 --mass all --batch
+```
 
 ## Creating workspaces for HIG18-023 analysis 
 
@@ -191,7 +194,7 @@ bool blindData = true // blinding observed limit
 It is advised to create separate folder where this step of statistical inference will be carried out and output is stored, for example
 ```
 mkdir impacts_ggA300
-cd impacts_gg300
+cd impacts_ggA300
 ``` 
 
 [Impacts](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/tutorial2023/parametric_exercise/#impacts) of nuisances parameters on the signal strength along with their postfit values are computes by running `combine` utility with flag `-M Impacts`. In the first step, one performs initial fit and scan of POI (either r_ggA or r_bbA). Example:
@@ -270,12 +273,13 @@ This command will create pdf file `impacts_ggA300_exp/impacts_obs.pdf` based on 
 ```
 
 ## Running GoF tests
-It is advised to perform [goodness-of-fit tests](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/part3/commonstatsmethods/#goodness-of-fit-tests) in the separate folder. Create new directory and change to it
+
+It is advised to run all the scripts to perform [goodness-of-fit (GoF) test](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/part3/commonstatsmethods/#goodness-of-fit-tests) in separate newly created folder, e.g. 
 ```
 mkdir GoF
 cd GoF
 ```
-The is perfomed in two steps. First test-statistics is computed in data using [one of three options](https://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/part3/commonstatsmethods/#goodness-of-fit-tests):
+The GoF test is done in two steps. First, test-statistics is computed in data using [one of three options](https://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/part3/commonstatsmethods/#goodness-of-fit-tests):
 * [saturated](https://www.physics.ucla.edu/~cousins/stats/cousins_saturated.pdf);
 * Kolmogorov-Smirnov (KS);
 * Anderson-Darling (AD).
@@ -284,7 +288,7 @@ In the following we will use the saturated, which is frequently used in CMS. Exa
 ```
 combineTool.py -M GoodnessOfFit \
 -d datacards/Run2/300/ws.root \ 
---setParameters r_ggA=1,r_bbA=0 
+--setParameters r_ggA=1,r_bbA=0 \
 -m 300 \ 
 --algo saturated \ 
 -n .obs
@@ -295,24 +299,31 @@ The command above will create RooT file `higgsCombine.obs.GoodnessOfFit.mH300.ro
 
 Afterwards, ensemble of toys is generated under assumption of the signal+packground hypothesis. The sampling is performed given background and signal predictions in each analysis bin and underlying uncertainty model. 
 ```
-mkdir 
-combineTool.py -M GoodnessOfFit -d Run2/300/ws.root --setParameters r_ggA=1,r_bbA=0 -m 300 --algo saturated -n .obs
+combineTool.py -M GoodnessOfFit \ 
+-d Run2/300/ws.root --toysFreq \ 
+--setParameters r_ggA=1,r_bbA=0 \
+-m 300 --algo saturated -n .exp \
+-t 1000 
+```
+
+The command above will start generating 1000 of toys interactively. But this may take very long time, therefore it is recommended to parallelise task by submitting jobs to the condor batch system, as illustrated below 
+```
+#!/bash
 for i in {1..100}
 do
     random=$RANDOM
     echo random seed $random
     combineTool.py -M GoodnessOfFit \ 
     -d Run2/300/ws.root --toysFreq \ 
-    -m 300 --algo saturated -n .exp \
-    -t 10 -s ${random} \
     --setParameters r_ggA=1,r_bbA=0 \
+    -m 300 --algo saturated -n .exp \
+    -t 10 \
     --job-mode condor --task-name gof.${random} \
     --sub-opts='+JobFlavour = "workday"' 
 done
 cd -
 ```
-
-The command above will parallelise taks by submitting 100 jobs to the condor batch system. Each job will produce 10 toys using as a seed random number (`${random}`) generated by operational system, and create RooT file named `higgsCombine.exp.GoodnessOfFit.mH300.${random}.root`.  Once jobs are completed, one can collect results in the folder (`GoF`), where commands were executed, e.g.
+This script will submit 100 jobs to the condor batch system. Each job will produce 10 toys using as a seed random number (`${random}`) generated by operational system, and create RooT file named `higgsCombine.exp.GoodnessOfFit.mH300.${random}.root`. Once jobs are completed, one can collect results in the folder (`GoF`), where commands were executed, e.g.
 ```
 hadd gof_exp.root higgsCombine.exp.GoodnessOfFit.mH300.*.root
 mv higgsCombine.obs.GoodnessOfFit.mH300.root gof_obs.root
@@ -328,4 +339,13 @@ void Compatibility(
 
 ## Closure test of the reducible background 
 
-Validation of reducible background is performed in the sideband region with same-sign tau-lepton candidates. Validation is based on GoF test performed on background templates and data distributions in this sideband region. Datacards for validation are produced with the python script (MakeClosureCards.py)[https://github.com/raspereza/AZh/blob/main/combine/MakeClosureCards.py]
+Validation of reducible background is performed in the sideband region with same-sign tau-lepton candidates. Validation is based on GoF test performed on background templates and data distributions in this sideband region. To enhance statistics btag and 0btag categories, as well Z->ee and Z->mumu decays are combined into one distribution per di-tau channel and year. In total 12 separate distributions are considered in the test : 4 decay modes of tau pairs (em, et, mt and tt) x 3 data-taking periods    
+
+Datacards for validation are produced with the python script (MakeClosureCards.py)[https://github.com/raspereza/AZh/blob/main/combine/MakeClosureCards.py]. It will make directory  $CMSSW_BASE/src/AZh/combine/ClosureTest, where various subfolders will be created to store datacards for individial data taking periods (2016, 2017, 2018) and di-tau modes (em, et, mt and tt). The combined Run2 workspaces are put in subfolder Run2. The macro will also plot distributions of m(4l) in the SS sideband for individual channels combining Run2 data. The plots are output in files `SS_closure_${channel}_Run2.png`, where `$channel={em, et, mt, tt}`. 
+
+The GoF tests can be run with script taking one argument - either era (2016, 2017, 2018)
+
+``` 
+
+```
+
