@@ -161,7 +161,7 @@ def MakeCanvas(name,title,dX,dY):
 def InitModel(hist,color,style):
     hist.SetFillStyle(0)
     hist.SetLineStyle(style)
-    hist.SetLineWidth(2)
+    hist.SetLineWidth(3)
     hist.SetLineColor(color)
     hist.SetMarkerStyle(0)
     hist.SetMarkerSize(0)

@@ -7,10 +7,11 @@ mA=300         # mass hypothesis
 r_ggA=0        # signal strength of ggA process
 r_bbA=0        # signal strength of bbA process
 algo=saturated # test-statistics, options saturated, KS, AD 
-njobs=100      # number of jobs 
-ntoys=10       # number of toys per job
+njobs=50       # number of jobs 
+ntoys=20       # number of toys per job
+channel=tt     # channel
 
-folder=${CMSSW_BASE}/src/AZh/combine/datacards/${year}/${mA} # folder with workspace
+folder=${CMSSW_BASE}/src/AZh/combine/datacards_tight_mtt/${year}/${mA} # folder with workspace
 outdir=${CMSSW_BASE}/src/AZh/combine/GoF_${year}_mA${mA} # output folder
 
 if [ ! -d "$outdir" ]; then

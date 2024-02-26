@@ -22,6 +22,7 @@ if __name__ == "__main__":
     parser.add_argument('-year','--year',dest='year',default='2016')
     parser.add_argument('-cat','--cat',dest='cat',default='0btag')
     parser.add_argument('-channel','--channel',dest='channel',default='mmtt')
+    parser.add_argument('-subfolder','--subfolder',dest='subfolder',default='datacards')
     parser.add_argument('-mass','--mass',dest='mass',required=True)
     parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=200)
     parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1000)
@@ -121,9 +122,10 @@ if __name__ == "__main__":
 
     inputfile, inputfile_s = utils.GetInputFiles(
         analysis=analysis,
-        year='2016',
+        year='2018',
         cat='0btag',
         channel='mmtt',
+        subfolder=args.subfolder,
         mass=mass)
 
     # creating templates
@@ -165,6 +167,7 @@ if __name__ == "__main__":
                     year=year,
                     cat=cat,
                     channel=channel,
+                    subfolder=args.subfolder,
                     mass=mass)
 
                 # extract backgrounds
@@ -173,7 +176,7 @@ if __name__ == "__main__":
                     hist_bkg = inputfile.Get(dirname+prefix+bkg)
                     hists_bkg[bkg] = hist_bkg.Clone(bkg+suffix)
                     sumofweights = hists_bkg[bkg].GetSumOfWeights()
-                    print('%15s %6.3f'%(bkg,sumofweights))
+                    print('%15s %6.2f'%(bkg,sumofweights))
 
                 # grouping backgrounds
                 hists_grp = utils.GroupBackgrounds(hists_bkg,group)
@@ -184,7 +187,7 @@ if __name__ == "__main__":
                 name = 'total'
                 sumofweights = hists_x['tot_bkg'+suffix].GetSumOfWeights()
                 print('----------------------')
-                print('%15s %6.3f'%(name,sumofweights))
+                print('%15s %6.2f'%(name,sumofweights))
 
                 print
                 for sig in signals:
@@ -192,14 +195,14 @@ if __name__ == "__main__":
                     hists_x[sig+suffix] = hist_sig.Clone(sig+suffix)
                     sigmass = sig+mass
                     sumofweights = hists_x[sig+suffix].GetSumOfWeights()
-                    print('%15s %6.3f'%(sigmass,sumofweights))
+                    print('%15s %6.2f'%(sigmass,sumofweights))
     
                 print
                 hist_data = inputfile.Get(dirname+prefix+'data_obs')
                 hists_x['data'+suffix] = hist_data.Clone('data'+suffix)
                 sumofweights = hists_x['data'+suffix].GetSumOfWeights()
                 name = 'data' 
-                print('%15s %6.3f'%(name,sumofweights))
+                print('%15s %6.0f'%(name,sumofweights))
                 print
 
                 for template in templates:
@@ -221,19 +224,19 @@ if __name__ == "__main__":
 
     for template in templates_bkg:
         sumofweights = hists[template].GetSumOfWeights()
-        print('%15s %6.3f'%(template,sumofweights))
+        print('%15s %6.2f'%(template,sumofweights))
     print
     for template in templates_totbkg:
         sumofweights = hists[template].GetSumOfWeights()
-        print('%15s %6.3f'%(template,sumofweights))
+        print('%15s %6.2f'%(template,sumofweights))
     print
     for template in templates_sig:
         sumofweights = hists[template].GetSumOfWeights()
-        print('%15s %6.3f'%(template,sumofweights))
+        print('%15s %6.2f'%(template,sumofweights))
     print
     for template in templates_data:
         sumofweights = hists[template].GetSumOfWeights()
-        print('%15s %6.3f'%(template,sumofweights))
+        print('%15s %6.0f'%(template,sumofweights))
 
     print
     utils.Plot(hists,

@@ -37,15 +37,15 @@ years_ext = ['2016','2017','2018','Run2']
 
 variations = ["Up","Down"]
 
-bins_fakes = [200,400,700,2000]
+bins_fakes = [200,400,700,2400]
 
 ##############################
 # AZh analysis : definitions # 
 ##############################
 
-azh_masses = ['225','275','300','325','350','375','400','450','500','600','700','800','900','1000','1200','1400','1600','1800','2000']
+azh_masses = ['225','250','275','300','325','350','375','400','450','500','600','700','800','900','1000','1200','1400','1600','1800','2000']
 
-azh_masses_ext = ['225','275','300','325','350','375','400','450','500','600','700','800','900','1000','1200','1400','1600','1800','2000','all']
+azh_masses_ext = ['225','250','275','300','325','350','375','400','450','500','600','700','800','900','1000','1200','1400','1600','1800','2000','all']
 
 azh_bkgs = [
     "ggZHWW",
@@ -56,6 +56,26 @@ azh_bkgs = [
     "ZHtt",
     "ggZZ",
     "ZZ",    
+    "reducible"
+]
+
+azh_allbkgs = [
+    "ggZHWW",
+    "ZHWW",
+    "TTHtt",
+    "VVV",
+    "TTZ",
+    "ZHtt",
+    "ggZZ",
+    "ZZ",
+    "ggHtt",  # -> cannot produce 4 genuine charged leptons
+    "VBFHtt", # -> cannot produce 4 genuine charged leptons
+    "WHtt",   # -> cannot produce 4 genuine charged leptons
+    "ggHWW",  # -> cannot produce 4 genuine charged leptons
+    "ggHZZ",  # -> negligible
+    "VBFHWW", # -> cannot produce 4 genuine charged leptons
+    "TTW",    # -> cannot produce 4 genuine charged leptons
+    "TT",     # -> cannot produce 4 genuine charged leptons
     "reducible"
 ]
 
@@ -137,6 +157,7 @@ azh_uncs = [
     'muES',
     'pileup',
     'l1prefire',
+    'JES',
     'eleSmear'
 ]
 
@@ -233,8 +254,12 @@ def symmetrizeUnc(hists):
     nbins = hist.GetNbinsX()
     nbinsUp = histUp.GetNbinsX()
     nbinsDown = histDown.GetNbinsX()
+    nameCentral = hist.GetName()
+    nameUp = histUp.GetName()
+    nameDown = histDown.GetName()
     if nbins!=nbinsUp or nbins!=nbinsDown:
-        print('symmetrizeUnc : inconsistency between number of bins (central/up/down)')
+        print('symmetrizeUnc : inconsistency between number of bins (central/up/down) %s %s %s'%(nameCentral,nameUp,nameDown))
+
 
     for ib in range(1,nbins+1):
         xcentral = hist.GetBinContent(ib)
@@ -629,8 +654,16 @@ def Plot(hists,**kwargs):
         xsum = x+err
         if xsum>ymax: ymax = xsum
 
+    if blind: 
+        ymax = tot_hist.GetMaximum()
+
     if tot_hist.GetMaximum()>ymax: 
         ymax = tot_hist.GetMaximum()
+    if ggA_hist.GetMaximum()>ymax:
+        ymax = ggA_hist.GetMaximum()
+    if isBBA:
+        if bbA_hist.GetMaximum()>ymax:
+            ymax = bbA_hist.GetMaximum()
 
     ZZ_hist.GetXaxis().SetRangeUser(xmin,xmax)
     ZZ_hist.GetYaxis().SetRangeUser(0,1.2*ymax)
@@ -689,13 +722,14 @@ def GetInputFiles(**kwargs):
     cat=kwargs.get('cat','0btag')
     channel=kwargs.get('channel')
     mass=kwargs.get('mass','400')
+    subfolder = kwargs.get('subfolder','datacards')
 
     folder = BaseFolder+'/root_files'
     filename = 'MC_data_'+cat+'_'+year+'.root'
     filename_signal = 'signal_'+mass+'_'+cat+'_'+year+'.root'
 
     if analysis.lower()=='azh':
-        folder = BaseFolder+'/datacards/Run2/'+mass
+        folder = BaseFolder+'/'+subfolder+'/Run2/'+mass
         filename = 'azh_'+year+'_'+cat+'_'+channel+'_'+mass+'.root'
         filename_signal = filename
     elif analysis.lower()=='hig18023':
@@ -716,7 +750,7 @@ def GetInputFiles(**kwargs):
 
     print
     print('Extracting histograms for year=%s  channel=%s  category=%s'%(year,cat,channel))
-    print('form file %s'%(fullfilename))
+    print('from file %s'%(fullfilename))
     print
 
     return inputfile,inputfile_signal

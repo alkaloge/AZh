@@ -1,9 +1,9 @@
 #include "HttStylesNew.cc"
 
 void Compatibility(
-		   TString folder = "GoF_Run2_mA300", // folder with RooT files
+		   TString folder = "GoF_tt_mA300", // folder with RooT files
 		   TString Algo = "saturated", // algorithm
-		   TString legend = "A#rightarrow Zh (Run2)", // legend
+		   TString legend = "A#rightarrow Zh (tt)", // legend
 		   int bins = 60 // number of bins in the histogram of toys
 		   ) {
   
@@ -56,7 +56,7 @@ void Compatibility(
     }
   }
 
-  float xlower = 0.9*xMin;
+  float xlower = 0.8*xMin;
   float xupper = 1.2*xMax;
 
   TH1F * chi2 = new TH1F("chi2",legend,bins,xlower,xupper);
@@ -116,6 +116,6 @@ void Compatibility(
   tex->Draw();
 
   canv->Update();
-  canv->Print(folder+"/gof_"+Algo+".png");
+  canv->Print("figures/"+folder+"_"+Algo+".png");
 
 }

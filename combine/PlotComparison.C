@@ -3,24 +3,25 @@
 
 void PlotComparison(TString Era1 = "Run2", // year2 
 		    TString Era2 = "Run2", // year2
-		    TString Process = "bbA", // process
-		    TString folder1 = "limits", // folder with output of limit computation
-		    TString folder2 = "limits_2POIs", // second folder with output of limit computation
-		    TString leg1 = "r_{ggA}=0",
-		    TString leg2 = "r_{ggA} profiled",
-		    float YMax = 15, // maximum of Y axis
+		    TString Process = "ggA", // process
+		    TString folder1 = "limits_tight_mtt", // folder with output of limit computation
+		    TString folder2 = "limits_tight_mtt_noem", // second folder with output of limit computation
+		    TString leg1 = "with em",
+		    TString leg2 = "no em",
+		    TString postfix = "emu",
+		    float YMax = 5, // maximum of Y axis
 		    float XMin = 225., // minimum of X axis
 		    float XMax = 2000., // maximum of X axis
 		    bool blindData = true) {
 
 
-  std::vector<TString> masses = {"225","275","300","325","350","375","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
+  std::vector<TString> masses = {"225","250","275","300","325","350","375","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
 
   std::map<TString,TString> lumiLabel = {
     {"Run2","Run 2, 138 fb^{-1}"},
-    {"UL_2018","2018, 59.8 fb^{-1}"},
-    {"UL_2017","2017, 41.5 fb^{-1}"},
-    {"UL_2016","2016, 36.3 fb^{-1}"}
+    {"2018","2018, 59.8 fb^{-1}"},
+    {"2017","2017, 41.5 fb^{-1}"},
+    {"2016","2016, 36.3 fb^{-1}"}
   };
 
   lumi_13TeV = lumiLabel[Era1];
@@ -256,9 +257,9 @@ void PlotComparison(TString Era1 = "Run2", // year2
   float yLegend = 0.41;
   float sizeLeg = 0.27;
 
-  TLegend * leg = new TLegend(0.40,0.60,0.70,0.80);
+  TLegend * leg = new TLegend(0.35,0.65,0.60,0.80);
   leg->SetFillColor(0);
-  leg->SetTextSize(0.045);
+  leg->SetTextSize(0.04);
   leg->SetBorderSize(0);
   if (!blindData) 
     leg->AddEntry(obsG,"Observed","lp");
@@ -275,8 +276,6 @@ void PlotComparison(TString Era1 = "Run2", // year2
 
   leg->Draw();
   canv->Update();
-  //  TString suffix(fileList);
-  //  canv->Print("BR_"+suffix+".pdf","Portrait pdf");
-  canv->Print("figures/Limits_"+Process+"_"+Era1+"_2POIs.png");
+  canv->Print("figures/Limits_"+Process+"_"+Era1+"_"+postfix+".png");
 
 }

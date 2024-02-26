@@ -2,10 +2,12 @@
 
 import ROOT
 import os
+import math
 import argparse
 import AZh.combine.stylesAZh as styles
 import AZh.combine.utilsAZh as utils
 import CombineHarvester.CombineTools.ch as ch
+from array import array 
 
 def PlotSS(rootfile,**kwargs):
 
@@ -21,6 +23,7 @@ def PlotSS(rootfile,**kwargs):
     irreducible = h_irreducible.Clone('h_irreducible')
     reducible.Add(reducible,irreducible)
     h_tot = reducible.Clone('h_tot')
+    for name
 
     styles.InitData(data,"m(4l) [GeV]","Events")
     styles.InitHist(reducible,"m(4l) [GeV]","Events",ROOT.TColor.GetColor("#c6f74a"),1001)
@@ -31,9 +34,24 @@ def PlotSS(rootfile,**kwargs):
     utils.zeroBinErrors(irreducible)
     ymax = 0
     nbins = data.GetNbinsX()
+    xdata = []
+    ydata = []
+    xeldata = []
+    xehdata = []
+    yeldata = []
+    yehdata = []
     for ib in range(1,nbins+1):
         x = data.GetBinContent(ib)
         err = data.GetBinError(ib)
+        position = data.GetBinCenter(ib)
+        xdata.append(position)
+        xeldata.append(0.)
+        xehdata.append(0.)
+        ylow = -0.5 + math.sqrt(x+0.25)
+        yhigh = 0.5 + math.sqrt(x+0.25)
+        ydata.append(x)
+        yeldata.append(ylow)
+        yehdata.append(yhigh)
         xsum = x+err
         if xsum>ymax: ymax = xsum
 
@@ -45,13 +63,23 @@ def PlotSS(rootfile,**kwargs):
     reducible.GetXaxis().SetNoExponent()
     reducible.GetXaxis().SetMoreLogLabels()
 
+    dataGraph = ROOT.TGraphAsymmErrors(nbins,
+                                       array('d',list(xdata)),
+                                       array('d',list(ydata)),
+                                       array('d',list(xeldata)),
+                                       array('d',list(xehdata)),
+                                       array('d',list(yeldata)),
+                                       array('d',list(yehdata)))
+
+    dataGraph.SetMarkerStyle(20)
+    dataGraph.SetMarkerSize(1.6)
 
     canv_name = 'canv_'+year+'_'+channel
     canv = styles.MakeCanvas('canv','',500,500) 
     reducible.Draw('h')
     irreducible.Draw('hsame')
     h_tot.Draw('e2same')
-    data.Draw('e1same')
+    dataGraph.Draw('epsame')
 
     leg = ROOT.TLegend(0.65,0.45,0.9,0.7)
     styles.SetLegendStyle(leg)
@@ -68,8 +96,6 @@ def PlotSS(rootfile,**kwargs):
     canv.RedrawAxis()
     canv.Update()
     canv.Print('figures/SS_closure_'+channel+'_'+year+'.png')
-
-
 
 def quasiSignal(hist):
     hist_sig = hist.Clone('sig')
@@ -158,6 +184,8 @@ def makedatacards(rootfile,**kwargs):
     year = kwargs.get('year','2016')
     channel = kwargs.get('channel','tt')
 
+    bins = [199,240,280,320,360,400,550,700,2400]
+
     hists = {}
     inputfilename=utils.BaseFolder+'/root_files/'+channel+'_comb_m4l_cons_SS_'+year+'.root'
     inputrootfile=ROOT.TFile(inputfilename)
@@ -165,9 +193,9 @@ def makedatacards(rootfile,**kwargs):
     reducible = inputrootfile.Get('reducible')
     irreducible = inputrootfile.Get('irreducible')
     ss_application = inputrootfile.Get('ss_application')
-    hists['data_obs'] = data
-    hists['reducible'] = reducible
-    hists['irreducible'] = irreducible
+    hists['data_obs'] = utils.rebinHisto(data,bins,'data_obs')
+    hists['reducible'] = utils.rebinHisto(reducible,bins,'reducible')
+    hists['irreducible'] = utils.rebinHisto(irreducible,bins,'irreducible')
     fixNegativeBins(hists)
     hists['sig'] = quasiSignal(irreducible)
     histsR = {}
@@ -175,7 +203,7 @@ def makedatacards(rootfile,**kwargs):
     histsR['reducible'] = reducible
     hists_reducible = setReducibleUncertainty(histsR,year=year,channel=channel)
     for hist in hists_reducible:
-        hists[hist] = hists_reducible[hist]
+        hists[hist] = utils.rebinHisto(hists_reducible[hist],bins,hist)
 
     saveRooTFile(channel,hists,rootfile)
 
@@ -193,6 +221,7 @@ if __name__ == "__main__":
 
     os.system('mkdir ClosureTest')
 
+    rigid = False
 
     bins = utils.bins_fakes
     newbins = len(bins)-1
@@ -204,15 +233,14 @@ if __name__ == "__main__":
     for year in utils.years:
         filename = utils.BaseFolder+'/root_files/m4l_SS_'+year+'.root'
         rootfile = ROOT.TFile(filename,'recreate')
-        for channel in ['em','et','mt','tt']:
+        for channel in ['et','mt','tt']:
             makedatacards(rootfile,year=year,channel=channel)
         rootfile.Close()
 
         cats = [
-            (1,'em'),
-            (2,'et'),
-            (3,'mt'),
-            (4,'tt')
+            (1,'et'),
+            (2,'mt'),
+            (3,'tt')
         ]    
 
 
@@ -226,11 +254,17 @@ if __name__ == "__main__":
         cb.cp().process(['irreducible']).AddSyst(cb,'norm_bkgs','lnN',ch.SystMap()(1.15))
         cb.cp().process(['sig']).AddSyst(cb,'norm_sig','lnN',ch.SystMap()(1.10))
 
-        for cat in cats:
-            ib = cat[0]
-            ib_name = cat[1]
-            for unc in fake_uncs:
-                cb.cp().process(['reducible']).bin_id([ib]).AddSyst(cb,ib_name+'_'+unc+'_'+year,'shape',ch.SystMap()(1.0))
+        if rigid:
+            for cat in cats:
+                ib = cat[0]
+                ib_name = cat[1]
+                cb.cp().process(['reducible']).bin_id([ib]).AddSyst(cb,ib_name+'_'+year,'lnN',ch.SystMap()(1.10))
+        else:
+            for cat in cats:
+                ib = cat[0]
+                ib_name = cat[1]
+                for unc in fake_uncs:
+                    cb.cp().process(['reducible']).bin_id([ib]).AddSyst(cb,ib_name+'_'+unc+'_'+year,'shape',ch.SystMap()(1.0))
 
         cb.AddDatacardLineAtEnd("* autoMCStats 0")
 
@@ -252,7 +286,7 @@ if __name__ == "__main__":
         print
     
     # merging files per one year
-    for channel in ['em','et','mt','tt']:
+    for channel in ['et','mt','tt']:
         if os.path.isfile('ClosureTest/azh_closure_Run2_SS_%s.root'%(channel)):
             command = 'rm ClosureTest/azh_closure_Run2_SS_%s.root'%(channel)
             os.system(command)

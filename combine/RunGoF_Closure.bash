@@ -42,10 +42,10 @@ else
     rm *
 fi
 combineTool.py -M GoodnessOfFit -d ${folder}/ws.root --fixedSignalStrength 0 -m 300 --algo saturated -n .obs
-for i in {1..100}
+for i in {1..25}
 do
     random=$RANDOM
     echo random seed $random
-    combineTool.py -M GoodnessOfFit -d ${folder}/ws.root --toysFreq -m 300 --algo saturated -n .exp -t 10 -s ${random} --fixedSignalStrength 0  --job-mode condor --task-name gof.${random} --sub-opts='+JobFlavour = "workday"' 
+    combineTool.py -M GoodnessOfFit -d ${folder}/ws.root --toysFreq -m 300 --algo saturated -n .exp -t 40 -s ${random} --fixedSignalStrength 0  --job-mode condor --task-name gof.${random} --sub-opts='+JobFlavour = "workday"' 
 done
 cd -

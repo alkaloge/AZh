@@ -1,10 +1,10 @@
 #include "HttStylesNew.cc"
 #include "CMS_lumi.C"
 
-void PlotLimits(TString Era = "Run2", // year
+void PlotLimits(TString Era = "2018", // year
 		TString Process = "bbA", // process
 		TString folder = "limits", // input folder (output of macro RunLimits.py)
-		float YMax = 10, // upper boundary of Y axis
+		float YMax = 20, // upper boundary of Y axis
 		float XMin = 225., // lower boundary of X axis
 		float XMax = 2000., // upper boundary of X axis
 		bool logx = false, // log scale of X axis
@@ -205,6 +205,6 @@ void PlotLimits(TString Era = "Run2", // year
   leg->Draw();
   canv->Update();
 
-  canv->Print("figures/Limits_"+Process+"_"+Era+"_obs.png");
+  canv->Print("figures/Limits_"+Process+"_"+Era+"_exp.png");
 
 }

@@ -21,8 +21,8 @@ if __name__ == "__main__":
 
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('-year','--year',dest='year',default='Run2',help=""" year : 2016 2017 2018 Run2""",choices=utils.years_ext)
-    parser.add_argument('-mass','--mass',dest='mass',default='1000',help=""" single mA point, if \'all\' is given as an argument, then workspaces for all masses will be created""",choices=utils.azh_masses_ext)
+    parser.add_argument('-year','--year',dest='year',required=True,help=""" year : 2016 2017 2018 Run2""",choices=utils.years_ext)
+    parser.add_argument('-mass','--mass',dest='mass',required=True,help=""" single mA point, if \'all\' is given as an argument, then workspaces for all masses will be created""",choices=utils.azh_masses_ext)
     parser.add_argument('-batch','--batch',dest='batch',action='store_true')
     args = parser.parse_args()
 

@@ -6,8 +6,9 @@ import os
 import AZh.combine.utilsAZh as utils
 import CombineHarvester.CombineTools.ch as ch
 import uproot
+import ROOT
 
-cats = [
+cats_all = [
     (1, "eeem"),
     (2, "eeet"),
     (3, "eemt"),
@@ -18,8 +19,38 @@ cats = [
     (8, "mmtt"),
 ]
 
+cats_noem = [
+    (1, "eeet"),
+    (2, "eemt"),
+    (3, "eett"),
+    (4, "mmet"),
+    (5, "mmmt"),
+    (6, "mmtt"),
+]
 
-expUnc = ['unclMET','tauID0','tauID1','tauID10','tauID11','tauES','efake','mfake','eleES','muES','pileup','l1prefire','eleSmear']
+cats_em = [
+    (1, "eeem"),
+    (2, "mmem")
+]
+
+cats_et = [
+    (1, "eeet"),
+    (2, "mmet")
+]
+
+cats_mt = [
+    (1, "eemt"),
+    (2, "mmmt")
+]
+
+cats_tt = [
+    (1, "eett"),
+    (2, "mmtt")
+]
+
+jetUnc = ["JES","btag","mistag"]
+
+expUnc = ['unclMET','tauID0','tauID1','tauID10','tauID11','tauES','efake','mfake','eleES','muES','pileup','l1prefire','eleSmear',"JES"]
 
 fakeUnc = ['bin1','bin2','bin3']
 
@@ -52,6 +83,9 @@ parser.add_argument("-mass", "--mass", required=True,help=""" mass of A boson ""
 parser.add_argument("-no_bbb","--no_bbb", action='store_true',help=""" parameter to drop MC statistical uncertainties""")
 args = vars(parser.parse_args())
 
+# specifying channel
+cats = cats_all
+
 year, mass, btag_label = args["year"], args["mass"], args["btag"]
 outdir=utils.DatacardsFolder
 auto_mc = True
@@ -74,7 +108,7 @@ mc_bkgd = [
 #    "ggHZZ", -> negligible
 #    "VBFHWW", -> cannot produce 4 genuine charged leptons
 #    "TTW", -> cannot produce 4 genuine charged leptons
-#    "TT" -> canno produce 4 genuine charged leptons
+#    "TT" -> cannot produce 4 genuine charged leptons
 ]
 reducible = ["reducible"]
 
@@ -221,6 +255,33 @@ bkgd_tauID = [b for b in bkgd]
 for unc in fakeUnc:
     cb.cp().process(reducible).AddSyst(cb, unc, "shape", ch.SystMap()(1.00))
 
+btagFile = ROOT.TFile('jet_systematics/systematics_%s_bkg.root'%(year))
+# btag uncertainties
+for proc in mc_bkgd:
+    for cat in cats:
+        for sys in ['btag','mistag']:
+            chan = cat[1]
+            binid = cat[0]
+            histBtagName = '%s_%s_%s_%s'%(proc,chan,args['btag'],sys)
+            histBtag = btagFile.Get(histBtagName)
+            value = float(int(1000*histBtag.GetBinContent(1)))/1000.0
+            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys+"_"+year, "lnN", ch.SystMap()(value))
+
+btagFile = ROOT.TFile('jet_systematics/systematics_%s_sig.root'%(year))
+for proc in signals:
+    for cat in cats:
+        for sys in ['btag','mistag']:
+            chan = cat[1]
+            binid = cat[0]
+            histBtagName = '%s%s_%s_%s_%s'%(proc,mass,chan,args['btag'],sys)
+            histBtag = btagFile.Get(histBtagName)
+            value = float(int(1000*histBtag.GetBinContent(1)))/1000.0
+            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys+"_"+year, "lnN", ch.SystMap()(value))
+
+
+# JES uncertainty
+cb.cp().process(bkgd).AddSyst(cb, "JES", "shape", ch.SystMap()(1.00))
+
 cb.cp().process(bkgd_tauID).AddSyst(cb, "tauID0", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd_tauID).AddSyst(cb, "tauID1", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd_tauID).AddSyst(cb, "tauID10", "shape", ch.SystMap()(1.00))
@@ -294,6 +355,7 @@ writer = ch.CardWriter(
     "$TAG/$ANALYSIS_$ERA_$CHANNEL_$BIN_$MASS.txt",
     "$TAG/$ANALYSIS_$ERA_$CHANNEL_$BIN_$MASS.root",
 )
+
 writer.WriteCards('%s/%s/%s/'%(outdir,year,mass), cb)
 writer.WriteCards('%s/Run2/%s/'%(outdir,mass), cb)
 

@@ -7,6 +7,7 @@ import AZh.combine.utilsAZh as utils
 if __name__ == "__main__":
 
     years = utils.years
+    # years = ['2018']
     cats = utils.azh_cats
     masses = utils.azh_masses
     procs = utils.azh_signals

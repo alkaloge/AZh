@@ -2,49 +2,93 @@
 
 import ROOT
 import os
+import math
 import argparse
-import AZh.combine.stylesAZh as styles
-import AZh.combine.utilsAZh as utils
-import CombineHarvester.CombineTools.ch as ch
 
 if __name__ == "__main__":
 
-    styles.InitROOT()
-    styles.SetStyle()
-
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('-channel','--channel',required=True,choices=['tt','mt','et','em'])
+    parser.add_argument('-channel','--channel',dest='channel',required=True,choices=['tt','mt','et','em'])
+    parser.add_argument('-category','--cat',dest='cat',required=True,choices=['0btag','btag','comb'])
+    parser.add_argument('-year','--year',dest='year',required=True,choices=['2016','2017','2018','Run2'])
+    parser.add_argument('-folder','--folder',dest='folder',required=True)
     args = parser.parse_args()
     chan = args.channel
-    histnames = ['reducible','irreducible','data']
+    year = args.year
+    cat = args.cat
+    folder = args.folder
+
+    histnames_SS = ['reducible','irreducible','data','ss_relaxed','ss_application']
+    histnames_OS = ['reducible','irreducible','ss_relaxed','os_application']
+
+    inputfile_OS = ROOT.TFile('root_files/'+folder+'/'+chan+'_'+cat+'_m4l_cons_OS_'+year+'.root')
+    inputfile_cards = ROOT.TFile('root_files/'+folder+'/MC_'+cat+'_'+year+'.root')
+
+    tot_promt = 0
+    tot_e2 = 0
+    bkgs_prompt = ["ggHtt","WHtt","ggHWW","ggHZZ","VBFHWW","TTW","TT"]
+    for zchannel in ['ee','mm']:
+        for bkg in bkgs_prompt:
+            histName = zchannel + args.channel + "/" + bkg
+            hist = inputfile_cards.Get(histName)
+            nbins = hist.GetNbinsX()
+            for ib in range(1,nbins+1):
+                err = hist.GetBinError(ib)
+                tot_e2 += err*err
+                tot_promt += hist.GetBinContent(ib)
     
+    tot_e = math.sqrt(tot_e2)
 
-    file1 = ROOT.TFile('root_files/'+chan+'_0_m4l_cons_SS.root')
-    file2 = ROOT.TFile('root_files/'+chan+'_0_m4l_cons_SS_all-years.root')
-    file3 = ROOT.TFile('root_files/ss_closure.root')
+    print('')
+    print('Year = %s   Category = %s   Channel = %s'%(args.year,args.cat,args.channel))
+    print('')
+    print('Prompt background = %5.3f +/- %5.3f'%(tot_promt,tot_e))
 
-    print
-    for histname in histnames:
-        print
-        print('------------------------------------------')
-        print(histname)
-        hist1 = file1.Get(histname)
-        hist2 = file2.Get(histname)
-        namehist = histname
-        if histname=='data': namehist='data_obs'
-        hist3 = file3.Get(chan+'/'+namehist)
-        nbins = hist1.GetNbinsX()
+
+    if args.cat=='comb':
+        inputfile_SS = ROOT.TFile('root_files/'+folder+'/'+chan+'_'+cat+'_m4l_cons_SS_'+year+'.root')
+        print('------------- SS Region ------------')
+          
+        for histname in histnames_SS:
+            hist = inputfile_SS.Get(histname)
+            tot = hist.GetSumOfWeights()
+            err2 = 0
+            nbins = hist.GetNbinsX()
+            for ib in range(1,nbins+1):
+                e = hist.GetBinError(ib)
+                err2 += e*e
+                err = math.sqrt(err2)
+            print('%15s : %5.2f +/- %5.2f'%(histname,tot,err))
+
+
+    print('')
+    print('------------- OS Region ------------')
+    for histname in histnames_OS:
+        hist = inputfile_OS.Get(histname)
+        tot = hist.GetSumOfWeights()
+        err2 = 0
+        nbins = hist.GetNbinsX()
         for ib in range(1,nbins+1):
-            low = hist1.GetBinLowEdge(ib)
-            high = hist1.GetBinLowEdge(ib)
-            x1 = hist1.GetBinContent(ib)
-            e1 = hist1.GetBinError(ib)
-            x2 = hist2.GetBinContent(ib)
-            e2 = hist2.GetBinError(ib)
-            x3 = hist3.GetBinContent(ib)
-            e3 = hist3.GetBinError(ib)
-            print('[%4i,%4i] | %5.2f+/-%5.2f | %5.2f+/-%5.2f | %5.2f+/-%5.2f |'%(low,high,x1,e1,x2,e2,x3,e3))
+            e = hist.GetBinError(ib)
+            err2 += e*e
+        err = math.sqrt(err2)
+        print('%15s : %5.2f +/- %5.2f'%(histname,tot,err))
 
-    print('------------------------------------------')
-    print
+    print('')
+    if args.cat!='comb':
+        hist = inputfile_cards.Get('mm'+args.channel+'/reducible')
+        hist_ee = inputfile_cards.Get('ee'+args.channel+'/reducible')
+        hist.Add(hist,hist_ee)
+        tot = hist.GetSumOfWeights()
+        err2 = 0
+        nbins = hist.GetNbinsX()
+        for ib in range(1,nbins+1):
+            e = hist.GetBinError(ib)
+            err2 += e*e
+        err = math.sqrt(err2)
+        histname = 'cross check'
+        print('%15s : %5.2f +/- %5.2f'%(histname,tot,err))
+        
+    
+    print('')
