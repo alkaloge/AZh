@@ -1,126 +1,143 @@
 #!/usr/bin/env python
 
-import stylesAZh as styles
+import AZh.combine.stylesAZh as styles
+import AZh.combine.utilsAZh as utils
 import argparse
+import math
 import ROOT
 import os
-unc = ['unclMET','tauID0','tauID1','tauID10','tauID11','tauES','efake','mfake','eleES','muES','pileup','l1prefire','eleSmear']
+from array import array
 
-cat_map = {
-    '1':'eeem',
-    '2':'eeet',
-    '3':'eemt',
-    '4':'eett',
-    '5':'mmem',
-    '6':'mmet',
-    '7':'mmmt',
-    '8':'mmtt'
-}
+def AddHisto(hist1,hist2):
+    nbins = hist1.GetNbinsX()
+    for ib in range(1,nbins+1):
+        x = hist1.GetBinContent(ib)
+        ex = hist1.GetBinError(ib)
+        y = hist2.GetBinContent(ib)
+        ey =  hist2.GetBinError(ib)
+        hist1.SetBinContent(ib,x+y)
+        err = math.sqrt(ex*ex+ey*ey)
+        hist1.SetBinError(ib,err)
 
-cats = ['btag','0btag']
-channels = ['mmem','mmet','mmmt','mmtt','eeem','eeet','eemt','eett']
-bkgds = [
-    "ggZZ",
-    "ZZ",
-    "TTZ",
-    "VVV",
-    "ZHtt",
-    "TTHtt",
-    "ZHWW",
-    "ggZHWW",
-    "ggHZZ",
-    "reducible"
-]
+def PlotSS(rootfile,**kwargs):
+
+    bins = [199,240,280,320,360,400,550,700,2400]
+    nbins = len(bins)-1
+
+    channel = kwargs.get('channel','mt')
+    preFit  = kwargs.get('preFit',True)
+    
+    folder = 'shapes_fit_b'
+    postfix = 'fit'
+    if preFit:
+        folder = 'shapes_prefit'
+        postfix = 'prefit'
+
+    h_data = ROOT.TH1D('h_data','h_data',nbins,array('d',list(bins)))
+    h_reducible = ROOT.TH1D('h_reducible','h_reducible',nbins,array('d',list(bins)))
+    h_irreducible = ROOT.TH1D('h_irreducible','h_irreducible',nbins,array('d',list(bins)))
+
+    print(h_data,h_reducible,h_irreducible)
+    for year in ['2016','2017','2018']:
+        fileEra = ROOT.TFile('ClosureTest/'+channel+'/azh_closure_'+year+'_SS_'+channel+'.root')
+        hist_data = fileEra.Get(channel+'/data_obs')
+        hist_reducible = rootfile.Get(folder+'/azh_closure_'+year+'_SS_'+channel+'/reducible')
+        hist_irreducible = rootfile.Get(folder+'/azh_closure_'+year+'_SS_'+channel+'/irreducible')
+        AddHisto(h_data,hist_data)
+        AddHisto(h_reducible,hist_reducible)
+        AddHisto(h_irreducible,hist_irreducible)
+        
+    data = h_data.Clone('h_data')
+    reducible = h_reducible.Clone('h_reducible')
+    irreducible = h_irreducible.Clone('h_irreducible')
+    reducible.Add(reducible,irreducible)
+    h_tot = reducible.Clone('h_tot')
+
+    styles.InitData(data,"m(4l) [GeV]","Events")
+    styles.InitHist(reducible,"m(4l) [GeV]","Events",ROOT.TColor.GetColor("#c6f74a"),1001)
+    styles.InitHist(irreducible,"m(4l) [GeV]","Events",ROOT.TColor.GetColor("#FFCCFF"),1001)
+    styles.InitTotalHist(h_tot)
+
+    utils.zeroBinErrors(reducible)
+    utils.zeroBinErrors(irreducible)
+    ymax = 0
+    nbins = data.GetNbinsX()
+    xdata = []
+    ydata = []
+    xeldata = []
+    xehdata = []
+    yeldata = []
+    yehdata = []
+    for ib in range(1,nbins+1):
+        x = data.GetBinContent(ib)
+        err = data.GetBinError(ib)
+        position = data.GetBinCenter(ib)
+        xdata.append(position)
+        xeldata.append(0.)
+        xehdata.append(0.)
+        ylow = -0.5 + math.sqrt(x+0.25)
+        yhigh = 0.5 + math.sqrt(x+0.25)
+        ydata.append(x)
+        yeldata.append(ylow)
+        yehdata.append(yhigh)
+        xsum = x+err
+        if xsum>ymax: ymax = xsum
+
+    if h_tot.GetMaximum()>ymax: 
+        ymax = h_tot.GetMaximum()
+
+    reducible.GetYaxis().SetRangeUser(0.,1.2*ymax)
+    reducible.GetXaxis().SetNdivisions(505)
+    reducible.GetXaxis().SetNoExponent()
+    reducible.GetXaxis().SetMoreLogLabels()
+
+    dataGraph = ROOT.TGraphAsymmErrors(nbins,
+                                       array('d',list(xdata)),
+                                       array('d',list(ydata)),
+                                       array('d',list(xeldata)),
+                                       array('d',list(xehdata)),
+                                       array('d',list(yeldata)),
+                                       array('d',list(yehdata)))
+
+    dataGraph.SetMarkerStyle(20)
+    dataGraph.SetMarkerSize(1.6)
+
+    canv_name = 'canv_'+year+'_'+channel
+    canv = styles.MakeCanvas('canv','',500,500) 
+    reducible.Draw('h')
+    irreducible.Draw('hsame')
+    h_tot.Draw('e2same')
+    dataGraph.Draw('epsame')
+
+    leg = ROOT.TLegend(0.65,0.45,0.9,0.7)
+    styles.SetLegendStyle(leg)
+    leg.SetTextSize(0.04)
+    leg.SetHeader(styles.chan_map[channel])
+    leg.AddEntry(data,'data','lp')
+    leg.AddEntry(reducible,'reducible','f')
+    leg.AddEntry(irreducible,'irreducible','f')
+    leg.Draw()
+
+    styles.CMS_label(canv,era=year)
+
+    canv.SetLogx(True)
+    canv.RedrawAxis()
+    canv.Update()
+    canv.Print('figures/SS_closure_'+channel+'_'+postfix+'.png')
+
+
 
 parser = argparse.ArgumentParser(description="Check cards")
-parser.add_argument('-chan','--chan',dest='chan',default='btag')
-parser.add_argument('-cat','--cat',dest='cat',default='mmtt')
-parser.add_argument('-year','--year',dest='year',default='2018')
-parser.add_argument('-templ','--templ',dest='templ',default='data_obs')
-parser.add_argument('-sys','--sys',dest='sys',default='')
-parser.add_argument('-mass','--mass',dest='mass',default='1000')
-args = parser.parse_args()
+parser.add_argument('-chan','--chan',dest='chan',required=True)
+parser.add_argument('-postfit','--postfit',action='store_true')
 
+args = parser.parse_args()
 
 ROOT.gROOT.SetBatch(True)
 styles.InitROOT()
 styles.SetStyle()
 
+rootfile = ROOT.TFile('ClosureTest/fit_closure.root')
+PlotSS(rootfile,channel=args.chan,preFit=True)
 
-binname = args.cat
-folder = os.getenv('CMSSW_BASE') + '/src/AZh/combine/Run2/'+args.mass
-filename = 'azh_'+args.year+'_'+args.chan+'_'+args.cat+'_'+args.mass+'.root'
-fullfilename = folder+'/'+filename
-inputfile = ROOT.TFile(fullfilename)
-hist = inputfile.Get(binname+'/'+args.templ)
-if hist==None:
-    print('template %s not found in analysis bin %s'%(args.templ,binname))
-    exit(1)
-
-histUp = hist
-histDown = hist
-if args.sys!='':
-    histUp = inputfile.Get(binname+'/'+args.templ+'_'+args.sys+'Up')
-    histDown = inputfile.Get(binname+'/'+args.templ+'_'+args.sys+'Down')
-    if histUp==None:
-        print('template %s with systematics %s not found in analysis bin %s'%(args.templ,args.sys,binname))
-        print('check content of file',fullfilename)
-        exit(1)
-
-print
-print('Printing content of template %s of analysis bin %s and systematic %s'%(args.templ,binname,args.sys))
-print
-#      1  0.00073  0.00073  0.00073
-print(' bin  central      up       down')
-print('--------------------------------')
-nbins = hist.GetNbinsX()
-for i in range(1,nbins):
-    x = hist.GetBinContent(i)
-    xup = histUp.GetBinContent(i)
-    xdown = histDown.GetBinContent(i)
-    if args.sys=='':
-        print(' %2i  %5.3f'%(i,x))
-    else:
-        print(' %2i   %7.5f   %7.5f   %7.5f'%(i,x,xup,xdown))
-
-    
-styles.InitData(hist)
-styles.InitData(histUp)
-styles.InitData(histDown)
-
-histUp.SetMarkerSize(0)
-histUp.SetLineColor(2)
-histUp.SetMarkerColor(2)
-histUp.SetLineStyle(1)
-
-histDown.SetMarkerSize(0)
-histDown.SetLineColor(4)
-histDown.SetMarkerColor(4)
-histDown.SetLineStyle(1)
-
-styles.zeroBinErrors(histUp)
-styles.zeroBinErrors(histDown)
-
-ymax = hist.GetMaximum()
-if histUp.GetMaximum()>ymax: ymax = histUp.GetMaximum()
-if histDown.GetMaximum()>ymax: ymax = histDown.GetMaximum()
-hist.GetYaxis().SetRangeUser(0.,1.5*ymax)
-
-canv = styles.MakeCanvas('canv','',500,500)
-hist.Draw("e1")
-histUp.Draw("hsame")
-histDown.Draw("hsame")
-
-leg = ROOT.TLegend(0.6,0.6,0.9,0.9)
-styles.SetLegendStyle(leg)
-leg.SetTextSize(0.045)
-leg.SetHeader(args.year+" "+args.chan+"_"+args.cat)
-leg.AddEntry(hist,args.templ,'lp')
-leg.AddEntry(histUp,args.sys+'Up','l')
-leg.AddEntry(histDown,args.sys+'Down','l')
-leg.Draw()
-
-canv.SetLogx(True)
-canv.Update()
-canv.Print("figures/%s_%s_%s_%s_%s.png"%(args.year,args.chan,cat_map[args.cat],args.templ,args.sys))
 

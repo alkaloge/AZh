@@ -1,0 +1,60 @@
+imax    1 number of bins
+jmax    10 number of processes minus 1
+kmax    * number of nuisance parameters
+--------------------------------------------------------------------------------
+shapes * eemt azh_2016_btag_eemt_375.root eemt/$PROCESS eemt/$PROCESS_$SYSTEMATIC
+shapes bbA eemt azh_2016_btag_eemt_375.root eemt/bbA$MASS eemt/bbA$MASS_$SYSTEMATIC
+shapes ggA eemt azh_2016_btag_eemt_375.root eemt/ggA$MASS eemt/ggA$MASS_$SYSTEMATIC
+--------------------------------------------------------------------------------
+bin          eemt            
+observation  1.0             
+--------------------------------------------------------------------------------
+bin                                      eemt            eemt            eemt            eemt            eemt            eemt            eemt            eemt            eemt            eemt            eemt            
+process                                  bbA             ggA             reducible       ggZZ            ZZ              TTZ             VVV             ZHtt            TTHtt           ZHWW            ggZHWW          
+process                                  -1              0               1               2               3               4               5               6               7               8               9               
+rate                                     0.0533796       0.0060866       0.306965        0.010148        0.068661        0.182089        0.000935573     0.0190879       0.0364658       0.00105335      0.00113477      
+--------------------------------------------------------------------------------
+BR_htt_PU_alphas                 lnN     1.0062          1.0062          -               -               -               -               -               1.0062          1.0062          -               -               
+BR_htt_PU_mq                     lnN     1.0099          1.0099          -               -               -               -               -               1.0099          1.0099          -               -               
+BR_htt_THU                       lnN     1.017           1.017           -               -               -               -               -               1.017           1.017           -               -               
+BR_hww_PU_alphas                 lnN     -               -               -               -               -               -               -               -               -               1.0066          1.0066          
+BR_hww_PU_mq                     lnN     -               -               -               -               -               -               -               -               -               1.0099          1.0099          
+BR_hww_THU                       lnN     -               -               -               -               -               -               -               -               -               1.0099          1.0099          
+CMS_NNLO_ggZZ                    lnN     -               -               -               1.1             -               -               -               -               -               -               -               
+CMS_eff_e                        lnN     1.06            1.06            -               -               -               -               -               -               -               -               -               
+CMS_eff_e_2016                   lnN     1.03            1.03            -               1.03            1.03            1.03            1.03            1.03            1.03            1.03            1.03            
+CMS_eff_m                        lnN     1               1               -               -               -               -               -               -               -               -               -               
+CMS_eff_m_2016                   lnN     1               1               -               1               1               1               1               1               1               1               1               
+CMS_xsec_ggZZ                    lnN     -               -               -               1.1             -               -               -               -               -               -               -               
+CMS_xsec_ttZ                     lnN     -               -               -               -               -               1.25            -               -               -               -               -               
+CMS_xsec_vv                      lnN     -               -               -               -               1.048           -               -               -               -               -               -               
+CMS_xsec_vvv                     lnN     -               -               -               -               -               -               1.25            -               -               -               -               
+JES_2016                         shape   1               1               -               1               1               1               1               1               1               1               1               
+QCDscale_VH                      lnN     -               -               -               -               -               -               -               1.009           -               1.009           1.009           
+QCDscale_tth                     lnN     -               -               -               -               -               -               -               -               1.08            -               -               
+btag_2016                        lnN     0.982           0.978           -               0.979           0.979           0.991           0.982           0.979           0.997           0.997           0.993           
+efake_2016                       shape   1               1               -               1               1               1               1               1               1               1               1               
+eleES_2016                       shape   1               1               -               1               1               1               1               1               1               1               1               
+eleSmear_2016                    shape   1               1               -               1               1               1               1               1               1               1               1               
+l1prefire_2016                   shape   1               1               -               1               1               1               1               1               1               1               1               
+lumi_13TeV_Beam_Beam_Deflection  lnN     1.004           1.004           -               1.004           1.004           1.004           1.004           1.004           1.004           1.004           1.004           
+lumi_13TeV_Dynamic_Beta          lnN     1.005           1.005           -               1.005           1.005           1.005           1.005           1.005           1.005           1.005           1.005           
+lumi_13TeV_Ghosts_And_Satellites lnN     1.004           1.004           -               1.004           1.004           1.004           1.004           1.004           1.004           1.004           1.004           
+lumi_13TeV_Uncorrelated_2016     lnN     1.01            1.01            -               1.01            1.01            1.01            1.01            1.01            1.01            1.01            1.01            
+lumi_13TeV_X_Y_Factorization     lnN     1.009           1.009           -               1.009           1.009           1.009           1.009           1.009           1.009           1.009           1.009           
+mfake_2016                       shape   1               1               -               1               1               1               1               1               1               1               1               
+mistag_2016                      lnN     0.995           0.93            -               0.927           0.944           0.999           0.976           0.949           0.997           0.997           0.88            
+mt_bin1_2016                     shape   -               -               1               -               -               -               -               -               -               -               -               
+mt_bin2_2016                     shape   -               -               1               -               -               -               -               -               -               -               -               
+mt_bin3_2016                     shape   -               -               1               -               -               -               -               -               -               -               -               
+muES_2016                        shape   1               1               -               1               1               1               1               1               1               1               1               
+pdf_Higgs_VH                     lnN     -               -               -               -               -               -               -               1.013           -               1.013           1.013           
+pdf_Higgs_ttH                    lnN     -               -               -               -               -               -               -               -               1.036           -               -               
+pileup_2016                      shape   1               1               -               1               1               1               1               1               1               1               1               
+tauES_2016                       shape   1               1               -               1               1               1               1               1               1               1               -               
+tauID0_2016                      shape   1               1               -               1               1               1               1               1               1               1               1               
+tauID10_2016                     shape   1               1               -               1               1               1               1               1               1               1               1               
+tauID11_2016                     shape   1               1               -               1               1               1               1               1               1               1               1               
+tauID1_2016                      shape   1               1               -               1               1               1               1               1               1               1               1               
+unclMET_2016                     shape   1               1               -               1               1               1               1               1               1               -               -               
+* autoMCStats 0
