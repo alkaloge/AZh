@@ -37,7 +37,7 @@ years_ext = ['2016','2017','2018','Run2']
 
 variations = ["Up","Down"]
 
-bins_fakes = [200,400,700,2400]
+bins_fakes = [200,300,400,2400]
 
 ##############################
 # AZh analysis : definitions # 
@@ -565,9 +565,38 @@ def PlotTemplate(hists,**kwargs):
 
     hist.GetYaxis().SetRangeUser(0.,1.1*ymax)
     hist.GetXaxis().SetRangeUser(xmin,xmax)
+
+    if sys.lower()!='none':
+        histRatioUp = histUp.Clone('histRatioUp')
+        histRatioDown = histDown.Clone('histRatioDown')
+
+    histRatio = hist.Clone('histRatio') 
+    maxdiff = 0
+    for ib in range(nbins+1):
+        value = hist.GetBinContent(ib)
+        error = hist.GetBinError(ib)
+        ratio = 1
+        eratio = 0.
+        if value>0: 
+            eratio = error/value
+            if sys.lower()!='none':
+                value_up = histUp.GetBinContent(ib)
+                value_down = histDown.GetBinContent(ib)
+                histRatioUp.SetBinContent(ib,value_up/value)
+                histRatioDown.SetBinContent(ib,value_down/value)
+                
+        histRatio.SetBinError(ib,eratio)
+        histRatio.SetBinContent(ib,1.0)
     
+    histRatio.GetYaxis().SetRangeUser(0.8,1.2)
+
     canv_name = 'canv_%s_%s'%(templ,sys)
     canv = styles.MakeCanvas(canv_name,'',700,700)
+    upper = ROOT.TPad("upper", "pad",0,0.31,1,1)
+    upper.Draw()
+    upper.cd()
+    styles.InitUpperPad(upper)
+
     hist.Draw("e1")
     if sys.lower()!='none':
         histUp.Draw("hsame")
@@ -583,10 +612,38 @@ def PlotTemplate(hists,**kwargs):
         leg.AddEntry(histDown,sys+'Down','l')
     leg.Draw()
 
-    styles.CMS_label(canv,era=year,extraText='Simulation')
+    styles.CMS_label(upper,era=year,extraText='Simulation')
 
-    canv.SetLogx(logx)
+    upper.Update()
+    upper.SetLogx(logx)
+    upper.Draw("SAME")
+    upper.RedrawAxis()
+    upper.Modified()
+
+    canv.cd()
+
+    lower = ROOT.TPad("lower", "pad",0,0,1,0.30)
+    lower.Draw()
+    lower.cd()
+    styles.InitLowerPad(lower)
+    
+    histRatio.Draw('e1')
+    histRatioUp.Draw('hsame')
+    histRatioDown.Draw('hsame')
+
+    styles.InitRatioHist(histRatio)
+
+    lower.Modified()
+    lower.RedrawAxis()
+    lower.SetLogx(logx)
+    
+    # update canvas 
+    canv.cd()
+    canv.Modified()
+    canv.cd()
+    canv.SetSelected(canv)
     canv.Update()
+
     if sys.lower()=='none':
         canv.Print("%s/%s_%s_%s_%s_%s.png"%(FiguresFolder,analysis,year,cat,channel,templ))
     else:

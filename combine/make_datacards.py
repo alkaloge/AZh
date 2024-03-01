@@ -84,7 +84,7 @@ parser.add_argument("-no_bbb","--no_bbb", action='store_true',help=""" parameter
 args = vars(parser.parse_args())
 
 # specifying channel
-cats = cats_all
+cats = cats_noem
 
 year, mass, btag_label = args["year"], args["mass"], args["btag"]
 outdir=utils.DatacardsFolder
