@@ -6,12 +6,12 @@ void PlotComparisonHig18023(TString Era = "2016", // year
 			    TString CompareTo = "hig18023", // HIG-18-023
 			    TString folder = "limits", // folder with output of limit computation
 			    TString folder2 = "limits_hig18023", // HIG-18-023 folder
-			    float YMax = 20, // maximum of Y axis
+			    float YMax = 15, // maximum of Y axis
 			    float XMin = 220., // minimum of X axis
 			    float XMax = 400., // maximum of X axis
 			    bool blindData = true) {
 
-  std::vector<TString> masses_azh = {"225","275","300","325","350","375","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
+  std::vector<TString> masses_azh = {"225","250","275","300","325","350","375","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
 
   std::vector<TString> masses_hig18023 = {"220","240","260","280","300","350","400"};
 

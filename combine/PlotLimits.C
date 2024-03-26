@@ -1,10 +1,11 @@
 #include "HttStylesNew.cc"
 #include "CMS_lumi.C"
 
-void PlotLimits(TString Era = "2018", // year
-		TString Process = "bbA", // process
+void PlotLimits(TString Era = "Run2", // year
+		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt
+		TString Process = "ggA", // process
 		TString folder = "limits", // input folder (output of macro RunLimits.py)
-		float YMax = 20, // upper boundary of Y axis
+		float YMax = 7, // upper boundary of Y axis
 		float XMin = 225., // lower boundary of X axis
 		float XMax = 2000., // upper boundary of X axis
 		bool logx = false, // log scale of X axis
@@ -12,7 +13,7 @@ void PlotLimits(TString Era = "2018", // year
 		) {
 
 
-  std::vector<TString> masses = {"225","275","300","325","350","375","400","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
+  std::vector<TString> masses = {"225","250","275","300","325","350","375","400","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
 
   std::map<TString,TString> lumiLabel = {
     {"Run2","Run 2, 138 fb^{-1}"},
@@ -53,7 +54,7 @@ void PlotLimits(TString Era = "2018", // year
 
   for (auto mass : masses) {
 
-    TString fileName = folder + "/higgsCombine.azh_"+Era+"_"+Process+".AsymptoticLimits.mH"+mass+".root";
+    TString fileName = folder + "/higgsCombine.azh_"+Sample+"_"+Process+".AsymptoticLimits.mH"+mass+".root";
     std::cout << fileName << std::endl;
 
     TFile * file = new TFile(fileName);
@@ -196,7 +197,7 @@ void PlotLimits(TString Era = "2018", // year
   leg->AddEntry(outerBand,"#pm2#sigma Expected","f");
   leg->Draw();
 
-  extraText = "Internal";
+  extraText = "Preliminary";
   writeExtraText = true;
   CMS_lumi(canv,4,33); 
   canv->SetLogx(logx);
@@ -205,6 +206,9 @@ void PlotLimits(TString Era = "2018", // year
   leg->Draw();
   canv->Update();
 
-  canv->Print("figures/Limits_"+Process+"_"+Era+"_exp.png");
+  if (blindData)
+    canv->Print("figures/Limits_"+Process+"_"+Sample+"_exp.png");
+  else 
+    canv->Print("figures/Limits_"+Process+"_"+Sample+"_exp.png");
 
 }
