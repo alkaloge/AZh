@@ -22,6 +22,10 @@ fullchan_map = {
     'mmet' : '(#mu#mu)(#tau_{e}#tau_{h})',
     'mmmt' : '(#mu#mu)(#tau_{#mu}#tau_{h})',
     'mmtt' : '(#mu#mu)(#tau_{h}#tau_{h})',
+    'em'   : '#tau_{e}#tau_{#mu}',
+    'et'   : '#tau_{e}#tau_{h}',
+    'mt'   : '#tau_{#mu}#tau_{h}',
+    'tt'   : '#tau_{h}#tau_{h}',
     'all'  : ''
 }
 

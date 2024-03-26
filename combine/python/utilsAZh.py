@@ -110,6 +110,15 @@ azh_higgs_channels = {
     'mmtt' : 'tt'
 }
 
+azh_channels_noem = [
+    'eeet',
+    'eemt',
+    'eett',
+    'mmet',
+    'mmmt',
+    'mmtt',
+]
+
 azh_channels = [
     'eeem',
     'eeet',
@@ -661,7 +670,6 @@ def Plot(hists,**kwargs):
         if 'bbA' in hist:
             isBBA = True
     
-    analysis = kwargs.get('analysis','azh')
     year = kwargs.get('year','2018')
     cat = kwargs.get('cat','0btag')
     channel = kwargs.get('channel','mmtt')
@@ -672,6 +680,7 @@ def Plot(hists,**kwargs):
     xmax = kwargs.get('xmax',700)
     blind = kwargs.get('blind',True)
     logx = kwargs.get('logx',True)
+    postfix = kwargs.get('postfix','cards')
 
     data_hist = hists['data'].Clone('data_hist')
     ggA_hist = hists['ggA'].Clone('ggA_hist')
@@ -752,8 +761,8 @@ def Plot(hists,**kwargs):
     leg.AddEntry(ZZ_hist,'ZZ','f')
     leg.AddEntry(fake_hist,'reducible','f')
     leg.AddEntry(other_hist,'other','f')
-    leg.AddEntry(ggA_hist,'ggA'+mass+' (20 fb)','l')
-    if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ '(20 fb)','l')
+    leg.AddEntry(ggA_hist,'ggA'+mass+' (5 fb)','l')
+    if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' (5 fb)','l')
     leg.Draw()
     styles.CMS_label(canv,era=year,extraText='Internal')
     canv.SetLogx(logx)
@@ -761,41 +770,31 @@ def Plot(hists,**kwargs):
     canv.Update()
     if cat=='':
         if channel=='':
-            canv.Print('%s/m4l_%s_%s_%s.png'%(FiguresFolder,analysis,year,mass))
+            canv.Print('%s/m4l_%s_%s_%s.png'%(FiguresFolder,year,mass,postfix))
         else:
-            canv.Print('%s/m4l_%s_%s_%s_%s.png'%(FiguresFolder,analysis,year,channel,mass))
+            canv.Print('%s/m4l_%s_%s_%s_%s.png'%(FiguresFolder,year,channel,mass,postfix))
     else:
         if channel=='':
-            canv.Print('%s/m4l_%s_%s_%s_%s.png'%(FiguresFolder,analysis,year,cat,mass))
+            canv.Print('%s/m4l_%s_%s_%s_%s.png'%(FiguresFolder,year,cat,mass,postfix))
         else:
-            canv.Print('%s/m4l_%s_%s_%s_%s_%s.png'%(FiguresFolder,analysis,year,cat,channel,mass))
+            canv.Print('%s/m4l_%s_%s_%s_%s_%s.png'%(FiguresFolder,year,cat,channel,mass,postfix))
 
 ###############################################
 
 def GetInputFiles(**kwargs):
 
-    analysis=kwargs.get('analysis','azh')
     year=kwargs.get('year','2018')
     cat=kwargs.get('cat','0btag')
     channel=kwargs.get('channel')
     mass=kwargs.get('mass','400')
-    subfolder = kwargs.get('subfolder','datacards')
+    folder = kwargs.get('folder','datacards')
 
-    folder = BaseFolder+'/root_files'
-    filename = 'MC_data_'+cat+'_'+year+'.root'
-    filename_signal = 'signal_'+mass+'_'+cat+'_'+year+'.root'
+    path = BaseFolder+'/'+folder+'/Run2/'+mass
+    filename = 'azh_'+year+'_'+cat+'_'+channel+'_'+mass+'.root'
+    filename_signal = filename
 
-    if analysis.lower()=='azh':
-        folder = BaseFolder+'/'+subfolder+'/Run2/'+mass
-        filename = 'azh_'+year+'_'+cat+'_'+channel+'_'+mass+'.root'
-        filename_signal = filename
-    elif analysis.lower()=='hig18023':
-        folder = BaseFolder+'/HIG-18-023/datacards/'+hig18023_channels[channel]+'/Aconstr_HsvFit90/common'
-        filename = 'SR.input.root'
-        filename_signal = filename
-
-    fullfilename = folder+'/'+filename
-    fullfilename_signal = folder+'/'+filename_signal
+    fullfilename = path+'/'+filename
+    fullfilename_signal = path+'/'+filename_signal
     inputfile = ROOT.TFile(fullfilename)
     if inputfile==None:
         print('file %s not found'%(fullfilename))
