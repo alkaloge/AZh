@@ -1,11 +1,9 @@
 #!/bin/bash
-cards=$1
-model=$2
-dir=${model}/combined/cmb
+mass=300
+folder=datacards/Run2/${mass}
 
-combine -M FitDiagnostics --saveNormalizations --saveShapes --saveWithUncertainties --robustHesse 1 --rMin=-100 --rMax=100 --cminDefaultMinimizerTolerance 0.1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy=0 -m 125 ${dir}/${cards}.txt -n _${model}_${cards} -v 5
+# Running fit with robustHesse (improved estimate of errors via covariance matrix)
+combineTool.py -M FitDiagnostics --robustHesse 1 --setParameters r_ggA=0,r_bbA=0 --setParameterRanges r_ggA=-10,10:r_bbA=-20,20 --redefineSignalPOIs r_ggA --X-rtd FITTER_NEW_CROSSING_ALGO --cminDefaultMinimizerTolerance 0.05 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy=0 -m ${mass} -d ${folder}/ws.root -v2
 
-#combineTool.py -M FitDiagnostics --robustHesse 1 --setParameters r_ggH=0,r_bbH=0 --freezeParameters r_bbH --setParameterRanges r_ggH=-50,100 --redefineSignalPOIs r_ggH --cminDefaultMinimizerTolerance 0.1 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy=0 -m 80 -d ${dir}/${ws}.root -n _${ws}_mH80 -v2
-
-#combine -M MultiDimFit --robustFit 1 --setParameters r_ggH=0,r_bbH=0 --setParameterRanges r_ggH=-500,500 --redefineSignalPOIs r_ggH --cminDefaultMinimizerTolerance 0.01 --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy=0 -m 80 -d ${dir}/ws_${channel}_${bin}_${era}_80.root -n _multiDim_${channel}_${bin}_${era}_mH80
-cd -
+# Running fit with robustFit (asymmetric errors on POI estimated from likelihood scan)
+#combineTool.py -M FitDiagnostics --robustFit 1 --setParameters r_ggA=0,r_bbA=0 --setParameterRanges r_ggA=-10,10:r_bbA=-20,20 --redefineSignalPOIs r_ggA --cminDefaultMinimizerTolerance 0.05 --X-rtd FITTER_NEW_CROSSING_ALGO --X-rtd MINIMIZER_analytic --cminDefaultMinimizerStrategy=1 -m ${mass} -d ${folder}/ws.root -v2
