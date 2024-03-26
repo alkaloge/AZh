@@ -2,17 +2,31 @@
 ##########################################################
 # definition of parameters to steer running of GoF tests #
 ##########################################################
-year=Run2      # options : 2016, 2017, 2018, Run2
+folder=$1      # folder with datacards (e.g. datacards)
+sample=$2      # options : 2016, 2017, 2018, Run2, et, mt, tt
 mA=300         # mass hypothesis
 r_ggA=0        # signal strength of ggA process
 r_bbA=0        # signal strength of bbA process
 algo=saturated # test-statistics, options saturated, KS, AD 
-njobs=50       # number of jobs 
-ntoys=20       # number of toys per job
-channel=tt     # channel
+njobs=25       # number of jobs 
+ntoys=40       # number of toys per job
 
-folder=${CMSSW_BASE}/src/AZh/combine/datacards_tight_mtt/${year}/${mA} # folder with workspace
-outdir=${CMSSW_BASE}/src/AZh/combine/GoF_${year}_mA${mA} # output folder
+npar=$#
+if [ $npar -ne 2 ]; then
+    echo 
+    echo Execute script with three parameters 
+    echo first argument : folder with datacards
+    echo second argument : 2016, 2017, 2018, em, et, mt, tt and Run2
+    echo Examples :
+    echo ./RunGoF.bash datacards Run2
+    echo ./RunGoF.bash datacards et
+    echo
+    exit
+fi
+
+
+folder=${CMSSW_BASE}/src/AZh/combine/${folder}/${sample}/${mA} # folder with workspace
+outdir=${CMSSW_BASE}/src/AZh/combine/GoF_${folder}_${sample}_${mA} # output folder
 
 if [ ! -d "$outdir" ]; then
     echo creating folder ${outdir}
