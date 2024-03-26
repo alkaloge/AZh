@@ -4,7 +4,9 @@ This documentation describes statistical analysis package used in the search for
 
 ## Installation
 
-The statistical analysis of the A->Zh search results requires [Higgs combination package](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit), [CombineHarvester toolkit](https://cms-analysis.github.io/CombineHarvester/index.html) and [python analysis code](https://github.com/raspereza/AZh.git). We recommend to download also [datacards of the previous analysis HIG-18-023](https://gitlab.cern.ch/cms-analysis/hig/HIG-18-023) for comparison. The code uses as inputs RooT files containing observed and predicted distributions of the final discriminant - 4-lepton mass reconstructed with the FastMTT algorithm, m(4l). Histograms are provided for data, MC background and signal sample, and data-driven background with jets misidentified as leptons. The inputs have been provided by Justin Gage Dezoort. For convenience the RooT files have been moved from the [original repository](https://github.com/GageDeZoort/azh_coffea/tree/main/src/notebooks/root_for_combine) to [this repository](https://github.com/raspereza/AZh/tree/main/combine/root_files/backup).
+The statistical analysis of the A->Zh search results requires [Higgs combination package](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit), [CombineHarvester toolkit](https://cms-analysis.github.io/CombineHarvester/index.html) and [python analysis code](https://github.com/raspereza/AZh.git). We recommend to download also [datacards of the previous analysis HIG-18-023](https://gitlab.cern.ch/cms-analysis/hig/HIG-18-023) for comparison. The code uses as inputs RooT files containing observed and predicted distributions of the final discriminant - 4-lepton mass reconstructed with the FastMTT algorithm, m(4l). Histograms are provided for data, MC background and signal sample, and data-driven background with jets misidentified as leptons. The inputs have been provided by Justin Gage Dezoort. For convenience the RooT files have been moved from the [original repository](https://github.com/GageDeZoort/azh_coffea/tree/main/src/notebooks/for_alexei/tighten_mtt/datacard_templates) to [this repository](https://github.com/raspereza/AZh/tree/main/combine/root_files/coffea).
+
+For the purpose of backtracking of the analysis, it recommended to leave [folder](https://github.com/raspereza/AZh/tree/main/combine/root_files/coffea) intact. Once updated RooT with templates become available create the new folder in the [repository of shapes](https://github.com/raspereza/AZh/tree/main/combine/root_files), for example 'coffea_v2' and copy the new files with the shape there. When running script [Setup.py](https://github.com/raspereza/AZh/blob/main/combine/Setup.py) you should indicate the name of this subfolder as an input argument as described below. 
 
 We advise users of this package to consult documentation of the [Combine package](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit) and [CombineHarvester toolkit](https://cms-analysis.github.io/CombineHarvester/index.html) for detailed information on the statistical methods employed in CMS. 
 
@@ -23,7 +25,7 @@ git clone https://github.com/raspereza/AZh.git AZh
 scramv1 b -j 4
 ```
 
-RooT files with shapes to be used as inputs for datacards producer, are originally stored in the backup folder [$CMSSW_BASE/src/AZh/combine/root_files/backup](https://github.com/raspereza/AZh/tree/main/combine/root_files/backup). At the stage of setting up environment their copies are place in the folder [$CMSSW_BASE/src/AZh/combine/root_files/backup](https://github.com/raspereza/AZh/tree/main/combine/root_files/backup).
+RooT files with shapes to be used as inputs for datacards producer, are stored in the folder [$CMSSW_BASE/src/AZh/combine/root_files/coffea](https://github.com/raspereza/AZh/tree/main/combine/root_files/coffea). At the stage of setting up environment their copies are place in the folder [$CMSSW_BASE/src/AZh/combine/root_files/backup](https://github.com/raspereza/AZh/tree/main/combine/root_files/backup).
 
 After installation is complete, change to the directory [$CMSSW_BASE/src/AZh/combine](https://github.com/raspereza/AZh/tree/main/combine). All scripts will be run in this directory.
 
@@ -35,16 +37,19 @@ git clone https://gitlab.cern.ch/cms-analysis/hig/HIG-18-023/datacards.git HIG-1
 
 Then execute macro [Setup.py](https://github.com/raspereza/AZh/blob/main/combine/Setup.py)
 ```
-./Setup.py
+./Setup.py --year $year --binning $binning --folder $folder
 ```
+The macro takes the following input arguments:
+* `year` : 2016, 2017, 2018, Run2. Default option is `Run2` which will create RooT files for analysis of combined Run2 data.
+* `binning` : coarse, nominal, fine. This argument defines binning of templates. Default option is `nominal`. Three options are discussed in presentation at the [Higgs meeting]() on 5/03/2024.
+* `folder` : folder where initial RooT files are located. Default: `coffea`. Once you have updated RooT files obtained with coffea framework, create the new folder in `$CMSSW_BASE/src/AZh/combine/root_files`, copy the new files to this folder and specify the name of folder via input argument `--folder`.
 
 The macro performs the following actions :
 1. For each year (2016, 2017 and 2018) it merges separate RooT files with data and background templates into one file since [CombineHarvester](https://cms-analysis.github.io/CombineHarvester/index.html) is looking for data distributions and background templates in the same RooT file.
 2. It fixes bins with negative content in signal and backgroun templates.
 3. It creates in the current directory subfolders `figures` and `jobs` where various plots (png files) and batch job scripts will be placed.
-4. The code builds systematic variations of the reducible background templates. These systematic variations are largely driven by statistical uncertainties in templates obtained by applying fake factor method to the sample, where identification criteria for one or both tau leptons assigned to H->tautau decay are inverted. This sample is referred to as "application region". Statistical uncertainties are derived in three bins in m(4l) : [200,400,700,2000] GeV, and applied to the reducible background templates.
-The data sample of same-sign tau lepton candidates passing relaxed identification conditions, is used to model shape of the reducible background, with corresponding template being normalized to the yield predicted in application region.
-5. The script also rescales MC templates of year 2016 to account for updated (more accurately measured) tau Id scale factors. 
+4. The script also rescales MC templates of year 2016 to account for updated (more accurately measured) tau Id scale factors. 
+5. Finally the macro rebins templates according to the option `binning`.  
 
 TAU POG has released [updated tau ID scale factors](https://twiki.cern.ch/twiki/bin/view/CMS/TauIDRecommendationForRun2#Corrections_for_the_DeepTauv2p1) in summer 2023. It turned out that for UL2016 samples new scale factors are about 6% higher than previous ones in wide range of tau pT from 20 up to 100 GeV. To account for this effect MC templates are scaled by 
 * 6% in mmet, mmmt, eeet and eemt channels; 
@@ -59,40 +64,58 @@ Datacards are created by macro [make_datacards.py](https://github.com/raspereza/
 ```
 ./make_datacards.py --year $year --btag $btag --mass $mass
 ```
-where
+The required input arguments are:
 * `$year : {2016, 2017, 2018}`;
 * `$btag : {btag, 0btag}`
 * `$mass :` mass hypothesis
-Datacards for a given year and mass hypothesis are stored in the folder
-* `datacards/$year/$mass`
+
+Optional input arguments are:
+* `--folder :` name of the folder, where datacards are stored. Default : `datacards`. This name is used by default by all macros described in the following
+* `--model : {r_ggA,r_bbA,2POI}`. Model which is used in the datacard creation. Default is `2POI`, meaning that the model incorporates two parameters of interest, rate of ggA process and rate of bbA process. Specifying `r_ggA` or `r_bbA` implies model with only one signal, ggA or bbA. The rate of other signal is assumed to be zero.
+* `--all_channels` : when this option is specified em channel is included in combination. By default this channel is excluded from combination and datacards for this channel are not produced. 
+* `--no_bbb` : when this option is enabled, no bin-by-by MC statistical uncertainties are included in datacards. By default datacards are created with option `* autoMCStats 0` meaning that bin-by-bin MC statistical uncertainties are automatically included into uncertainty model.
+
+Datacards for a given year and mass hypothesis are stored in the folder 
+* `$folder/$year/$mass`. 
+
+Also datacards for individual channels are created and saved in folders 
+* `$folder/$channel/$mass`, where `$channel={et,mt,tt}`. 
+
+This enables running limits individually for each data taking period and channel.  
 
 Combined Run2 datacards are put in folders 
-* `datacards/Run2/$mass` : for signal model with 2 POIs;
-
-By default datacards are created with option `* autoMCStats 0` meaning that bin-by-bin MC statistical uncertainties are automatically included into uncertainty model. To disable this option, script should be run with additional flag `--no_bbb`
+* `datacards/Run2/$mass`
 
 Datacards can be produced for all years and all mass points in one go by executing script [CreateCards.py](https://github.com/raspereza/AZh/blob/main/combine/CreateCards.py)
 ```
-./CreateCards.py
+./CreateCards.py 
 ```
+Optional parameters are:
+* `--year` : data taking period (2016, 2017, 2018).
+* `--mass` : mass of A. 
+* `--model={r_ggA,r_bbA,POI}` Default is `2POI`. 
+* `--folder` : folder where datacards are saved. Default is `datacards`.
+* `--all_channels` : will create combined cards including em channel. By default this channel is excluded.
+
 Running datacards for all years and mass points may take awhile.
 
 At the next step [RooWorkspaces](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/tutorial2020/exercise/#d-workspaces) for [multisignal model](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/tutorial2023/parametric_exercise/#building-the-models) need to be produced. This is done with script [CreateWorkspaces.py](https://github.com/raspereza/AZh/blob/main/combine/CreateWorkspaces.py)
 ```
-./CreateWorkspaces.py --year $year --mass $mass 
+./CreateWorkspaces.py --mass $mass 
 ```
 where
-* `$year` : 2016, 2017, 2018 or Run2 for combination (default=Run2). 
-* `$mass` : mA (default = 1000). One can produce workspaces for all mass points in one go by setting `$mass` to `all` 
-Additional (optional) flag `--batch` can be used to send jobs to the condor batch system. One job per mass point will be submited, which will accelerate the task of creating workspaces. 
+* `$mass` : mA (default = 300). One can produce workspaces for all mass points in one go by setting `--mass all` 
+Additional (optional) arguments 
+* `--folder` specifies folder with cards. Default is `datacards`.
+* `--batch` flag can be used to send jobs to the condor batch system. One job per mass point will be submited, which will accelerate the task of creating workspaces. 
 
-For each $year and $mass, workspaces are put in the folder `datacards/$year/$mass` under the name `ws.root`. Workspaces for Run2 combination are put in folders `datacards/Run2/$mass` under the same name. 
+For each $year and $mass, workspaces are put in the folder `$folder/$year($channel)/$mass` under the name `ws.root`. Workspaces for Run2 combination are put in folders `datacards/Run2/$mass` under the same name. Workspaces are also created for individual channels : `$folder/$channel/$mass/ws.root`, where `--channel={et,mt,tt}`.
 
 Signal model includes two  parameters of interest (POI): rate of the process ggA (r_ggA) and rate of the process bbA (r_bbA). 
 
 Running workspaces for all masses interactively is time consuming, especially for combined Run2 datacards. Therefore it is recommended to submit jobs to the batch system by raising flag `--batch`, for example
 ```
-./CreateWorkspaces.py --year Run2 --mass all --batch
+./CreateWorkspaces.py --mass all --batch
 ```
 
 ## Creating workspaces for HIG18-023 analysis 
@@ -134,6 +157,27 @@ With this command plots of all MC templates along with all systematic variations
 ```
 With this command plots of the ggA template with all systematic variations of uncertainty `CMS_scale_t_3prong` will be produced for datacards of the HIG-18-023 analysis and put in the folder `$CMSSW_BASE/src/AZh/combine/figures`. 
 
+## Plotting mass distributions from datacards
+The distributions of 4-lepton mass can be plotted from created datacards using macro [PlotCards.py](https://github.com/raspereza/AZh/blob/main/combine/PlotCards.py)
+
+```
+./PlotCards.py --year $year --channel $channel --cat $category --mass $mass
+```
+Inputs :
+* `--year={2016,2017,2018,all}` : data-taking period or all data-taking periods combined. 
+* `--channel={et,mt,tt,all}` specifies channel (et, mt, tt) or plot combination of channels (all).
+* `--cat={0btag,btag,all}` specifies category (btag, 0btag) or plot combination of both.
+* `--mass=$mass` : mA.
+
+Additional (optional) inputs:
+* `--folder` : folder with datacards. Default is `datacards`. 
+* `--xmin` : minimal edge of X-axis. Default is 200. 
+* `--xmax` : maximal edge of X-axis. Default is 2500.
+* `--logx` : logarithmic scale for X-axis.
+* `--unblind` : unblind plots.
+
+The output plot will be saved in the folder `figures`.
+
 ## Running limits
 
 Example below shows how to compute [Asymptotic](http://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/tutorial2020/exercise/#a-asymptotic-limits) expected limits on the rate of the process ggA, while rate of the bbA process is set to zero. 
@@ -157,13 +201,19 @@ To compute observed limits one needs to remove the flag `--noFitAsimov -t -1`.
 
 Macro [RunLimits.py](https://github.com/raspereza/AZh/blob/main/combine/RunLimits.py) automatises computation of limits with `combine` utility. It is executed with the following parameters:
 ```
-./RunLimits.py --analysis $analysis --year $year --outdir $outdir --mass $mass
+./RunLimits.py --analysis $analysis --sample $sample --outdir $outdir --mass $mass
 ```
-where
-* `$analysis = {hig18023, azh}` : if set to `hig18023` or `HIG18023` limits are computed for the HIG18-023 analysis, if set to `azh` or `AZh` - limits are computed for the current analysis (default = `azh`);
-* `$year = {2016, 2017, 2018, Run2}` (default = `Run2`);
-* `$mass` : mA hypothesis (default = `1000`);
-* `$outdir ` : folder where results of limit computation will be stored (the user is required to specify this argument);
+where required inputs are: 
+* `$sample = {2016, 2017, 2018, Run2, et, mt, tt}` : year, channel or Run2 combination.
+* `$mass` : mA hypothesis (default = `300`). When `--mass all` is specified, limits are computed for all massses.
+* `$outdir ` : folder where results of limit computation will be stored.
+
+Optional arguments are:
+* `--folder` : folder with datacards (default `datacards`).
+* `--obs` : observed limits are computed.
+* `--releaseOtherPOI` : limits are computed on ggA (bbA) rates with rate of other process allowed to float freely.
+
+
 For a specified mass limits will be computed for both `r_ggA` and `r_bbA`. To set `r_bbA` to zero when running limits on `r_ggA` and vice versa), add flag `--freezeOtherPOI`. If you wish to compute limits for all mass points, specify `--mass all`. 
 Computation of observed limits is activated with flag `--obs`. Results of computation (asymptotic median limit, 2.5, 16, 84 and 97.5% quantiles, and observed limit ) for a given `$mass` and `$year` and process `$proc={ggA,bbA}` are save in folder `$outdir` in the file named `higgsCombine.azh_${year}_${proc}.AsymptoticLimits.mH${mass}.root`.
 
@@ -176,6 +226,7 @@ Once limits are computed they can be plotted as a function of mA using the RooT 
 ```
 void PlotLimits(
 TString Era = "Run2", // year
+TString Sample = "Run2", // available options : 2016, 2017, 2018, Run2, et, mt, tt
 TString Process = "bbA", // process
 TString folder = "limits", // folder containing output of the macro RunLimits.py (parameter `--outdir`)
 float YMax = 10, // upper boundary of Y axis
@@ -241,8 +292,10 @@ Running impacts for Run 2 combination is automatised with the macro [RunImpacts.
 ```
 ./RunImpacts.py --proc $proc --mass $mass
 ```
-* `$proc` defines process (either r_ggA or r_bbA), whose rate will be regarded as POI
+* `$proc` defines process (either ggA or bbA), whose rate will be regarded as POI
 * `$mass` - mA 
+* 
+
 These two parameters are required to be set by user. By default expected impacts are computed based on the Asimov dataset. In this case one can optionally specify signal strenghts for ggA and bbA processes with flags `--r_ggA ` (default is 1) and `--r_bbA` (default is 0). The script automatically parallelises computation by submitting jobs to the condor batch system. One job performs scan of 4 nuisance parameters. Results of the computation will be stored in the folder `impacts_${proc}${mass}_exp`. For example running script as
 ```
 ./RunImpacts.py --proc ggA --mass 300 --r_ggA 2 --r_bbA 0
@@ -258,13 +311,14 @@ Once all jobs computing impacts are finished (monitor condor dashboard), results
 ```
 ./PlotImpacts.py --proc ggA --mass 300
 ```
-With this command pdf file `impacts_ggA300_exp/impacts_exp.pdf` will be created using output of running expected impacts on the ggA300 signal strength.
-
+With this command pdf file `impacts_ggA300_exp/impacts_ggA300_exp.pdf` will be created using output of running expected impacts on the ggA300 signal strength. Usually impacts of r_ggA (r_bbA) on r_bbA (r_ggA) overwhelms impacts of all other nuisances. Additional pdf `impacts_ggA300_exp/impacts_OnePOI_ggA300_exp.pdf`, where impact of the rate of unconstrained rate parameter on POI is not shown. This makes more visible impacts of other nuisances. 
 
 ```
 ./PlotImpacts.py --proc	ggA --mass 300 --obs
 ```
-This command will create pdf file `impacts_ggA300_exp/impacts_obs.pdf` based on the results of computed observed impacts on the ggA300 signal strength. The observed fitted value of the signal strength will be hidden in the plot. To unblind signal strength, raise flag `--unblind`
+This command will create pdf file `impacts_ggA300_exp/impacts_ggA300_obs.pdf` based on the results of computed observed impacts on the ggA300 signal strength. Additional pdf file `impacts_ggA300_exp/impacts_OnePOI_ggA300_obs.pdf` is created without showing impact of other POI (r_bbA) on rate of the ggA process.
+
+The observed fitted value of the signal strength will be hidden in the plot. To unblind signal strength, raise flag `--unblind`
 ```
 ./PlotImpacts.py --proc ggA --mass 300 --obs --unblind
 ```
@@ -297,7 +351,7 @@ The command above will create RooT file `higgsCombine.obs.GoodnessOfFit.mH300.ro
 Afterwards, ensemble of toys is generated under assumption of the signal+packground hypothesis. The sampling is performed given background and signal predictions in each analysis bin and underlying uncertainty model. 
 ```
 combineTool.py -M GoodnessOfFit \ 
--d Run2/300/ws.root --toysFreq \ 
+-d $CMSSW_BASE/src/AZh/combine/datacards/Run2/300/ws.root --toysFreq \ 
 --setParameters r_ggA=1,r_bbA=0 \
 -m 300 --algo saturated -n .exp \
 -t 1000 
@@ -311,7 +365,7 @@ do
     random=$RANDOM
     echo random seed $random
     combineTool.py -M GoodnessOfFit \ 
-    -d Run2/300/ws.root --toysFreq \ 
+    -d $CMSSW_BASE/src/AZh/combine/datacards/Run2/300/ws.root --toysFreq \ 
     --setParameters r_ggA=1,r_bbA=0 \
     -m 300 --algo saturated -n .exp \
     -t 10 \
@@ -330,6 +384,9 @@ mv higgsCombine.obs.GoodnessOfFit.mH300.root gof_obs.root
 cd ../
 ```
 
+The script [Hadd_GoF.bash](https://github.com/raspereza/AZh/blob/main/combine/Hadd_GoF.bash) is intended to collect outputs of GoF test into files with observed test-statistics 
+
+
 The histogram of test-statistics in ensemble of toys is then compared with the value of test-statistics in data and p-value, quantifying compatibility of data with the model, is computed as integral in the distribution of toys from the actual observed value up to infinity. RooT macro [Compatibility.C](https://github.com/raspereza/AZh/blob/main/combine/Compatibility.C) visualises the procedure
 ```
 void Compatibility(
@@ -339,6 +396,35 @@ void Compatibility(
      int bins = 60 // number of bins in the histogram of toys
      ) {
 ```
+
+## Fitting
+
+Example of running maximum likelihood fit can be foung in [RunFit.bash](https://github.com/raspereza/AZh/blob/main/combine/RunFit.bash). The procedure is automated with the python macro [RunFit.py](https://github.com/raspereza/AZh/blob/main/combine/RunFit.py):
+```
+./RunFit.py --sample $sample --mass $mass
+```
+Inputs are:
+* `$sample={2016,2017,2018,Run2,et,mt,tt}`. Sample to fit. It could be either year, channel or combination 
+* `$mass` : mA
+
+Optional inputs are
+* `--obs` : activates fir of data (by default Asimov dataset is fitted).
+* `--r_ggA` : signal modifier for ggA process. Relevant only if Asimov dataset is fitted. Default = 0.
+* `--r_bbA` : signal modifier for bbA process. Relevant	only if	Asimov dataset is fitted. Default = 0.
+* `--folder` : folder with datacards. Default is `datacards`.
+* `--saveShapes` : ATTENTION! with this flag postfit shapes will be stored. These shapes are used for plotting postfit distributions.
+* `--robustHesse` : robustHesse option is activated (improved covariance matrix estimate). By default robustFit option is used (estimate of errors with likelihood scans) 
+* `--mininizer` : analytic minimizer option. The fit is sensitive to this parameter. Default option is 1. But one may to try option 0, if fit doesn't converge or yields invalid Hessian matrix. 
+* `--batch` : submits job to condor. 
+
+The script performs fit and saves output RooT file in the newly created folder: 
+* `fit_$sample_mA$mass_exp/fitDiagnosticsTest.root`, when fit is performed on Asimov dataset
+* `fit_$sample_mA$mass_obs/fitDiagnosticsTest.root`, when fit is performed on data
+
+ATTENTION. To save postfit shapes, set flag `--saveShapes`. With this flag fit will run much slower, and may take half a day. Therefore, in this case it is recommended to submit job to condor by setting flag `--batch`. It makes sense to save shapes only when running on data.
+
+## Plotting prefit and postfit distributions
+
 
 ## Closure test of the reducible background 
 
