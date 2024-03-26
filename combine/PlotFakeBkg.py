@@ -18,16 +18,6 @@ def ComparePlots(hists,**kwargs):
     h_relaxed = hists['relaxed']
     h_prompt = hists['prompt']
 
-
-    if year=='Run2':
-        if channel=='mt' and charge=='OS':
-            h_model.SetBinContent(1,3.72)
-            h_model.SetBinContent(3,4.21)
-    
-            if channel=='et' and charge=='SS':
-                h_model.SetBinContent(1,2.25)
-                h_model.SetBinContent(4,0.74)
-    
     utils.fixNegativeBins(h_model)
     utils.fixNegativeBins(h_relaxed)
 
@@ -67,16 +57,18 @@ def ComparePlots(hists,**kwargs):
     label_prob = 'prob(KS) = %4.2f'%(prob)
     label_reverse = 'prob(KS,reverse) = %4.2f'%(prob_reverse)
 
+#    h_model.GetYaxis().SetRangeUser(0.005,10*h_model.GetMaximum())
+
     canv = styles.MakeCanvas("canv","",600,600)
 
     h_model.Draw('e1')
     h_relaxed.Draw('hsame')
 
     legTit = '%s %s'%(charge,styles.chan_map[channel])
-    leg = ROOT.TLegend(0.55,0.5,0.9,0.7)
+    leg = ROOT.TLegend(0.65,0.6,0.9,0.8)
     styles.SetLegendStyle(leg)
     leg.SetHeader(legTit)
-    leg.SetTextSize(0.045)
+    leg.SetTextSize(0.04)
     leg.AddEntry(h_model,"FF estimate","ep")
     leg.AddEntry(h_relaxed,"relaxed ID","el")
     leg.Draw()
@@ -91,9 +83,10 @@ def ComparePlots(hists,**kwargs):
         latex.DrawLatex(0.6,0.4,label_prob)
 
     canv.SetLogx(True)
+ #   canv.SetLogy(True)
     canv.RedrawAxis()
     canv.Update()
-    #    canv.Print('figures/Fakes_%s_%s_%s_%s.png'%(year,cat,channel,charge))
+    canv.Print('figures/Fakes_%s_%s_%s_%s.png'%(year,cat,channel,charge))
 
     
     print('')
@@ -118,13 +111,13 @@ if __name__ == "__main__":
     parser.add_argument('-channel','--channel',dest='channel',required=True,help=""" channel : em, et, mt, tt""",choices=['em','et','mt','tt'])
     parser.add_argument('-cat','--cat',dest='cat',required=True,help=""" category : 0btag, btag, comb """,choices=['0btag','btag','comb'])
     parser.add_argument('-same_sign','--same_sign',dest='ss',action='store_true',help=""" SS sideband""")
-    parser.add_argument('-coarse','--coarse',dest='coarse')
+    parser.add_argument('-coarse','--coarse',dest='coarse',action='store_true')
     parser.add_argument('-folder','--folder',dest='folder',default='tighten_mtt_bin5GeV')
     args = parser.parse_args()
 
     bins = [199,240,280,320,360,400,450,550,700,1000,2400]
     if args.coarse:
-        bins = [199,400,700,2400]
+        bins = [199,300,400,2400]
 
     histnames=['reducible','irreducible','ss_relaxed']
     year = args.year

@@ -21,17 +21,184 @@ tauID_UL2016 = {
     'mmtt' : 1.12
 }
 
-def MergeDataMC():
-    os.system('cp root_files/backup/*root root_files')
-    os.system('./Hadd_MC_data.bash')
+uncertainties = [
+    'unclMET',
+    'tauID0',
+    'tauID1',
+    'tauID10',
+    'tauID11',
+    'tauES',
+    'efake',
+    'mfake',
+    'eleES',
+    'muES',
+    'pileup',
+    'l1prefire',
+    'eleSmear',
+    #'JES'
+]
 
-def FixNegativeBins():
+def RebinAndSave(**kwargs):
 
-    years = utils.years
+    era = kwargs.get('year','2018')
+    binning = kwargs.get('binning','nominal')
+    years = []
+    if era=='Run2':
+        years = utils.years
+    else:
+        years.append(era)
+
+    subfolder = kwargs.get('folder','coffea')
     cats = utils.azh_cats
     channels = utils.azh_channels
-    templates = utils.azh_bkgs
-    uncs = utils.azh_uncs
+    templates = utils.azh_allbkgs
+    uncs = uncertainties
+    masses = utils.azh_masses
+    folder = utils.BaseFolder+'/root_files'
+    variations = utils.variations
+    signals = utils.azh_signals
+
+    path = folder+'/'+subfolder
+    if os.path.isdir(path):
+        print('')
+        print('Processing files in folder ->')
+        print('%s'%(path))
+        os.system('rm root_files/*.root')
+        print('')
+    else:
+        print('')
+        print('Folder %s does not exist'%(path))
+        exit()
+
+    ###########################
+    # defininting of binning
+    ###########################
+    bins = []
+    if binning=='nominal':
+        for ib in range(200,500,20):
+            bins.append(ib)    
+        for ib in range(500,750,25):
+            bins.append(ib)
+        for ib in range(750,1150,100):
+            bins.append(ib)
+        bins.append(2400)
+    elif binning=='fine':
+        for ib in range(200,500,10):
+            bins.append(ib)    
+        for ib in range(500,750,25):
+            bins.append(ib)
+        for ib in range(750,1150,100):
+            bins.append(ib)
+        bins.append(2400)
+    else:
+        for ib in range(200,400,20):
+            bins.append(ib)
+        bins.append(400)
+        bins.append(450)
+        bins.append(550)
+        bins.append(700)
+        bins.append(1000)
+        bins.append(2400)
+
+    print('')
+    print('Rebinning with bins ->')
+    nbins = len(bins)
+    for ib in range(0,nbins-1):
+        print('[%4i,%4i]'%(int(bins[ib]),int(bins[ib+1])))
+    print('')
+
+    for year in years:
+        for cat in cats:
+            print('Rebinning %s %s '%(year,cat))
+            print(' background templates')
+            name_data = folder+'/'+subfolder+'/data_'+cat+'_'+year+'.root'
+            name_mc   = folder+'/'+subfolder+'/MC_'+cat+'_'+year+'.root'
+            input_data = ROOT.TFile(name_data)
+            input_mc = ROOT.TFile(name_mc)
+            name_output = folder+'/MC_data_'+cat+'_'+year+'.root'
+            output_file = ROOT.TFile(name_output,'recreate')
+            for channel in channels:
+                output_file.mkdir(channel)
+                data_orig = input_data.Get(channel+'/data')
+                data_rebin = utils.rebinHisto(data_orig,bins,'_rebin')
+                output_file.cd(channel)
+                data_rebin.Write('data')
+                for template in templates:
+                    mc_orig = input_mc.Get(channel+'/'+template)
+                    if mc_orig!=None:
+                        mc_rebin = utils.rebinHisto(mc_orig,bins,year+cat+'_rebin')
+                        output_file.cd(channel)
+                        mc_rebin.Write(template)
+                    else:
+                        print('Template %s is not found in channel %s and category %s'%(template,channel,cat))
+                        
+                    for unc in uncs:
+                        for variation in variations:
+                            sys_orig =  input_mc.Get(channel+'/'+template+'_'+unc+variation)
+                            if sys_orig!=None:
+                                sys_rebin = utils.rebinHisto(sys_orig,bins,year+cat+'_rebin')
+                                output_file.cd(channel)
+                                sys_rebin.Write(template+'_'+unc+variation)
+            output_file.Close()
+            for mass in masses:
+                print(' signal with mass %s'%(mass))
+                name_output = folder+'/signal_'+mass+'_'+cat+'_'+year+'.root'
+                name_input = folder+'/'+subfolder+'/signal_'+mass+'_'+cat+'_'+year+'.root'
+                input_file = ROOT.TFile(name_input)
+                output_file = ROOT.TFile(name_output,'recreate')
+                for channel in channels:
+                    output_file.mkdir(channel)
+                    for signal in signals:
+                        sig_orig = input_file.Get(channel+'/'+signal)
+                        sig_rebin = utils.rebinHisto(sig_orig,bins,year+cat+'_rebin')
+                        output_file.cd(channel)
+                        sig_rebin.Write(signal)
+                        for unc in uncs:
+                            for variation in variations:
+                                sys_orig = input_file.Get(channel+'/'+signal+'_'+unc+variation)
+                                sys_rebin = utils.rebinHisto(sys_orig,bins,year+cat+'_rebin')
+                                output_file.cd(channel)
+                                sys_rebin.Write(signal+'_'+unc+variation)
+                output_file.Close()
+    for h_channel in ['em','et','mt','tt']:
+        command = 'cp root_files/%s/%s*root root_files/'%(subfolder,h_channel)
+        os.system(command)
+
+
+def MergeDataMC(**kwargs):
+
+    folder = kwargs.get('folder','tighten_mtt')
+    era = kwargs.get('year','2018')
+    years = []
+    if era=='Run2':
+        years = utils.years
+    else:
+        years.append(era)
+    
+    os.system('rm root_files/*.root')
+    pathdir='root_files/%s'%(folder)
+    if os.path.isdir(pathdir):
+        command='cp root_files/%s/*root root_files'%(folder)
+        os.system(command)
+    else:
+        print('folder root_files/%s does not exist'%(folder))
+        exit()
+    for year in years:
+        command='./Hadd_MC_data.bash %s'%(year)
+        os.system(command)
+
+def FixNegativeBins(**kwargs):
+
+    era = kwargs.get('year','2018')
+    years = []
+    if era=='Run2':
+        years = utils.years
+    else:
+        years.append(era) 
+    cats = utils.azh_cats
+    channels = utils.azh_channels
+    templates = utils.azh_allbkgs
+    uncs = uncertainties
     masses = utils.azh_masses
     folder = utils.BaseFolder+'/root_files'
     variations = utils.variations
@@ -50,12 +217,14 @@ def FixNegativeBins():
                     nbins = hist.GetNbinsX()
                     for ib in range(1,nbins+1):
                         x = hist.GetBinContent(ib)
-                        if x<0:
+                        if x<0.0:
                             print('negative bin %2i :  %7.5f in %s_%s_%s %s'
                                   %(ib,x,year,cat,channel,template))
-                            hist.SetBinContent(ib,0.)
-                            hist.SetBinError(ib,0.)
+                            hist.SetBinContent(ib,0.0)
+                            hist.SetBinError(ib,0.0)
                     inputfile.cd(channel)
+                    if hist.GetSumOfWeights()==0.0:
+                        hist.SetBinContent(1,0.0001)
                     hist.Write(template)
                     for unc in uncs:
                         for variation in variations:
@@ -63,12 +232,14 @@ def FixNegativeBins():
                             if histSys!=None:
                                 for ib in range(1,nbins+1):
                                     x = histSys.GetBinContent(ib)
-                                    if x<0:
+                                    if x<0.0:
                                         print('negative bin %2i : %7.5f in %s_%s_%s %s_%s%s'
                                               %(ib,x,year,cat,channel,template,unc,variation))
-                                        histSys.SetBinContent(ib,0.)
-                                        histSys.SetBinError(ib,0.)
+                                        histSys.SetBinContent(ib,0.0)
+                                        histSys.SetBinError(ib,0.0)
                                 inputfile.cd(channel)
+                                if histSys.GetSumOfWeights()==0.0:
+                                    histSys.SetBinContent(1,0.0001)
                                 histSys.Write(template+'_'+unc+variation)
             inputfile.Close()
     
@@ -76,8 +247,8 @@ def RescaleToTauID_2016():
 
     cats = utils.azh_cats
     channels = utils.azh_channels
-    templates = utils.azh_bkgs
-    uncs = utils.azh_uncs
+    templates = utils.azh_allbkgs
+    uncs = uncertainties
     masses = utils.azh_masses
     variations = utils.variations
     signals = utils.azh_signals
@@ -128,20 +299,25 @@ def RescaleToTauID_2016():
                                 histSys.Write(template+'_'+unc+variation)
             inputfile.Close()
     
-def SymmetrizeUnc():
+def SymmetrizeUnc(**kwargs):
 
-    years = utils.years
+    era = kwargs.get('year','2018')
+    years = []
+    if era=='Run2':        
+        years = utils.years
+    else:
+        years.append(era)
     cats = utils.azh_cats
     channels = utils.azh_channels
-    templates = utils.azh_bkgs
-    uncs = utils.azh_uncs
+    templates = utils.azh_allbkgs
+    uncs = uncertainties
     masses = utils.azh_masses
     folder = utils.BaseFolder+'/root_files'
     variations = utils.variations
     signals = utils.azh_signals
 
     for year in years:
-        print('symmetrizing bkg uncertainties for UL%s'%(year))
+        print('symmetrizing uncertainties for UL%s'%(year))
         for cat in cats:
             nameinput = folder + "/MC_data_"+cat+"_"+year+".root"
             inputfile = ROOT.TFile(nameinput,'update')
@@ -155,6 +331,16 @@ def SymmetrizeUnc():
                         hists['down'] = inputfile.Get(channel+'/'+template+'_'+unc+'Down')
                         if hists['up']!=None and hists['down']!=None:
                             utils.symmetrizeUnc(hists)
+                            if unc=='eleES':
+                                nbins = hist.GetNbinsX()
+                                for ib in range(1,nbins+1):
+                                    x = hist.GetBinContent(ib)
+                                    xup = hists['up'].GetBinContent(ib)
+                                    xdown = hists['down'].GetBinContent(ib)
+                                    xup_new = x + 0.5*(xup-x)
+                                    xdown_new = x + 0.5*(xdown-x)
+                                    hists['up'].SetBinContent(ib,xup_new)
+                                    hists['down'].SetBinContent(ib,xdown_new)
                             inputfile.cd(channel)
                             hists['up'].Write(template+'_'+unc+'Up')
                             hists['down'].Write(template+'_'+unc+'Down')
@@ -173,15 +359,30 @@ def SymmetrizeUnc():
                             hists['down'] = inputfile.Get(channel+'/'+template+'_'+unc+'Down')
                             if hists['up']!=None and hists['down']!=None:
                                 utils.symmetrizeUnc(hists)
+                                if unc=='eleES':
+                                    nbins = hist.GetNbinsX()
+                                    for ib in range(1,nbins+1):
+                                        x = hist.GetBinContent(ib)
+                                        xup = hists['up'].GetBinContent(ib)
+                                        xdown = hists['down'].GetBinContent(ib)
+                                        xup_new = x + 0.5*(xup-x)
+                                        xdown_new = x + 0.5*(xdown-x)
+                                        hists['up'].SetBinContent(ib,xup_new)
+                                        hists['down'].SetBinContent(ib,xdown_new)
                                 inputfile.cd(channel)
                                 hists['up'].Write(template+'_'+unc+'Up')
                                 hists['down'].Write(template+'_'+unc+'Down')
                 inputfile.Close()
 
-def ReducibleSystematics():
+def ReducibleSystematics(**kwargs):
 
+    era = kwargs.get('year','Run2')
+    years = []
     print
-    years = utils.years
+    if era=='Run2':
+        years = utils.years
+    else:
+        years.append(era)
     z_channels = ['ee','mm']
     h_channels = ['em','mt','et','tt']
     cats = utils.azh_cats
@@ -267,24 +468,30 @@ def ReducibleSystematics():
 ############
 if __name__ == "__main__":
 
+    from argparse import ArgumentParser
+    parser = ArgumentParser()
+    parser.add_argument('-year','--year',dest='year',default='Run2',help=""" year : 2016 2017 2018 Run2""",choices=utils.years_ext)
+    parser.add_argument('-folder','--folder',dest='folder',default='coffea',help=""" folder with ROOT files""")
+    parser.add_argument('-binning','--binning',dest='binning',default='nominal',help=""" binning """,choices=['nominal','fine','coarse'])
+    args = parser.parse_args()
 
     ROOT.gROOT.SetBatch(True)
 
-    # merging data and MC into one file
-    MergeDataMC()
+    RebinAndSave(folder=args.folder,year=args.year,binning=args.binning)
 
     # fixing bins with negative content
-    FixNegativeBins()
+    FixNegativeBins(year=args.year)
 
     # rescale MC shapes by new tau ID
-    RescaleToTauID_2016()
+    if args.year=='Run2' or args.year=='2016':
+        RescaleToTauID_2016()
 
     # symmetrize shape uncertainties
-    SymmetrizeUnc()
+    SymmetrizeUnc(year=args.year)
 
     # constructing systematic templates 
-    # for reducible background
-    ReducibleSystematics()
+    # for reducible background (obsolete)
+    # ReducibleSystematics(year=args.year)
 
     # creating folders for figures, batch jobs
     pathdir=utils.BaseFolder+'/figures'

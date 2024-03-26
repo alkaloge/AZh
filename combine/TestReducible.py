@@ -25,27 +25,6 @@ if __name__ == "__main__":
     inputfile_OS = ROOT.TFile('root_files/'+folder+'/'+chan+'_'+cat+'_m4l_cons_OS_'+year+'.root')
     inputfile_cards = ROOT.TFile('root_files/'+folder+'/MC_'+cat+'_'+year+'.root')
 
-    tot_promt = 0
-    tot_e2 = 0
-    bkgs_prompt = ["ggHtt","WHtt","ggHWW","ggHZZ","VBFHWW","TTW","TT"]
-    for zchannel in ['ee','mm']:
-        for bkg in bkgs_prompt:
-            histName = zchannel + args.channel + "/" + bkg
-            hist = inputfile_cards.Get(histName)
-            nbins = hist.GetNbinsX()
-            for ib in range(1,nbins+1):
-                err = hist.GetBinError(ib)
-                tot_e2 += err*err
-                tot_promt += hist.GetBinContent(ib)
-    
-    tot_e = math.sqrt(tot_e2)
-
-    print('')
-    print('Year = %s   Category = %s   Channel = %s'%(args.year,args.cat,args.channel))
-    print('')
-    print('Prompt background = %5.3f +/- %5.3f'%(tot_promt,tot_e))
-
-
     if args.cat=='comb':
         inputfile_SS = ROOT.TFile('root_files/'+folder+'/'+chan+'_'+cat+'_m4l_cons_SS_'+year+'.root')
         print('------------- SS Region ------------')
@@ -73,22 +52,23 @@ if __name__ == "__main__":
             e = hist.GetBinError(ib)
             err2 += e*e
         err = math.sqrt(err2)
-        print('%15s : %5.2f +/- %5.2f'%(histname,tot,err))
+        percent = err/tot
+        print('%15s : %5.2f +/- %5.2f : %5.3f'%(histname,tot,err,percent))
 
     print('')
-    if args.cat!='comb':
-        hist = inputfile_cards.Get('mm'+args.channel+'/reducible')
-        hist_ee = inputfile_cards.Get('ee'+args.channel+'/reducible')
-        hist.Add(hist,hist_ee)
-        tot = hist.GetSumOfWeights()
-        err2 = 0
-        nbins = hist.GetNbinsX()
-        for ib in range(1,nbins+1):
-            e = hist.GetBinError(ib)
-            err2 += e*e
-        err = math.sqrt(err2)
-        histname = 'cross check'
-        print('%15s : %5.2f +/- %5.2f'%(histname,tot,err))
+
+    hist = inputfile_cards.Get('mm'+args.channel+'/reducible')
+    hist_ee = inputfile_cards.Get('ee'+args.channel+'/reducible')
+    hist.Add(hist,hist_ee)
+    tot = hist.GetSumOfWeights()
+    err2 = 0
+    nbins = hist.GetNbinsX()
+    for ib in range(1,nbins+1):
+        e = hist.GetBinError(ib)
+        err2 += e*e
+    err = math.sqrt(err2)
+    histname = 'cross check'
+    print('%15s : %5.2f +/- %5.2f'%(histname,tot,err))
         
     
     print('')

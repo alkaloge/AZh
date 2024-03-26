@@ -9,9 +9,10 @@ def MakeCommandImpacts(**kwargs):
     proc = kwargs.get('proc','ggA')
     mass = kwargs.get('mass','400')
     strategy = kwargs.get('strategy',1)
-    r_ggA = kwargs.get('r_ggA','1')
+    r_ggA = kwargs.get('r_ggA','0')
     r_bbA = kwargs.get('r_bbA','0')
-    
+    indir = kwargs.get('indir','datacards')
+
     if typ not in ['exp','obs']:
         print('warning : ill-specified type of computation : %s'%(typ))
         print('available options : exp, obs')
@@ -26,11 +27,11 @@ def MakeCommandImpacts(**kwargs):
     # change to dir where output will be stored
     command = 'cd %s/impacts_%s%s_%s ; '%(utils.BaseFolder,proc,mass,typ)
     # perform initial fit and perform likelihood scan for signal strength
-    command += 'combineTool.py -M Impacts -d %s/datacards/Run2/%s/ws.root -m %s '%(utils.BaseFolder,mass,mass)
+    command += 'combineTool.py -M Impacts -d %s/%s/Run2/%s/ws.root -m %s '%(utils.BaseFolder,indir,mass,mass)
     command += '--robustFit 1 --cminDefaultMinimizerTolerance 0.05 '
     command += '--X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO '
     command += '--cminDefaultMinimizerStrategy %1i '%(strategy)
-    command += '--setParameterRanges r_ggA=-20,20:r_bbA=-20,20 '
+    command += '--setParameterRanges r_ggA=-10,10:r_bbA=-10,10 '
     command += '--freezeParameters r_%s '%(otherProcess)
     if expect:
         command += '-t -1 '
@@ -42,7 +43,7 @@ def MakeCommandImpacts(**kwargs):
     command += '--robustFit 1 --cminDefaultMinimizerTolerance 0.05 '
     command += '--X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO '
     command += '--cminDefaultMinimizerStrategy %1i '%(strategy)
-    command += '--setParameterRanges r_ggA=-20,20:r_bbA=-20,20 '
+    command += '--setParameterRanges r_ggA=-10,10:r_bbA=-10,10 '
     command += '--freezeParameters r_%s '%(otherProcess)
     if expect:
         command += '-t -1 '
@@ -62,10 +63,11 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('-proc','--proc',dest='proc',required=True,choices=['ggA','bbA'])
     parser.add_argument('-mass','--mass',dest='mass',required=True,choices=utils.azh_masses)
-    parser.add_argument('-obs','--obs',dest='obs',action='store_true')
-    parser.add_argument('-r_ggA','--r_ggA',dest='r_ggA',type=float,default=1.0)
-    parser.add_argument('-r_bbA','--r_bbA',dest='r_bbA',type=float,default=0.0)
+    parser.add_argument('-r_ggA','--r_ggA',dest='r_ggA',default='0')
+    parser.add_argument('-r_bbA','--r_bbA',dest='r_bbA',default='0')
+    parser.add_argument('-folder','--folder',dest='folder',default='datacards')
     parser.add_argument('-minimizer_strategy','--minimizer_strategy',dest='strategy',type=int,default=1)
+    parser.add_argument('-obs','--obs',dest='obs',action='store_true')
     args = parser.parse_args()
 
     typ='exp'
@@ -77,6 +79,7 @@ if __name__ == "__main__":
     mass=args.mass
     r_ggA=args.r_ggA
     r_bbA=args.r_bbA
+    indir=args.folder
 
     folder='%s/impacts_%s%s_%s'%(utils.BaseFolder,proc,mass,typ)
     if os.path.isdir(folder):
@@ -90,7 +93,8 @@ if __name__ == "__main__":
         typ=typ,
         strategy=strategy,
         r_ggA=r_ggA,
-        r_bbA=r_bbA)
+        r_bbA=r_bbA,
+        indir=indir)
     os.system(command)
 
 

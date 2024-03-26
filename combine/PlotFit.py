@@ -7,6 +7,28 @@ from array import array
 import ROOT
 import os
 
+def ExtractHistoFromFit(hist,fitfile,**kwargs):
+
+    fittype = kwargs.get('fittype','prefit')
+    channel = kwargs.get('channel','mmtt')
+    year = kwargs.get('year','2018')
+    cat = kwargs.get('cat','0btag')
+    mass = kwargs.get('mass','300')
+    templ = kwargs.get('templ','ggA')
+    
+    histname = 'shapes_%s/azh_%s_%s_%s_%s/%s'%(fittype,year,cat,channel,mass,templ)
+    reference = fitfile.Get(histname)
+    norm = reference.GetSumOfWeights()
+    is_positive = norm>0.0
+    nbins = reference.GetNbinsX()
+    for ib in range(1,nbins+1):
+        x = 0
+        e = 0
+        if is_positive:
+            x = reference.GetBinContent(ib)
+            e = reference.GetBinError(ib)
+        hist.SetBinContent(ib,x)
+        hist.SetBinError(ib,e)
         
 ############
 ### MAIN ###
@@ -18,22 +40,26 @@ if __name__ == "__main__":
     styles.SetStyle()
 
     parser = argparse.ArgumentParser(description="Plotting final discriminants")
-    parser.add_argument('-year','--year',dest='year',default='all',choices=['2016','2017','2018','all'])
-    parser.add_argument('-cat','--cat',dest='cat',default='0btag',choices=['btag','0btag','all'])
-    parser.add_argument('-channel','--channel',dest='channel',default='all',choices=['mt','tt','et','all'])
+    parser.add_argument('-year','--year',dest='year',default='all')
+    parser.add_argument('-cat','--cat',dest='cat',default='0btag')
+    parser.add_argument('-channel','--channel',dest='channel',default='all')
     parser.add_argument('-folder','--folder',dest='folder',default='datacards')
-    parser.add_argument('-mass','--mass',dest='mass',default='300')
+    parser.add_argument('-mass','--mass',dest='mass',required=True)
     parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=200)
-    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1000)
+    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=2500)
     parser.add_argument('-logx','--logx',dest='logx',action='store_true')
+    parser.add_argument('-fittype','--fittype',dest='fittype',default='prefit',choices=['prefit','fit_b','fit_s'])
     parser.add_argument('-unblind','--unblind',dest='unblind',action='store_true')
     args = parser.parse_args()
 
+    blind = not args.unblind
     year = args.year
     cat = args.cat
     channel = args.channel
     mass = args.mass
-    
+    fittype = args.fittype
+    logx = args.logx
+
     xmin = args.xmin
     xmax = args.xmax
 
@@ -69,7 +95,6 @@ if __name__ == "__main__":
         cat_legend=cat
 
     if channel.lower()=='all':
-#            channels = utils.azh_channels
         channels = utils.azh_channels_noem
         channel_legend=''
     elif channel.lower()=='em':
@@ -82,19 +107,14 @@ if __name__ == "__main__":
         channels = ['eett','mmtt']
     else:
         channels = [channel]
-        channel_legend=channel
-        
-    blind = True 
-    if args.unblind: blind = False
-    logx = args.logx
-
+ 
     templates = ['data','other_bkg','reducible_bkg','ZZ_bkg','tot_bkg','ggA','bbA']
     templates_bkg = ['other_bkg','reducible_bkg','ZZ_bkg']
     templates_sig = ['ggA','bbA']
     templates_totbkg = ['tot_bkg']
     templates_data = ['data']
         
-    print
+    print()
     print('plotting macro ->')
     print
     print('years ',years)
@@ -107,6 +127,7 @@ if __name__ == "__main__":
     isFirst = True
 
     inputfile, inputfile_s = utils.GetInputFiles(
+        analysis='azh',
         year='2018',
         cat='0btag',
         channel='mmtt',
@@ -115,7 +136,6 @@ if __name__ == "__main__":
 
     # creating templates
     dirname = 'mmtt/'
-
     templHist = inputfile.Get(dirname+prefix+'ZZ')
     bins = []
     nbins = templHist.GetNbinsX()
@@ -124,7 +144,15 @@ if __name__ == "__main__":
 
     inputfile.Close()
     inputfile_s.Close()
+
+    fitfilename = utils.BaseFolder + '/fit_Run2_mA' + mass + '_obs/fitDiagnosticsTest.root'
+    if not os.path.isfile(fitfilename): 
+        print('input file %s does not exist'%(fitfilename))
+        print('Run script ./RunFit.py --sample Run2 --mass %s --saveShapes -obs --batch')
+        exit()
     
+    fitfile = ROOT.TFile(fitfilename)
+   
     print
     print('histogram binning')
     for ib in range(1,nbins+1):
@@ -145,6 +173,7 @@ if __name__ == "__main__":
 
                 # open input files
                 inputfile, inputfile_s = utils.GetInputFiles(
+                    analysis='azh',
                     year=year,
                     cat=cat,
                     channel=channel,
@@ -155,6 +184,14 @@ if __name__ == "__main__":
                 hists_bkg = {} 
                 for bkg in bkgs:
                     hist_bkg = inputfile.Get(dirname+prefix+bkg)
+                    ExtractHistoFromFit(hist_bkg,
+                                        fitfile,
+                                        fittype=fittype,
+                                        channel=channel,
+                                        year=year,
+                                        cat=cat,
+                                        templ=bkg,
+                                        mass=mass)
                     hists_bkg[bkg] = hist_bkg.Clone(bkg+suffix)
                     sumofweights = hists_bkg[bkg].GetSumOfWeights()
                     print('%15s %6.2f'%(bkg,sumofweights))
@@ -173,6 +210,14 @@ if __name__ == "__main__":
                 print
                 for sig in signals:
                     hist_sig = inputfile_s.Get(dirname+prefix+signals[sig])
+                    ExtractHistoFromFit(hist_sig,
+                                        fitfile,
+                                        fittype=fittype,
+                                        channel=channel,
+                                        year=year,
+                                        mass=mass,
+                                        templ=sig,
+                                        cat=cat)
                     hists_x[sig+suffix] = hist_sig.Clone(sig+suffix)
                     sigmass = sig+mass
                     sumofweights = hists_x[sig+suffix].GetSumOfWeights()
@@ -221,6 +266,7 @@ if __name__ == "__main__":
 
     print
     utils.Plot(hists,
+               analysis='azh',
                year=year_legend,
                cat=cat_legend,
                channel=channel_legend,
@@ -229,5 +275,5 @@ if __name__ == "__main__":
                xmin=xmin,
                xmax=xmax,
                logx=logx,
-               postfix='cards')
+               postfix=fittype)
 

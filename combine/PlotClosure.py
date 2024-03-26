@@ -19,29 +19,47 @@ def AddHisto(hist1,hist2):
         err = math.sqrt(ex*ex+ey*ey)
         hist1.SetBinError(ib,err)
 
-def PlotSS(rootfile,**kwargs):
-
-    bins = [199,240,280,320,360,400,550,700,2400]
-    nbins = len(bins)-1
+def Plot(**kwargs):
 
     channel = kwargs.get('channel','mt')
     preFit  = kwargs.get('preFit',True)
+    indir   = kwargs.get('indir','SS_lowstat')
+    gof     = kwargs.get('gof',True)
     
+    fit = not gof
+
     folder = 'shapes_fit_b'
     postfix = 'fit'
     if preFit:
         folder = 'shapes_prefit'
         postfix = 'prefit'
 
-    h_data = ROOT.TH1D('h_data','h_data',nbins,array('d',list(bins)))
-    h_reducible = ROOT.TH1D('h_reducible','h_reducible',nbins,array('d',list(bins)))
-    h_irreducible = ROOT.TH1D('h_irreducible','h_irreducible',nbins,array('d',list(bins)))
+    reffile = ROOT.TFile(indir+'/Run2/azh_closure_2018_SS_'+channel+'.root')
+    refhist = reffile.Get('%s/data_obs'%(channel))
+    rootfile = ROOT.TFile(indir+'/fit.root')
 
-    print(h_data,h_reducible,h_irreducible)
+    h_data = refhist.Clone('h_data')
+    h_reducible = refhist.Clone('h_reducible')
+    h_irreducible = refhist.Clone('h_irreducible')
+
+    nbins = refhist.GetNbinsX()
+
+    for ibin in range(1,nbins+1):
+        h_data.SetBinContent(ibin,0.);
+        h_data.SetBinError(ibin,0.);
+        h_reducible.SetBinContent(ibin,0.);
+        h_reducible.SetBinError(ibin,0.);
+        h_irreducible.SetBinContent(ibin,0.);
+        h_irreducible.SetBinError(ibin,0.);
+
+    reducible_name = 'reducible'
+    if fit:
+        reducible_name = 'sig_'+channel
+
     for year in ['2016','2017','2018']:
-        fileEra = ROOT.TFile('ClosureTest/'+channel+'/azh_closure_'+year+'_SS_'+channel+'.root')
+        fileEra = ROOT.TFile(indir+'/Run2/azh_closure_'+year+'_SS_'+channel+'.root')
         hist_data = fileEra.Get(channel+'/data_obs')
-        hist_reducible = rootfile.Get(folder+'/azh_closure_'+year+'_SS_'+channel+'/reducible')
+        hist_reducible = rootfile.Get(folder+'/azh_closure_'+year+'_SS_'+channel+'/'+reducible_name)
         hist_irreducible = rootfile.Get(folder+'/azh_closure_'+year+'_SS_'+channel+'/irreducible')
         AddHisto(h_data,hist_data)
         AddHisto(h_reducible,hist_reducible)
@@ -109,7 +127,7 @@ def PlotSS(rootfile,**kwargs):
     h_tot.Draw('e2same')
     dataGraph.Draw('epsame')
 
-    leg = ROOT.TLegend(0.65,0.45,0.9,0.7)
+    leg = ROOT.TLegend(0.67,0.55,0.9,0.8)
     styles.SetLegendStyle(leg)
     leg.SetTextSize(0.04)
     leg.SetHeader(styles.chan_map[channel])
@@ -118,18 +136,18 @@ def PlotSS(rootfile,**kwargs):
     leg.AddEntry(irreducible,'irreducible','f')
     leg.Draw()
 
-    styles.CMS_label(canv,era=year)
+    styles.CMS_label(canv,era="Run2",extraText="Preliminary")
 
     canv.SetLogx(True)
     canv.RedrawAxis()
     canv.Update()
-    canv.Print('figures/SS_closure_'+channel+'_'+postfix+'.png')
-
-
+    canv.Print('figures/'+indir+'_'+channel+'_'+postfix+'.png')
 
 parser = argparse.ArgumentParser(description="Check cards")
-parser.add_argument('-chan','--chan',dest='chan',required=True)
-parser.add_argument('-postfit','--postfit',action='store_true')
+parser.add_argument('-channel','--channel',dest='chan',required=True)
+parser.add_argument('-prefit','--prefit',action='store_true')
+parser.add_argument('-folder','--folder',required=True)
+parser.add_argument('-gof_option','--gof_option',dest='gof',action='store_true')
 
 args = parser.parse_args()
 
@@ -137,7 +155,6 @@ ROOT.gROOT.SetBatch(True)
 styles.InitROOT()
 styles.SetStyle()
 
-rootfile = ROOT.TFile('ClosureTest/fit_closure.root')
-PlotSS(rootfile,channel=args.chan,preFit=True)
+Plot(channel=args.chan,preFit=args.prefit,indir=args.folder,gof=args.gof)
 
 

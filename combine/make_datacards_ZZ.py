@@ -2,7 +2,6 @@
 
 import argparse
 import os
-import math
 
 import AZh.combine.utilsAZh as utils
 import CombineHarvester.CombineTools.ch as ch
@@ -49,52 +48,9 @@ cats_tt = [
     (2, "mmtt")
 ]
 
-cats_ditau = {
-    'em' : cats_em,
-    'et' : cats_et,
-    'mt' : cats_mt,
-    'tt' : cats_tt
-}
+jetUnc = ["JES","btag","mistag"]
 
-#############################################
-# uncertainties in the reducible background #
-#############################################
-stat_reducible_2016 = {
-    "em" : 1.16,
-    "et" : 1.13,
-    "mt" : 1.16,
-    "tt" : 1.15
-}
-
-stat_reducible_2017 = {
-    "em" : 1.13,
-    "et" : 1.14,
-    "mt" : 1.17,
-    "tt" : 1.15
-}
-
-stat_reducible_2018 = {
-    "em" : 1.17,
-    "et" : 1.09,
-    "mt" : 1.11,
-    "tt" : 1.12
-}
-
-stat_reducible_Run2 = {
-    "2016" : stat_reducible_2016,
-    "2017" : stat_reducible_2017,
-    "2018" : stat_reducible_2018
-}
-
-nonclosure_reducible = {
-    "em" : 1.50,
-    "et" : 1.30,
-    "mt" : 1.20,
-    "tt" : 1.20
-}
-
-# add JES uncertainty once available
-expUnc = ['unclMET','tauID0','tauID1','tauID10','tauID11','tauES','efake','mfake','eleES','muES','pileup','l1prefire','eleSmear']
+expUnc = ['unclMET','tauID0','tauID1','tauID10','tauID11','tauES','efake','mfake','eleES','muES','pileup','l1prefire','eleSmear',"JES"]
 
 fakeUnc = ['bin1','bin2','bin3']
 
@@ -113,70 +69,54 @@ h_channel_map={
 def DecorrelateUncertainties(cb,year,channel):
     for unc in expUnc:
         cb.cp().RenameSystematic(cb,unc,unc+"_"+year)
+    for unc in fakeUnc:
+        for cat in cats:
+            ib = cat[0]
+            ib_name = cat[1]
+            h_channel = h_channel_map[ib_name]
+            cb.cp().channel([channel]).bin_id([ib]).RenameSystematic(cb,unc,"%s_%s_%s"%(h_channel,unc,year))
 
 parser = argparse.ArgumentParser(description="Datacards producer for AZh analysis")
 parser.add_argument("-year", "--year", required=True,help=""" year : 2016, 2017 or 2018 """,choices=utils.years)
 parser.add_argument("-btag", "--btag", required=True,help=""" category : btag or 0btag """,choices=utils.azh_cats)
-parser.add_argument("-mass", "--mass", required=True,help=""" mass of A boson """,choices=utils.azh_masses)
-parser.add_argument("-model", "--model", default="2POI",help=""" model : ggA, bbA or 2POI""",choices=["ggA","bbA","2POI"])
-parser.add_argument("-folder","--folder", default="datacards",help=""" folder where datacards are saved""")
-parser.add_argument("-all_channels","--all_channels",action='store_true',help=""" including all channels with em""")
 parser.add_argument("-no_bbb","--no_bbb", action='store_true',help=""" parameter to drop MC statistical uncertainties""")
 args = vars(parser.parse_args())
 
-year, mass, btag_label, model, folder = args["year"], args["mass"], args["btag"], args["model"], args["folder"]
+# specifying channel
+cats = cats_noem
 
-cats = [
-    (1, "eeet"),
-    (2, "eemt"),
-    (3, "eett"),
-    (4, "mmet"),
-    (5, "mmmt"),
-    (6, "mmtt"),
-]
-
-if args["all_channels"]:
-    cats.append((7, 'eeem'))
-    cats.append((8, 'mmem'))
-
+year, btag_label = args["year"], args["btag"]
+outdir=utils.DatacardsFolder
 auto_mc = True
 if args["no_bbb"]:
     auto_mc = False
 
 mc_bkgd = [ 
-    "ggZZ",
-    "ZZ",
+#    "ggZZ",
+#    "ZZ",
     "TTZ",
     "VVV",
     "ZHtt",
     "TTHtt",
     "ZHWW",
     "ggZHWW",
-#    "ggHZZ", -> negligible
 #    "ggHtt", -> cannot produce 4 genuine charged leptons
 #    "VFBHtt", -> cannot produce 4 genuine charged leptons
 #    "WHtt", -> cannot produce 4 genuine charged leptons
 #    "ggHWW", -> cannot produce 4 genuine charged leptons
+#    "ggHZZ", -> negligible
 #    "VBFHWW", -> cannot produce 4 genuine charged leptons
 #    "TTW", -> cannot produce 4 genuine charged leptons
 #    "TT" -> cannot produce 4 genuine charged leptons
 ]
 reducible = ["reducible"]
 
-signals = []
-if model=="bbA":
-    signals.append("bbA")
-elif model=="ggA":
-    signals.append("ggA")
-else:
-    signals.append("bbA")
-    signals.append("ggA")
-
+signals = ["ZZ","ggZZ"]
 
 cb = ch.CombineHarvester()
 
 cb.AddObservations(["*"], ["azh"], [year], [btag_label], cats)
-cb.AddProcesses([mass], ["azh"], [year], [btag_label], signals, cats, True)
+cb.AddProcesses(["*"], ["azh"], [year], [btag_label], signals, cats, True)
 cb.AddProcesses(["*"], ["azh"], [year], [btag_label], reducible, cats, False)
 cb.AddProcesses(["*"], ["azh"], [year], [btag_label], mc_bkgd, cats, False)
 
@@ -184,45 +124,44 @@ mc_processes = signals + mc_bkgd
 # luminosity
 if year=='2016':
     cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2016','lnN', ch.SystMap()(1.010))
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Correlated','lnN', ch.SystMap()(1.006)) 
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2016','lnN', ch.SystMap()(1.010))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Beam_Deflection','lnN', ch.SystMap()(1.004))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_X_Y_Factorization','lnN', ch.SystMap()(1.009))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Ghosts_And_Satellites','lnN', ch.SystMap()(1.004))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Dynamic_Beta','lnN', ch.SystMap()(1.005))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Beam_Deflection','lnN', ch.SystMap()(1.004))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_X_Y_Factorization','lnN', ch.SystMap()(1.009))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Ghosts_And_Satellites','lnN', ch.SystMap()(1.004))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Dynamic_Beta','lnN', ch.SystMap()(1.005))
 
 if year=='2017':
     cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2017','lnN', ch.SystMap()(1.020))
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Correlated','lnN', ch.SystMap()(1.009))
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Correlated1718','lnN', ch.SystMap()(1.006))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2017','lnN', ch.SystMap()(1.020))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Beam_Deflection','lnN', ch.SystMap()(1.004))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_X_Y_Factorization','lnN', ch.SystMap()(1.008))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Current_Calibration','lnN', ch.SystMap()(1.003))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Length_Scale','lnN', ch.SystMap()(1.003))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Ghosts_And_Satellites','lnN', ch.SystMap()(1.001))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Dynamic_Beta','lnN', ch.SystMap()(1.005))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Beam_Deflection','lnN', ch.SystMap()(1.004))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_X_Y_Factorization','lnN', ch.SystMap()(1.008))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Current_Calibration','lnN', ch.SystMap()(1.003))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Length_Scale','lnN', ch.SystMap()(1.003))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Ghosts_And_Satellites','lnN', ch.SystMap()(1.001))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Dynamic_Beta','lnN', ch.SystMap()(1.005))
 
 if year=='2018':
     cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2018','lnN', ch.SystMap()(1.015))
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Correlated','lnN', ch.SystMap()(1.02))
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Correlated1718','lnN', ch.SystMap()(1.002))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2018','lnN', ch.SystMap()(1.015))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Beam_Deflection','lnN', ch.SystMap()(1.002))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_X_Y_Factorization','lnN', ch.SystMap()(1.02))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Current_Calibration','lnN', ch.SystMap()(1.002))
-#    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Length_Scale','lnN', ch.SystMap()(1.002))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Beam_Deflection','lnN', ch.SystMap()(1.002))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_X_Y_Factorization','lnN', ch.SystMap()(1.02))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Current_Calibration','lnN', ch.SystMap()(1.002))
+    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Length_Scale','lnN', ch.SystMap()(1.002))
+
+
+# Obsolete scheme
+#cb.cp().signals().AddSyst(cb, "CMS_lumi_13TeV_2016", "lnN", ch.SystMap()(1.01))
+#cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_lumi_13TeV_2016", "lnN", ch.SystMap()(1.01))
+#cb.cp().signals().AddSyst(cb, "CMS_lumi_13TeV_correlated", "lnN", ch.SystMap()(1.006))
+#cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_lumi_13TeV_correlated", "lnN", ch.SystMap()(1.006))
 
 # Higgs tau tau PU alphas
-cb.cp().signals().AddSyst(cb, "BR_htt_PU_alphas", "lnN", ch.SystMap()(1.0062))
+#cb.cp().signals().AddSyst(cb, "BR_htt_PU_alphas", "lnN", ch.SystMap()(1.0062))
 cb.cp().process(["ggHtt", "VBFHtt", "WHtt", "ZHtt", "TTHtt"]).AddSyst(
     cb, "BR_htt_PU_alphas", "lnN", ch.SystMap()(1.0062)
 )
-cb.cp().signals().AddSyst(cb, "BR_htt_PU_mq", "lnN", ch.SystMap()(1.0099))
+#cb.cp().signals().AddSyst(cb, "BR_htt_PU_mq", "lnN", ch.SystMap()(1.0099))
 cb.cp().process(["ggHtt", "VBFHtt", "WHtt", "ZHtt", "TTHtt"]).AddSyst(
     cb, "BR_htt_PU_mq", "lnN", ch.SystMap()(1.0099)
 )
-cb.cp().signals().AddSyst(cb, "BR_htt_THU", "lnN", ch.SystMap()(1.017))
+#cb.cp().signals().AddSyst(cb, "BR_htt_THU", "lnN", ch.SystMap()(1.017))
 cb.cp().process(["ggHtt", "VBFHtt", "WHtt", "ZHtt", "TTHtt"]).AddSyst(
     cb, "BR_htt_THU", "lnN", ch.SystMap()(1.017)
 )
@@ -238,24 +177,27 @@ cb.cp().process(["ggHWW", "VBFHWW", "WHWW", "ZHWW", "ggZHWW"]).AddSyst(
     cb, "BR_hww_THU", "lnN", ch.SystMap()(1.0099)
 )
 
+# CMS_NNLO_ggZZ
+#cb.cp().process(["ggZZ"]).AddSyst(cb, "CMS_NNLO_ggZZ", "lnN", ch.SystMap()(1.1))
+
 # CMS electron efficiencies
-# 1% correlated part and 1% decorrelated
+# 2% correlated part and 1% decorrelated
 syst_map = ch.SystMap("bin_id")([1, 2], 1.03)([3, 4], 1.02)([5, 6], 1.01)([7, 8], 1.0)
 cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_e_"+year, "lnN", syst_map)
 cb.cp().signals().AddSyst(cb, "CMS_eff_e_"+year, "lnN", syst_map)
 
-syst_map = ch.SystMap("bin_id")([1, 2], 1.03)([3, 4], 1.02)([5, 6], 1.01)([7, 8], 1.0)
+syst_map = ch.SystMap("bin_id")([1, 2], 1.06)([3, 4], 1.04)([5, 6], 1.02)([7, 8], 1.0)
 cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_e", "lnN", syst_map)
 cb.cp().signals().AddSyst(cb, "CMS_eff_e", "lnN", syst_map)
 
 
 # CMS muon efficiencies
-# 1% correlated and 1% decorrelated
+# 1.5% correlated and 1% decorrelated
 syst_map = ch.SystMap("bin_id")([5, 7], 1.03)([6, 8], 1.02)([1, 3], 1.01)([2, 4], 1.0)
 cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_m_"+year, "lnN", syst_map)
 cb.cp().signals().AddSyst(cb, "CMS_eff_m_"+year, "lnN", syst_map)
 
-syst_map = ch.SystMap("bin_id")([5, 7], 1.03)([6, 8], 1.02)([1, 3], 1.01)([2, 4], 1.0)
+syst_map = ch.SystMap("bin_id")([5, 7], 1.06)([6, 8], 1.04)([1, 3], 1.02)([2, 4], 1.0)
 cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_m", "lnN", syst_map)
 cb.cp().signals().AddSyst(cb, "CMS_eff_m", "lnN", syst_map)
 
@@ -309,46 +251,23 @@ bkgd = mc_bkgd + signals
 bkgd_mod = [b for b in bkgd if "ggHWW" not in b]
 bkgd_tauID = [b for b in bkgd]
 
-#for unc in fakeUnc:
-#    cb.cp().process(reducible).AddSyst(cb, unc, "shape", ch.SystMap()(1.00))
+for unc in fakeUnc:
+    cb.cp().process(reducible).AddSyst(cb, unc, "shape", ch.SystMap()(1.00))
 
 btagFile = ROOT.TFile('jet_systematics/systematics_%s_bkg.root'%(year))
 # btag uncertainties
-for proc in mc_bkgd:
+for proc in bkgd:
     for cat in cats:
         for sys in ['btag','mistag']:
             chan = cat[1]
             binid = cat[0]
             histBtagName = '%s_%s_%s_%s'%(proc,chan,args['btag'],sys)
             histBtag = btagFile.Get(histBtagName)
-            value = histBtag.GetBinContent(1) - 1.0
-            value_correlated = 0.6*value + 1.0 # 60% correlated
-            value_uncorrelated = 0.8*value + 1.0 #60% uncorrelated
-            value_corr = float(int(1000*value_correlated))/1000.0
-            value_uncorr = float(int(1000*value_uncorrelated))/1000.0
-            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys+"_"+year, "lnN", ch.SystMap()(value_uncorr))
-            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys, "lnN", ch.SystMap()(value_corr))
-
-btagFile = ROOT.TFile('jet_systematics/systematics_%s_sig.root'%(year))
-for proc in signals:
-    for cat in cats:
-        for sys in ['btag','mistag']:
-            chan = cat[1]
-            binid = cat[0]
-            histBtagName = '%s%s_%s_%s_%s'%(proc,mass,chan,args['btag'],sys)
-            histBtag = btagFile.Get(histBtagName)
-            value = histBtag.GetBinContent(1) - 1.0
-            value_correlated = 0.6*value + 1.0 # 60% correlated
-            value_uncorrelated = 0.8*value + 1.0 #60% uncorrelated
-            value_corr = float(int(1000*value_correlated))/1000.0
-            value_uncorr = float(int(1000*value_uncorrelated))/1000.0
             value = float(int(1000*histBtag.GetBinContent(1)))/1000.0
             cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys+"_"+year, "lnN", ch.SystMap()(value))
-            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys, "lnN", ch.SystMap()(value_corr))
-
 
 # JES uncertainty
-#cb.cp().process(bkgd).AddSyst(cb, "JES", "shape", ch.SystMap()(1.00))
+cb.cp().process(bkgd).AddSyst(cb, "JES", "shape", ch.SystMap()(1.00))
 
 cb.cp().process(bkgd_tauID).AddSyst(cb, "tauID0", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd_tauID).AddSyst(cb, "tauID1", "shape", ch.SystMap()(1.00))
@@ -365,24 +284,9 @@ cb.cp().process([b for b in bkgd if ("WZ" not in b)]).AddSyst(
     cb, "l1prefire", "shape", ch.SystMap()(1.00)
 )
 
-# reducible background
-stat_unc = stat_reducible_Run2[year]
-
-# systematicc uncertainties in reducible background
-for cat in cats:
-    ib = cat[0]
-    ib_name = cat[1]
-    h_channel = h_channel_map[ib_name]
-    value = stat_unc[h_channel]
-#    print(ib_name,h_channel,value)
-    cb.cp().process(['reducible']).channel([btag_label]).bin_id([ib]).AddSyst(cb, "stat_fakes_"+ib_name+"_"+year,"lnN", ch.SystMap()(value))
-    value = nonclosure_reducible[h_channel]
-#    print(ib_name,h_channel,value)
-    cb.cp().process(['reducible']).channel([btag_label]).bin_id([ib]).AddSyst(cb, "nonclosure_fakes_"+h_channel,"lnN", ch.SystMap()(value))
-
 cb.cp().process(bkgd).AddSyst(cb, "eleES", "shape", ch.SystMap()(1.00)) 
 cb.cp().process(bkgd).AddSyst(cb, "eleSmear", "shape", ch.SystMap()(1.00))
-#cb.cp().process(bkgd).AddSyst(cb, "muES", "shape", ch.SystMap()(1.00))
+cb.cp().process(bkgd).AddSyst(cb, "muES", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd).AddSyst(cb, "efake", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd).AddSyst(cb, "mfake", "shape", ch.SystMap()(1.00))
 
@@ -424,7 +328,7 @@ cb.cp().backgrounds().ExtractShapes(
 cb.cp().signals().ExtractShapes(
     (
         #        "/uscms_data/d3/jdezoort/azh_columnar/CMSSW_10_2_9/src/"
-        os.getenv('CMSSW_BASE') + '/src/AZh/combine/root_files/signal_%s_%s_%s.root'%(mass,btag_label,year)
+        os.getenv('CMSSW_BASE') + '/src/AZh/combine/root_files/MC_data_%s_%s.root'%(btag_label,year)
     ),
     "$BIN/$PROCESS",
     "$BIN/$PROCESS_$SYSTEMATIC",
@@ -435,13 +339,15 @@ cb.cp().signals().ExtractShapes(
 DecorrelateUncertainties(cb,year,btag_label)
 
 writer = ch.CardWriter(
-    "$TAG/$ANALYSIS_$ERA_$CHANNEL_$BIN_$MASS.txt",
-    "$TAG/$ANALYSIS_$ERA_$CHANNEL_$BIN_$MASS.root",
+    "$TAG/$ANALYSIS_$ERA_$CHANNEL_$BIN.txt",
+    "$TAG/$ANALYSIS_$ERA_$CHANNEL_$BIN.root",
 )
+writer.SetWildcardMasses([])
+writer.SetVerbosity(0);
 
-writer.WriteCards('%s/%s/%s/'%(folder,year,mass), cb)
-writer.WriteCards('%s/Run2/%s/'%(folder,mass), cb)
+writer.WriteCards('%s/%s/'%(outdir,year), cb)
+writer.WriteCards('%s/Run2/'%(outdir), cb)
 
-#print('Done cards for year : %s -- category : %s -- mass : %s -- channel '%(year,btag_label,mass))
+print('Done cards for year : %s -- category : %s '%(year,btag_label))
 
 

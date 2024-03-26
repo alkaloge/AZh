@@ -10,14 +10,27 @@ def MakeCommandPlot(**kwargs):
     typ = kwargs.get('typ','exp')
     blind = kwargs.get('blind',True)
 
+    otherProc = 'bbA'
+    if proc=='bbA':
+        otherProc = 'ggA'
+
     folder = '%s/impacts_%s%s_%s'%(utils.BaseFolder,proc,mass,typ)
-    
     command = 'cd %s ; '%(folder)
+    # creating plots with other POI
     command += 'combineTool.py -M Impacts -d %s/datacards/Run2/%s/ws.root -m %s '%(utils.BaseFolder,mass,mass)
     command += '--redefineSignalPOIs r_%s -m %s -o impacts.json ; '%(proc,mass)
-    command += 'plotImpacts.py -i impacts.json -o impacts_%s '%(typ) 
+    command += 'plotImpacts.py -i impacts.json -o impacts ' 
     if blind and typ=='obs':
         command += ' --blind '
+    # creating plots w/o other POI
+    command += ' ; mv higgsCombine_paramFit_Test_r_%s.MultiDimFit.mH%s.root backup.xxx '%(otherProc,mass)
+    command += ' ; combineTool.py -M Impacts -d %s/datacards/Run2/%s/ws.root -m %s '%(utils.BaseFolder,mass,mass)
+    command += '--redefineSignalPOIs r_%s -m %s -o impacts_noOtherPOI.json'%(proc,mass)
+    command += ' ; plotImpacts.py -i impacts_noOtherPOI.json -o impacts_noOtherPOI ' 
+    if blind and typ=='obs':
+        command += ' --blind '
+    command += ' ; mv backup.xxx higgsCombine_paramFit_Test_r_%s.MultiDimFit.mH%s.root '%(otherProc,mass)
+
     command += ' ; cd - '
 
     return command
