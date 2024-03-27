@@ -161,22 +161,22 @@ With this command plots of the ggA template with all systematic variations of un
 The distributions of 4-lepton mass can be plotted from created datacards using macro [PlotCards.py](https://github.com/raspereza/AZh/blob/main/combine/PlotCards.py)
 
 ```
-./PlotCards.py --year $year --channel $channel --cat $category --mass $mass
+./PlotCards.py --year $year --channel $channel --cat $cat --mass $mass
 ```
 Inputs :
-* `--year={2016,2017,2018,all}` : data-taking period or all data-taking periods combined. 
-* `--channel={et,mt,tt,all}` specifies channel (et, mt, tt) or plot combination of channels (all).
-* `--cat={0btag,btag,all}` specifies category (btag, 0btag) or plot combination of both.
-* `--mass=$mass` : mA.
+* `$year={2016,2017,2018,all}` : data-taking period or all data-taking periods combined. 
+* `$channel={et,mt,tt,all}` specifies channel (et, mt, tt) or plot combination of channels (all).
+* `$cat={0btag,btag,all}` specifies category (btag, 0btag) or plot combination of both.
+* `$mass` : mA.
 
 Additional (optional) inputs:
 * `--folder` : folder with datacards. Default is `datacards`. 
 * `--xmin` : minimal edge of X-axis. Default is 200. 
 * `--xmax` : maximal edge of X-axis. Default is 2500.
 * `--logx` : logarithmic scale for X-axis.
-* `--unblind` : unblind plots.
+* `--unblind` : unblind data in plots.
 
-The output plot will be saved in the folder `figures`.
+The output plot will be saved in the folder `figures`.`figures/m4l_$year_$cat_$channel_$mass_cards.png`
 
 ## Running limits
 
@@ -424,13 +424,29 @@ The script performs fit and saves output RooT file in the newly created folder:
 ATTENTION. To save postfit shapes, set flag `--saveShapes`. With this flag fit will run much slower, and may take half a day. Therefore, in this case it is recommended to submit job to condor by setting flag `--batch`. It makes sense to save shapes only when running on data.
 
 ## Plotting prefit and postfit distributions
+To plot postfit disctribution you have first to run [RunFit.py](https://github.com/raspereza/AZh/blob/main/combine/RunFit.py) with flags `--obs` and `--saveShapes`, and it is recommended to submit job to condor with flag `--batch`. The output of this macro is used to plot postifit distributions. Plotting is done with script [PlotFit.py](https://github.com/raspereza/AZh/blob/main/combine/PlotFit.py):
+```
+./PlotFit.py --year $year --channel $channel --cat $cat --mass $mass --fittype $fittype
+```
+* `$year={2016,2017,2018,all}`
+* `$channel={et,mt,tt,all}`
+* `$cat={btag,0btag,all}`
+* `$mass` : mA
+* `$fittype={prefit,fit_b,fit_s}` : (prefit, background-only fit, signal fit)
 
+Optional arguments:
+* `--xmin` : lower boundary of X-axis (default = 200).
+* `--xmax` : upper boundary of X-axis (default = 2500).
+* `--logx` : when this flag is set, X-axis is shown in logarithmic scale.
+* `--unblind` : when this flag is set, data is unblinded.
+
+The creates plot of the m(4l) distribution and saves plot in the png file `figures/m4l_$year_$cat_$channel_$mass_$fittype.png`. Please note that macro access binning of mass distribution from datacards. Therefore an option is offered to specify the folder with datacards with input parameter `--folder $folder` (default is `datacards`).   
 
 ## Closure test of the reducible background 
 
-Validation of reducible background is performed in the sideband region with same-sign tau-lepton candidates. Validation is based on GoF test performed on background templates and data distributions in this sideband region. To enhance statistics btag and 0btag categories, as well Z->ee and Z->mumu decays are combined into one distribution per di-tau channel and year. In total 12 separate distributions are considered in the test : 4 decay modes of tau pairs (em, et, mt and tt) x 3 data-taking periods    
+Validation of reducible background is performed in the sideband region with same-sign tau-lepton candidates. Validation is based on GoF test performed on background templates and data distributions in this sideband region. To enhance statistics btag and 0btag categories, as well Z->ee and Z->mumu decays are combined into one distribution per di-tau channel and year. In total 9 separate distributions are considered in the test : 3 decay modes of tau pairs (em, et, mt and tt) x 3 data-taking periods    
 
-Datacards for validation are produced with the python script [MakeClosureCards.py](https://github.com/raspereza/AZh/blob/main/combine/MakeClosureCards.py). It will make directory  $CMSSW_BASE/src/AZh/combine/ClosureTest, where various subfolders will be created to store datacards for individial data taking periods (2016, 2017, 2018) and di-tau modes (em, et, mt and tt). The combined Run2 workspaces are put in subfolder Run2. The macro will also plot distributions of m(4l) in the SS sideband for individual channels combining Run2 data. The plots are output in files `SS_closure_${channel}_Run2.png`, where `$channel={em, et, mt, tt}`. 
+Datacards for validation are produced with the python script [MakeClosureCards.py](https://github.com/raspereza/AZh/blob/main/combine/MakeClosureCards.py). It will make directory  $CMSSW_BASE/src/AZh/combine/ClosureTest, where various subfolders will be created to store datacards for individial data taking periods (2016, 2017, 2018) and di-tau modes (em, et, mt and tt). The combined Run2 workspaces are put in subfolder Run2. The macro will also plot distributions of m(4l) in the SS sideband for individual channels combining Run2 data. The plots are output in files `SS_closure_${channel}_Run2.png`, where `$channel={et, mt, tt}`. 
 
 The GoF tests can be done with the bash script [RunGoF_Closure.bash](https://github.com/raspereza/AZh/blob/main/combine/RunGoF_Closure.bash)
 ```
