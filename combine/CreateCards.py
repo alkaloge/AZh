@@ -11,7 +11,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument('-year','--year',dest='year',required=True,choices=['2016','2017','2018','all'])
     parser.add_argument('-mass','--mass',dest='mass',required=True,choices=utils.azh_masses_ext)
-    parser.add_argument('-proc','--proc',dest='proc',default='2POI',choices=['ggA','bbA','2POI'])
+    parser.add_argument('-model','--model',dest='model',default='2POI',choices=['ggA','bbA','2POI'])
     parser.add_argument('-all_channels','--all_channels',action='store_true')
     parser.add_argument('-folder','--folder',dest='folder',default='datacards')
     args = parser.parse_args()
