@@ -176,7 +176,7 @@ Additional (optional) inputs:
 * `--logx` : logarithmic scale for X-axis.
 * `--unblind` : unblind data in plots.
 
-The output plot will be saved in the folder `figures`.`figures/m4l_$year_$cat_$channel_$mass_cards.png`
+The output plot will be saved in the png file `figures/m4l_$year_$cat_$channel_$mass_cards.png`
 
 ## Running limits
 
