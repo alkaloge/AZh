@@ -63,7 +63,7 @@ def RebinAndSave(**kwargs):
         print('')
         print('Processing files in folder ->')
         print('%s'%(path))
-        os.system('rm root_files/*.root')
+        #        os.system('rm root_files/*.root')
         print('')
     else:
         print('')
@@ -175,7 +175,7 @@ def MergeDataMC(**kwargs):
     else:
         years.append(era)
     
-    os.system('rm root_files/*.root')
+    #    os.system('rm root_files/*.root')
     pathdir='root_files/%s'%(folder)
     if os.path.isdir(pathdir):
         command='cp root_files/%s/*root root_files'%(folder)
