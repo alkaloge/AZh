@@ -388,8 +388,7 @@ mv higgsCombine.obs.GoodnessOfFit.mH300.root gof_obs.root
 cd ../
 ```
 
-The script [Hadd_GoF.bash](https://github.com/raspereza/AZh/blob/main/combine/Hadd_GoF.bash) is intended to collect outputs of GoF test into files with observed test-statistics 
-
+The script [Hadd_GoF.bash](https://github.com/raspereza/AZh/blob/main/combine/Hadd_GoF.bash) is intended to collect outputs of GoF test into files with observed test-statistics.  
 
 The histogram of test-statistics in ensemble of toys is then compared with the value of test-statistics in data and p-value, quantifying compatibility of data with the model, is computed as integral in the distribution of toys from the actual observed value up to infinity. RooT macro [Compatibility.C](https://github.com/raspereza/AZh/blob/main/combine/Compatibility.C) visualises the procedure
 ```
