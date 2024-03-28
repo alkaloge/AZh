@@ -32,7 +32,7 @@ def MakeCommandImpacts(**kwargs):
     command += '--X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO '
     command += '--cminDefaultMinimizerStrategy %1i '%(strategy)
     command += '--setParameterRanges r_ggA=-10,10:r_bbA=-10,10 '
-    command += '--freezeParameters r_%s '%(otherProcess)
+    #    command += '--freezeParameters r_%s '%(otherProcess)
     if expect:
         command += '-t -1 '
     command += '--setParameters r_ggA=%s,r_bbA=%s '%(r_ggA,r_bbA)
@@ -44,7 +44,7 @@ def MakeCommandImpacts(**kwargs):
     command += '--X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO '
     command += '--cminDefaultMinimizerStrategy %1i '%(strategy)
     command += '--setParameterRanges r_ggA=-10,10:r_bbA=-10,10 '
-    command += '--freezeParameters r_%s '%(otherProcess)
+    #    command += '--freezeParameters r_%s '%(otherProcess)
     if expect:
         command += '-t -1 '
     command += '--setParameters r_ggA=%s,r_bbA=%s '%(r_ggA,r_bbA)
