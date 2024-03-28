@@ -1,17 +1,17 @@
 #include "HttStylesNew.cc"
 #include "CMS_lumi.C"
 
-void PlotLimitsSample(TString Sample1 = "et", // year2 
-		      TString Sample2 = "mt", // year2
-		      TString Sample3 = "tt", // 
-		      TString Process = "ggA", // process
+void PlotLimitsSample(TString Sample1 = "2016", // year2 
+		      TString Sample2 = "2017", // year2
+		      TString Sample3 = "2018", // 
+		      TString Process = "bbA", // process
 		      TString folder1 = "limits", // first folder 
 		      TString folder2 = "limits", // second folder 
 		      TString folder3 = "limits", // third folder
-		      TString leg1 = "e#tau",
-		      TString leg2 = "#mu#tau",
-		      TString leg3 = "#tau#tau",
-		      TString postfix = "channel",
+		      TString leg1 = "2016",
+		      TString leg2 = "2017",
+		      TString leg3 = "2018",
+		      TString postfix = "year",
 		      float YMax = 12, // maximum of Y axis
 		      float XMin = 225., // minimum of X axis
 		      float XMax = 2000., // maximum of X axis
@@ -288,14 +288,14 @@ void PlotLimitsSample(TString Sample1 = "et", // year2
 
   TLegend * leg = new TLegend(0.5,0.65,0.7,0.80);
   leg->SetFillColor(0);
-  leg->SetTextSize(0.04);
+  leg->SetTextSize(0.05);
   leg->SetBorderSize(0);
   leg->AddEntry(expG,leg1,"l");
   leg->AddEntry(expH,leg2,"l");
   leg->AddEntry(expL,leg3,"l");
   leg->Draw();
 
-  extraText = "Internal";
+  extraText = "Preliminary";
   writeExtraText = true;
   CMS_lumi(canv,4,33); 
   canv->RedrawAxis();
