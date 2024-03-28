@@ -19,14 +19,21 @@ def MakeCommandPlot(**kwargs):
     # creating plots with other POI
     command += 'combineTool.py -M Impacts -d %s/datacards/Run2/%s/ws.root -m %s '%(utils.BaseFolder,mass,mass)
     command += '--redefineSignalPOIs r_%s -m %s -o impacts.json ; '%(proc,mass)
-    command += 'plotImpacts.py -i impacts.json -o impacts_%s%s_%s '%(proc,mass,typ) 
+    if not blind and typ=='obs':
+        command += 'plotImpacts.py -i impacts.json -o impacts_unblind_%s%s_%s '%(proc,mass,typ) 
+    else:
+        command += 'plotImpacts.py -i impacts.json -o impacts_%s%s_%s '%(proc,mass,typ)
     if blind and typ=='obs':
         command += ' --blind '
     # creating plots w/o other POI
     command += ' ; mv higgsCombine_paramFit_Test_r_%s.MultiDimFit.mH%s.root backup.xxx '%(otherProc,mass)
     command += ' ; combineTool.py -M Impacts -d %s/datacards/Run2/%s/ws.root -m %s '%(utils.BaseFolder,mass,mass)
     command += '--redefineSignalPOIs r_%s -m %s -o impacts_OnePOI.json'%(proc,mass)
-    command += ' ; plotImpacts.py -i impacts_OnePOI.json -o impacts_OnePOI_%s%s_%s '%(proc,mass,typ) 
+    if not blind and typ=='obs':
+        command += ' ; plotImpacts.py -i impacts_OnePOI.json -o impacts_unblind_OnePOI_%s%s_%s '%(proc,mass,typ)
+    else:
+        command += ' ; plotImpacts.py -i impacts_OnePOI.json -o impacts_OnePOI_%s%s_%s '%(proc,mass,typ)
+
     if blind and typ=='obs':
         command += ' --blind '
     command += ' ; mv backup.xxx higgsCombine_paramFit_Test_r_%s.MultiDimFit.mH%s.root '%(otherProc,mass)
