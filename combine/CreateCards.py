@@ -20,7 +20,7 @@ if __name__ == "__main__":
     if args.all_channels:
         channels.append('em')
     folder = args.folder
-    proc = args.proc
+    proc = args.model
     years = []
     if args.year=='all':
         years = utils.years
