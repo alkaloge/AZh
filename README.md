@@ -88,14 +88,18 @@ Combined Run2 datacards are put in folders
 
 Datacards can be produced for all years and all mass points in one go by executing script [CreateCards.py](https://github.com/raspereza/AZh/blob/main/combine/CreateCards.py)
 ```
-./CreateCards.py 
+./CreateCards.py --year $year --mass $mass
 ```
-Optional parameters are:
-* `--year` : data taking period (2016, 2017, 2018).
-* `--mass` : mass of A. 
-* `--model={r_ggA,r_bbA,POI}` Default is `2POI`. 
+Required input arguments:
+* `$year={2016, 2017, 2018, all}`. If `--year all` is specified, cards are created for all years and Run2 combination (recommended option).
+* `$mass` : mA. If `--mass all` is specified, cards are created for all masses.
+
+Optional parameters are: 
+* `--model={r_ggA, r_bbA, 2POI}` Default is `2POI`. 
 * `--folder` : folder where datacards are saved. Default is `datacards`.
 * `--all_channels` : will create combined cards including em channel. By default this channel is excluded.
+
+The script [CreateCards.py](https://github.com/raspereza/AZh/blob/main/combine/CreateCards.py) will create datacards for each mass hypothesis, data taking period (2016, 2017, 2018, Run2) and channel (et, mt, tt) Datacards are saved in folders `$folder/$year($channel)/$mass`. Here `$folder` is specified by the argument `--folder`.
 
 Running datacards for all years and mass points may take awhile.
 
