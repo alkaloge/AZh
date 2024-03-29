@@ -680,6 +680,7 @@ def Plot(hists,**kwargs):
     xmax = kwargs.get('xmax',700)
     blind = kwargs.get('blind',True)
     logx = kwargs.get('logx',True)
+    fits = kwargs.get('fits',False)
     postfix = kwargs.get('postfix','cards')
 
     data_hist = hists['data'].Clone('data_hist')
@@ -761,8 +762,12 @@ def Plot(hists,**kwargs):
     leg.AddEntry(ZZ_hist,'ZZ','f')
     leg.AddEntry(fake_hist,'reducible','f')
     leg.AddEntry(other_hist,'other','f')
-    leg.AddEntry(ggA_hist,'ggA'+mass+' (5 fb)','l')
-    if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' (5 fb)','l')
+    if fits:
+        leg.AddEntry(ggA_hist,'ggA'+mass+' ','l')
+        if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' ','l')
+    else:
+        leg.AddEntry(ggA_hist,'ggA'+mass+' (5 fb)','l')
+        if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' (5 fb)','l')
     leg.Draw()
     styles.CMS_label(canv,era=year,extraText='Internal')
     canv.SetLogx(logx)

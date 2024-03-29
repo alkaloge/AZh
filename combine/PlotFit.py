@@ -145,7 +145,7 @@ if __name__ == "__main__":
     inputfile.Close()
     inputfile_s.Close()
 
-    fitfilename = utils.BaseFolder + '/fit_Run2_mA' + mass + '_obs/fitDiagnosticsTest.root'
+    fitfilename = utils.BaseFolder + '/fit_'+year_legend+'_mA'+mass+'_obs/fitDiagnostics.Test.root'
     if not os.path.isfile(fitfilename): 
         print('input file %s does not exist'%(fitfilename))
         print('Run script ./RunFit.py --sample Run2 --mass %s --saveShapes -obs --batch')
@@ -210,14 +210,15 @@ if __name__ == "__main__":
                 print
                 for sig in signals:
                     hist_sig = inputfile_s.Get(dirname+prefix+signals[sig])
-                    ExtractHistoFromFit(hist_sig,
-                                        fitfile,
-                                        fittype=fittype,
-                                        channel=channel,
-                                        year=year,
-                                        mass=mass,
-                                        templ=sig,
-                                        cat=cat)
+                    if fittype=='fit_s':
+                        ExtractHistoFromFit(hist_sig,
+                                            fitfile,
+                                            fittype=fittype,
+                                            channel=channel,
+                                            year=year,
+                                            mass=mass,
+                                            templ=sig,
+                                            cat=cat)
                     hists_x[sig+suffix] = hist_sig.Clone(sig+suffix)
                     sigmass = sig+mass
                     sumofweights = hists_x[sig+suffix].GetSumOfWeights()
@@ -265,6 +266,17 @@ if __name__ == "__main__":
         print('%15s %6.0f'%(template,sumofweights))
 
     print
+
+    scale_ggA = 1.0
+    scale_bbA = 1.0
+    if fittype=='prefit' or fittype=='fit_b':
+        scale_ggA = 5.0
+        scale_bbA = 5.0
+
+    fits=False
+    if fittype=='fit_s':
+        fits=True
+
     utils.Plot(hists,
                analysis='azh',
                year=year_legend,
@@ -274,6 +286,9 @@ if __name__ == "__main__":
                blind=blind,
                xmin=xmin,
                xmax=xmax,
+               scale_bbA=1.0,
+               scale_ggA=1.0,
                logx=logx,
+               fits=fits,
                postfix=fittype)
 
