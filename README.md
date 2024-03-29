@@ -402,7 +402,7 @@ void Compatibility(
 
 ## Fitting
 
-Example of running maximum likelihood fit can be foung in [RunFit.bash](https://github.com/raspereza/AZh/blob/main/combine/RunFit.bash). The procedure is automated with the python macro [RunFit.py](https://github.com/raspereza/AZh/blob/main/combine/RunFit.py):
+The maximum likelihood fit is run with macro [RunFit.py](https://github.com/raspereza/AZh/blob/main/combine/RunFit.py):
 ```
 ./RunFit.py --sample $sample --mass $mass
 ```
