@@ -43,6 +43,10 @@ if __name__ == "__main__":
     bkgs = utils.azh_bkgs
     signals = {}
 
+    yearToAccess = '2016'
+    if not year=='all':
+        yearToAccess = year
+
     years = []
     cats = []
     channels = []
@@ -107,7 +111,7 @@ if __name__ == "__main__":
     isFirst = True
 
     inputfile, inputfile_s = utils.GetInputFiles(
-        year='2018',
+        year=yearToAccess,
         cat='0btag',
         channel='mmtt',
         folder=args.folder,
