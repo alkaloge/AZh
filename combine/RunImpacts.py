@@ -17,6 +17,7 @@ def MakeCommandImpacts(**kwargs):
     r_bbA_max = kwargs.get('r_bbA_max','10')
     indir = kwargs.get('indir','datacards')
     freezeOtherPOI = kwargs.get('freezeOtherPOI',False)
+    full_mode = kwargs.get('full_mode',False)
 
     if typ not in ['exp','obs']:
         print('warning : ill-specified type of computation : %s'%(typ))
@@ -33,30 +34,33 @@ def MakeCommandImpacts(**kwargs):
     command = 'cd %s/impacts_%s%s_%s ; '%(utils.BaseFolder,proc,mass,typ)
     # perform initial fit and perform likelihood scan for signal strength
     command += 'combineTool.py -M Impacts -d %s/%s/Run2/%s/ws.root -m %s '%(utils.BaseFolder,indir,mass,mass)
-    command += '--robustFit 1 --cminDefaultMinimizerTolerance 0.05 '
-    command += '--X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO '
+    command += '--robustFit 1 --cminDefaultMinimizerTolerance 0.1 '
+    #    command += '--X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO '
+    #    command += '--X-rtd FITTER_NEVER_GIVE_UP --X-rtd FITTER_BOUND --X-rtd ADDNLL_RECURSIVE=0 '
     command += '--cminDefaultMinimizerStrategy %1i '%(strategy)
     command += '--setParameterRanges r_ggA=%s,%s:r_bbA=%s,%s '%(r_ggA_min,r_ggA_max,r_bbA_min,r_bbA_max)
     if freezeOtherPOI:
         command += '--freezeParameters r_%s '%(otherProcess)
     if expect:
         command += '-t -1 '
-        command += '--setParameters r_ggA=%s,r_bbA=%s '%(r_ggA,r_bbA)
+    command += '--setParameters r_ggA=%s,r_bbA=%s '%(r_ggA,r_bbA)
     command += '--redefineSignalPOIs r_%s '%(proc)
     command += '--doInitialFit ; '
     # run scans of all nuisances; submit jobs to the local batch system
-    command += 'combineTool.py -M Impacts -d %s/datacards/Run2/%s/ws.root -m %s '%(utils.BaseFolder,mass,mass)
-    command += '--robustFit 1 --cminDefaultMinimizerTolerance 0.05 '
-    command += '--X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO '
-    command += '--cminDefaultMinimizerStrategy %1i '%(strategy)
-    command += '--setParameterRanges r_ggA=%s,%s:r_bbA=%s,%s '%(r_ggA_min,r_ggA_max,r_bbA_min,r_bbA_max)
-    if freezeOtherPOI:
-        command += '--freezeParameters r_%s '%(otherProcess)
-    if expect:
-        command += '-t -1 '
+    if full_mode:
+        command += 'combineTool.py -M Impacts -d %s/datacards/Run2/%s/ws.root -m %s '%(utils.BaseFolder,mass,mass)
+        command += '--robustFit 1 --cminDefaultMinimizerTolerance 0.1 '
+        #    command += '--X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO '
+        command += '--cminDefaultMinimizerStrategy %1i '%(strategy)
+        command += '--setParameterRanges r_ggA=%s,%s:r_bbA=%s,%s '%(r_ggA_min,r_ggA_max,r_bbA_min,r_bbA_max)
+        if freezeOtherPOI:
+            command += '--freezeParameters r_%s '%(otherProcess)
+        if expect:
+            command += '-t -1 '
         command += '--setParameters r_ggA=%s,r_bbA=%s '%(r_ggA,r_bbA)
-    command += '--redefineSignalPOIs r_%s '%(proc)
-    command += '--job-mode condor --sub-opts=\'+JobFlavour = "workday"\' --merge 4 --doFits ; '
+        command += '--redefineSignalPOIs r_%s '%(proc)
+        command += '--job-mode condor --sub-opts=\'+JobFlavour = "workday"\' --merge 4 --doFits ; '
+    #    command += '--doFits ; '
     # return to the original folder
     command += 'cd ../'
 
@@ -79,6 +83,7 @@ if __name__ == "__main__":
     parser.add_argument('-folder','--folder',dest='folder',default='datacards')
     parser.add_argument('-freezeOtherPOI','--freezeOtherPOI',action='store_true')
     parser.add_argument('-minimizer_strategy','--minimizer_strategy',dest='strategy',type=int,default=1)
+    parser.add_argument('-full_mode','--full_mode',dest='full_mode',action='store_true')
     parser.add_argument('-obs','--obs',dest='obs',action='store_true')
     args = parser.parse_args()
 
@@ -96,6 +101,8 @@ if __name__ == "__main__":
     r_ggA_max=args.r_ggA_max
     r_bbA_max=args.r_bbA_max
     indir=args.folder
+    freezeOtherPOI = args.freezeOtherPOI
+    full_mode = args.full_mode
 
     folder='%s/impacts_%s%s_%s'%(utils.BaseFolder,proc,mass,typ)
     if os.path.isdir(folder):
@@ -114,7 +121,8 @@ if __name__ == "__main__":
         r_ggA_max=r_ggA_max,
         r_bbA_min=r_bbA_min,
         r_bbA_max=r_bbA_max,
-        freezeOtherPOI=args.freezeOtherPOI,
+        freezeOtherPOI=freezeOtherPOI,
+        full_mode=full_mode,
         indir=indir)
     os.system(command)
 
