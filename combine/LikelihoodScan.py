@@ -23,5 +23,6 @@ if __name__ == "__main__":
     command += '--setParameterRanges r_%s=%s,%s '%(args.proc,args.xmin,args.xmax)
     command += '--floatOtherPOIs 1 --points %s '%(args.npoints) 
     command += '--robustFit 1 -d datacards/%s/%s/ws.root '%(args.sample,args.mass) 
-    command += '--algo grid --alignEdges 1 --cminDefaultMinimizerStrategy 1 -n _%s_%s '%(args.sample,args.proc)
+    command += '--algo grid --alignEdges 1 --cminDefaultMinimizerStrategy 1 -n _%s_%s ; '%(args.sample,args.proc)
+    command += 'plot1DScan.py higgsCombine_%s_%s.MultiDimFit.mH%s.root --POI r_%s --output scan_%s_%s%s'%(args.sample,args.proc,args.mass,args.proc,args.sample,args.proc,args.mass)
     os.system(command)
