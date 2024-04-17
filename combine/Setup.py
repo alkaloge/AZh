@@ -35,7 +35,8 @@ uncertainties = [
     'pileup',
     'l1prefire',
     'eleSmear',
-    #'JES'
+    'JES',
+    'JER'
 ]
 
 def RebinAndSave(**kwargs):
@@ -73,42 +74,63 @@ def RebinAndSave(**kwargs):
     ###########################
     # defininting of binning
     ###########################
-    bins = []
+    bins_ggA = []
+    bins_bbA = []
     if binning=='nominal':
         for ib in range(200,500,20):
-            bins.append(ib)    
+            bins_ggA.append(ib)    
         for ib in range(500,750,25):
-            bins.append(ib)
+            bins_ggA.append(ib)
         for ib in range(750,1150,100):
-            bins.append(ib)
-        bins.append(2400)
+            bins_ggA.append(ib)
+        bins_ggA.append(2400)
+
+        for ib in range(200,550,25):
+            bins_bbA.append(ib)
+        for ib in range(550,1050,100):
+            bins_bbA.append(ib)
+        bins_bbA.append(2400)
+            
     elif binning=='fine':
         for ib in range(200,500,10):
-            bins.append(ib)    
+            bins_ggA.append(ib)    
         for ib in range(500,750,25):
-            bins.append(ib)
+            bins_ggA.append(ib)
         for ib in range(750,1150,100):
-            bins.append(ib)
-        bins.append(2400)
+            bins_ggA.append(ib)
+        bins_ggA.append(2400)
+        bins_bbA=bins_ggA
     else:
         for ib in range(200,400,20):
-            bins.append(ib)
-        bins.append(400)
-        bins.append(450)
-        bins.append(550)
-        bins.append(700)
-        bins.append(1000)
-        bins.append(2400)
+            bins_ggA.append(ib)
+        bins_ggA.append(400)
+        bins_ggA.append(450)
+        bins_ggA.append(550)
+        bins_ggA.append(700)
+        bins_ggA.append(1000)
+        bins_ggA.append(2400)
+        bins_bbA=bins_ggA
+
+    bins_cat = {
+        'btag': bins_bbA,
+        '0btag': bins_ggA
+    }
 
     print('')
-    print('Rebinning with bins ->')
-    nbins = len(bins)
+    print('Rebinning 0btag with bins ->')
+    nbins = len(bins_ggA)
     for ib in range(0,nbins-1):
-        print('[%4i,%4i]'%(int(bins[ib]),int(bins[ib+1])))
+        print('[%4i,%4i]'%(int(bins_ggA[ib]),int(bins_ggA[ib+1])))
+    print('')
+    print('Rebinning btag with bins ->')
+    nbins = len(bins_bbA)
+    for ib in range(0,nbins-1):
+        print('[%4i,%4i]'%(int(bins_bbA[ib]),int(bins_bbA[ib+1])))
     print('')
 
     for year in years:
         for cat in cats:
+            bins = bins_cat[cat]
             print('Rebinning %s %s '%(year,cat))
             print(' background templates')
             name_data = folder+'/'+subfolder+'/data_'+cat+'_'+year+'.root'
@@ -217,14 +239,14 @@ def FixNegativeBins(**kwargs):
                     nbins = hist.GetNbinsX()
                     for ib in range(1,nbins+1):
                         x = hist.GetBinContent(ib)
-                        if x<0.0:
+                        if x<0.002:
                             print('negative bin %2i :  %7.5f in %s_%s_%s %s'
                                   %(ib,x,year,cat,channel,template))
-                            hist.SetBinContent(ib,0.0)
-                            hist.SetBinError(ib,0.0)
+                            hist.SetBinContent(ib,0.002)
+                            hist.SetBinError(ib,0.001)
                     inputfile.cd(channel)
                     if hist.GetSumOfWeights()==0.0:
-                        hist.SetBinContent(1,0.0001)
+                        hist.SetBinContent(1,0.001)
                     hist.Write(template)
                     for unc in uncs:
                         for variation in variations:
@@ -232,14 +254,14 @@ def FixNegativeBins(**kwargs):
                             if histSys!=None:
                                 for ib in range(1,nbins+1):
                                     x = histSys.GetBinContent(ib)
-                                    if x<0.0:
+                                    if x<0.005:
                                         print('negative bin %2i : %7.5f in %s_%s_%s %s_%s%s'
                                               %(ib,x,year,cat,channel,template,unc,variation))
-                                        histSys.SetBinContent(ib,0.0)
-                                        histSys.SetBinError(ib,0.0)
+                                        histSys.SetBinContent(ib,0.002)
+                                        histSys.SetBinError(ib,0.001)
                                 inputfile.cd(channel)
                                 if histSys.GetSumOfWeights()==0.0:
-                                    histSys.SetBinContent(1,0.0001)
+                                    histSys.SetBinContent(1,0.001)
                                 histSys.Write(template+'_'+unc+variation)
             inputfile.Close()
     

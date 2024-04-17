@@ -277,10 +277,10 @@ def symmetrizeUnc(hists):
         delta = 0.5*(xup-xdown)
         up = max(0,xcentral+delta)
         down = max(0,xcentral-delta)
-        onesided = (xcentral<xdown and xcentral<xup) or (xcentral>xdown and xcentral>xup)
-        if onesided:
-            histUp.SetBinContent(ib,up)
-            histDown.SetBinContent(ib,down)
+        #        onesided = (xcentral<xdown and xcentral<xup) or (xcentral>xdown and xcentral>xup)
+        #        if onesided:
+        histUp.SetBinContent(ib,up)
+        histDown.SetBinContent(ib,down)
 
 #############################
 #   histogram utilities     #
@@ -800,14 +800,20 @@ def GetInputFiles(**kwargs):
 
     fullfilename = path+'/'+filename
     fullfilename_signal = path+'/'+filename_signal
+    if not os.path.isfile(fullfilename):
+        print('file %s not found'%(fullfilename))
+        exit()
     inputfile = ROOT.TFile(fullfilename)
     if inputfile==None:
         print('file %s not found'%(fullfilename))
-        exit(1)
+        exit()
+    if not os.path.isfile(fullfilename_signal):
+        print('file %s not found'%(fullfilename))
+        exit()
     inputfile_signal = ROOT.TFile(fullfilename_signal)
     if inputfile_signal==None:
         print('file %s not found'%(fullfilename_signal))
-        exit(1)
+        exit()
 
     print
     print('Extracting histograms for year=%s  channel=%s  category=%s'%(year,cat,channel))
