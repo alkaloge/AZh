@@ -17,6 +17,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     channels = ['et','mt','tt']
+    cats = ['btag','0btag']
     if args.all_channels:
         channels.append('em')
     folder = args.folder
@@ -56,6 +57,15 @@ if __name__ == "__main__":
             source = folder+'/Run2/'+mass+"/*mm"+channel+"*"
             target = folder+'/'+channel+'/'+mass
             os.system('cp '+source+' '+target)
+    for cat in cats:
+        if not os.path.isdir('%s/%s'%(folder,cat)):
+             os.system('mkdir %s/%s'%(folder,cat))
+        for mass in masses:
+            if not os.path.isdir('%s/%s/%s'%(folder,cat,mass)):
+                os.system('mkdir %s/%s/%s'%(folder,cat,mass))
+                source = folder+'/Run2/'+mass+'/*_'+cat+'*'
+                target = folder+'/'+cat+'/'+mass
+                os.system('cp '+source+' '+target)
         
     print
     print('datacards are written to folder %s '%(folder))
