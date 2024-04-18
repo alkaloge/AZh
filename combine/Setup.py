@@ -233,11 +233,11 @@ def FixNegativeBins(**kwargs):
                     nbins = hist.GetNbinsX()
                     for ib in range(1,nbins+1):
                         x = hist.GetBinContent(ib)
-                        if x<0.001:
-                            print('negative bin %2i :  %7.5f in %s_%s_%s %s'
-                                  %(ib,x,year,cat,channel,template))
-                            hist.SetBinContent(ib,0.001)
-                            hist.SetBinError(ib,0.0005)
+                        if x<1e-6:
+                            if x<0: 
+                                print('negative bin %2i :  %7.5f in %s_%s_%s %s'%(ib,x,year,cat,channel,template))
+                            hist.SetBinContent(ib,1e-6)
+                            hist.SetBinError(ib,0.3e-6)
                     inputfile.cd(channel)
                     if hist.GetSumOfWeights()==0.0:
                         hist.SetBinContent(1,0.001)
@@ -248,11 +248,11 @@ def FixNegativeBins(**kwargs):
                             if histSys!=None:
                                 for ib in range(1,nbins+1):
                                     x = histSys.GetBinContent(ib)
-                                    if x<0.001:
-                                        print('negative bin %2i : %7.5f in %s_%s_%s %s_%s%s'
-                                              %(ib,x,year,cat,channel,template,unc,variation))
-                                        histSys.SetBinContent(ib,0.001)
-                                        histSys.SetBinError(ib,0.0005)
+                                    if x<1e-6:
+                                        if x<0: 
+                                            print('negative bin %2i : %7.5f in %s_%s_%s %s_%s%s'%(ib,x,year,cat,channel,template,unc,variation))
+                                        histSys.SetBinContent(ib,1e-6)
+                                        histSys.SetBinError(ib,0.3e-6)
                                 inputfile.cd(channel)
                                 if histSys.GetSumOfWeights()==0.0:
                                     histSys.SetBinContent(1,0.001)
