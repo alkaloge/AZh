@@ -29,9 +29,9 @@ def MakeCommand(**kwargs):
         command += '-d %s/%s/%s/ws.root '%(indir,sample,mass)
         command += '--setParameters r_bbA=0,r_ggA=0 '
         if release:
-            command += '--setParameterRanges r_%s=-10,10:r_%s=-10,10 '%(proc,otherProc)
+            command += '--setParameterRanges r_%s=-20,20:r_%s=0,20 '%(proc,otherProc)
         else:
-            command += '--setParameterRanges r_%s=-10,10 '%(proc)
+            command += '--setParameterRanges r_%s=-20,20 '%(proc)
             command += '--freezeParameters r_%s '%(otherProc)
         command += '--redefineSignalPOIs r_%s '%(proc) 
     else:
@@ -47,6 +47,7 @@ def MakeCommand(**kwargs):
     if batch:
         taskname='limit_%s_%s_%s_%s'%(sample,proc,mass,typ);
         command += '--job-mode condor --sub-opts=\'+JobFlavour = "workday"\' --task-name %s '%(taskname)
+    print(command)
     command += ' ; cd %s'%(utils.BaseFolder)
 
     return command
