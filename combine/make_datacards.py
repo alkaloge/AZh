@@ -94,7 +94,7 @@ nonclosure_reducible = {
 }
 
 # add JES uncertainty once available
-expUnc = ['unclMET','tauID0','tauID1','tauID10','tauID11','tauES','efake','mfake','eleES','muES','pileup','l1prefire','eleSmear']
+expUnc = ['unclMET','tauID0','tauID1','tauID10','tauID11','tauES','efake','mfake','eleES','muES','pileup','l1prefire','eleSmear','JES','JER']
 
 fakeUnc = ['bin1','bin2','bin3']
 
@@ -348,7 +348,8 @@ for proc in signals:
 
 
 # JES uncertainty
-#cb.cp().process(bkgd).AddSyst(cb, "JES", "shape", ch.SystMap()(1.00))
+cb.cp().process(bkgd).AddSyst(cb, "JES", "shape", ch.SystMap()(1.00))
+cb.cp().process(bkgd).AddSyst(cb, "JER", "shape", ch.SystMap()(1.00))
 
 cb.cp().process(bkgd_tauID).AddSyst(cb, "tauID0", "shape", ch.SystMap()(1.00))
 cb.cp().process(bkgd_tauID).AddSyst(cb, "tauID1", "shape", ch.SystMap()(1.00))

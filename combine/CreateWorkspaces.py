@@ -35,7 +35,7 @@ if __name__ == "__main__":
     else:
         masses.append(args.mass)
 
-    samples = ['2016','2017','2018','Run2','et','mt','tt']
+    samples = ['2016','2017','2018','Run2','et','mt','tt','btag','nobtag']
 
     batch=False
     if args.batch:
@@ -57,7 +57,7 @@ if __name__ == "__main__":
             if not os.path.isdir(folder_mass):
                 print('Warning : Folder %s does not exist'%(folder_mass))
                 print ('Run first datacard production with script make_datacards.py or CreateCards.py')
-                print('Skipping mA=%s for %s'%(mass,sample))
+                print('Skipping mA=%s for %s'%(mA,sample))
                 print('')
                 continue
 
