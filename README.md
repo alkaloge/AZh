@@ -445,9 +445,65 @@ Optional arguments:
 
 The creates plot of the m(4l) distribution and saves plot in the png file `figures/m4l_$year_$cat_$channel_$mass_$fittype.png`. Please note that macro access binning of mass distribution from datacards. Therefore an option is offered to specify the folder with datacards with input parameter `--folder $folder` (default is `datacards`).   
 
+## Computing 2D confidence level intervals
+Two-dimensional confidence level interval are computed with script (Run2Dscan.py)[https://github.com/raspereza/AZh/blob/main/combine/Run2Dscan.py]
+```
+./Run2Dscan.py --sample $sample --mass $mass 
+```
+* `$sample = {2016, 2017, 2018, Run2, et, mt, tt}` : 
+* `$mass` : mA.
+
+Optional parameters
+* `--r_ggA` : maximal range of the signal strength r_ggA (default : 10)
+* `--r_bbA` : maximal range of the signal strength r_bbA (default : 10) 
+* `--npoints` : number of grid points along each axis of 2D (r_ggA, r_bbA) plane (default : 100)
+* `--batch` : submit jobs to condor
+* `--npoints_per_job` : number of grid points per condor job (default : 200)
+* `--folder` : folder with datacards (default : datacards)
+
+With default setting likelihood will be computed for 10000 equdistant grid points (10000 = 100 x 100) in 2D plane and scan wil be performed in the range [0,r_ggA] [0,r_bbA] as we consider models with non-negative signal strength. Maximal ranges of `r_ggA` and `r_bbA` should be adjusted based on one-dimensional upper limits on signal strength modifiers `r_ggA` (`r_bbA`) as obtained by running script (RunLimits.py)[https://github.com/raspereza/AZh/blob/main/combine/RunLimits.py]. It is suggested to set upper range slightly above the maximum of expected and observed limits at a given mA. 
+Recommended upper ranges when running 2D scan for Run2 combination:
+
+* 225 : r_ggA=8, r_bbA=8
+* 250 : r_ggA=7, r_bbA=7 
+* 275 : r_ggA=6, r_bbA=6
+* 300 : r_ggA=5, r_bbA=5
+* 325 : r_ggA=5, r_bbA=5
+* 350 : r_ggA=4, r_bbA=4
+* 375 : r_ggA=3, r_bbA=3
+* 400 : r_ggA=3, r_bbA=3
+* 450 : r_ggA=3, r_bbA=3
+* 500 : r_ggA=1.5, r_bbA=1.5
+
+The script will create folder 2Dscan_$sample_$mass, where output of the script will be stored.
+NB : Beware, the script will remove all files within the folder 2Dscan_$sample_$mass if it is already exist. 
+
+After all jobs finished, collect results of the likelihood scan with bash script (Hadd_2Dscan.bash)[https://github.com/raspereza/AZh/blob/main/combine/Hadd_2Dscan.bash]. You should pass as an argument the name of the folder, where results of the 2D likelihood scan are stored:
+```
+./Hadd_2Dscan.bash 2Dscan_$sample_$mass
+```
+
+The results of the 2D likelihood scan are plotted using RooT macro (Plot2Dscan.C)[https://github.com/raspereza/AZh/blob/main/combine/Plot2Dscan.C]
+```
+// ++++++++++++++++++++++
+// +++ Main subroutine
+// ++++++++++++++++++++++
+void Plot2Dscan(
+TString folder="2Dscan_Run2_300",
+double xmax_frame = 5,
+double ymax_frame = 5) 
+```
+with the following input parameters
+* `folder` : the name of the folder with the results of likelihood scan;
+* `xmax_frame` : the maximum range of X-axis corresponding to `r_ggA`;
+* `xmin_frame` : the maximum range of Y-axis corresponding to `r_bbA`. 
+
+The plot is saved in the file `2Dscan_$sample_$mass.png`.
+
+
 ## Closure test of the reducible background 
 
-Validation of reducible background is performed in the sideband region with same-sign tau-lepton candidates. Validation is based on GoF test performed on background templates and data distributions in this sideband region. To enhance statistics btag and 0btag categories, as well Z->ee and Z->mumu decays are combined into one distribution per di-tau channel and year. In total 9 separate distributions are considered in the test : 3 decay modes of tau pairs (em, et, mt and tt) x 3 data-taking periods    
+Validation of reducible background is performed in the sideband region with same-sign tau-lepton candidates. Validation is based on GoF test performed on background templates and data distributions in this sideband region. To enhance statistics btag and 0btag categories, as well Z->ee and Z->mumu decays are combined into one distribution per di-tau channel and year. In total 9 separate distributions are considered in the test : 3 decay modes of tau pairs (et, mt and tt) x 3 data-taking periods    
 
 Datacards for validation are produced with the python script [MakeClosureCards.py](https://github.com/raspereza/AZh/blob/main/combine/MakeClosureCards.py). It will make directory  $CMSSW_BASE/src/AZh/combine/ClosureTest, where various subfolders will be created to store datacards for individial data taking periods (2016, 2017, 2018) and di-tau modes (em, et, mt and tt). The combined Run2 workspaces are put in subfolder Run2. The macro will also plot distributions of m(4l) in the SS sideband for individual channels combining Run2 data. The plots are output in files `SS_closure_${channel}_Run2.png`, where `$channel={et, mt, tt}`. 
 
