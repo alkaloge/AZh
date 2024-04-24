@@ -446,7 +446,7 @@ Optional arguments:
 The creates plot of the m(4l) distribution and saves plot in the png file `figures/m4l_$year_$cat_$channel_$mass_$fittype.png`. Please note that macro access binning of mass distribution from datacards. Therefore an option is offered to specify the folder with datacards with input parameter `--folder $folder` (default is `datacards`).   
 
 ## Computing 2D confidence level intervals
-Two-dimensional confidence level interval are computed with script (Run2Dscan.py)[https://github.com/raspereza/AZh/blob/main/combine/Run2Dscan.py]
+Two-dimensional confidence level interval are computed with script [Run2Dscan.py](https://github.com/raspereza/AZh/blob/main/combine/Run2Dscan.py)
 ```
 ./Run2Dscan.py --sample $sample --mass $mass 
 ```
