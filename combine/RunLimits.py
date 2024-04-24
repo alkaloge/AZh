@@ -15,6 +15,7 @@ def MakeCommand(**kwargs):
     batch = kwargs.get('batch',False)
     folder = kwargs.get('folder','datacards')
     indir = utils.BaseFolder + '/' + folder
+    noFitAsimov = kwargs.get('noFitAsimov',False)
 
     otherProc = 'bbA'
     if proc=='bbA': otherProc = 'ggA'
@@ -29,19 +30,23 @@ def MakeCommand(**kwargs):
         command += '-d %s/%s/%s/ws.root '%(indir,sample,mass)
         command += '--setParameters r_bbA=0,r_ggA=0 '
         if release:
-            command += '--setParameterRanges r_%s=-20,20:r_%s=0,20 '%(proc,otherProc)
+            command += '--setParameterRanges r_%s=0,20:r_%s=0,20 '%(proc,otherProc)
         else:
             command += '--setParameterRanges r_%s=-20,20 '%(proc)
             command += '--freezeParameters r_%s '%(otherProc)
         command += '--redefineSignalPOIs r_%s '%(proc) 
+        if notFitAsimov:
+            
     else:
         command += '%s/HIG-18-023/%s/ws.root '%(utils.BaseFolder,mass)
         command += '--rMin=0.001 --rMax=50. '
-        #    command += '--rAbsAcc 0 --rRelAcc 0.0005 --X-rtd MINIMIZER_analytic '
+    command += '--rAbsAcc 0 --rRelAcc 0.0005 '
     command += '--X-rtd MINIMIZER_analytic '
-    command += '--cminDefaultMinimizerStrategy 1 --cminDefaultMinimizerTolerance 0.01 '
+    command += '--cminDefaultMinimizerStrategy 0 --cminDefaultMinimizerTolerance 0.01 '
     if not obs:
-        command += '--noFitAsimov -t -1 '
+        command +='-t -1 '
+    if noFitAsimov: 
+        command +='--noFitAsimov '
     command += '-n ".%s_%s_%s" '%(analysis,sample,proc)
     command += '-m %s '%(mass)
     if batch:
@@ -62,6 +67,7 @@ if __name__ == "__main__":
     parser.add_argument('-mass','--mass',dest='mass',type=str,required=True,help=""" tested mass of A boson, if \'all\' is specified, limits are computed for all masses""")
     parser.add_argument('-obs','--obs',dest='obs',action='store_true',help=""" compute observed limits """)
     parser.add_argument('-releaseOtherPOI','--releaseOtherPOI',dest='releaseOtherPOI',action='store_true',help=""" release other POI, for example r_bbA when running limits on r_ggA or vice versa""")
+    parser.add_argument('-noFitAsimov','--noFitAsimov',dest='noFitAsimov',action='store_true',help=""" no fit to Asimov""")
     parser.add_argument('-folder','--folder',dest='folder',default="datacards",help=""" input folder twith datacards""")
     parser.add_argument('-batch','--batch',dest='batch',action='store_true')
     args = parser.parse_args()
@@ -74,6 +80,7 @@ if __name__ == "__main__":
     analysis = args.analysis
     releaseOtherPOI = args.releaseOtherPOI
     obs = args.obs
+    noFitAsimov = args.noFitAsimov
 
     DatacardsFolder = utils.BaseFolder + '/' + folder
 
@@ -162,6 +169,7 @@ if __name__ == "__main__":
                                   sample=sample,
                                   obs=obs,
                                   releaseOtherPOI=releaseOtherPOI,
+                                  noFitAsimov=noFitAsimov,
                                   mass=mA,
                                   folder=folder,
                                   proc=proc,
