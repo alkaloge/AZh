@@ -461,7 +461,7 @@ Optional parameters
 * `--npoints_per_job` : number of grid points per condor job (default : 200)
 * `--folder` : folder with datacards (default : datacards)
 
-With default setting likelihood will be computed for 10000 equdistant grid points (10000 = 100 x 100) in 2D plane and scan wil be performed in the range [0,r_ggA] [0,r_bbA] as we consider models with non-negative signal strength. Maximal ranges of `r_ggA` and `r_bbA` should be adjusted based on one-dimensional upper limits on signal strength modifiers `r_ggA` (`r_bbA`) as obtained by running script (RunLimits.py)[https://github.com/raspereza/AZh/blob/main/combine/RunLimits.py]. It is suggested to set upper range slightly above the maximum of expected and observed limits at a given mA. 
+With default setting likelihood will be computed for 10000 equdistant grid points (10000 = 100 x 100) in 2D plane and scan wil be performed in the range [0,r_ggA] [0,r_bbA] as we consider models with non-negative signal strength. Maximal ranges of `r_ggA` and `r_bbA` should be adjusted based on one-dimensional upper limits on signal strength modifiers `r_ggA` (`r_bbA`) as obtained by running script [RunLimits.py](https://github.com/raspereza/AZh/blob/main/combine/RunLimits.py). It is suggested to set upper range slightly above the maximum of expected and observed limits at a given mA. 
 Recommended upper ranges when running 2D scan for Run2 combination:
 
 * 225 : r_ggA=8, r_bbA=8
@@ -476,14 +476,15 @@ Recommended upper ranges when running 2D scan for Run2 combination:
 * 500 : r_ggA=1.5, r_bbA=1.5
 
 The script will create folder 2Dscan_$sample_$mass, where output of the script will be stored.
-NB : Beware, the script will remove all files within the folder 2Dscan_$sample_$mass if it is already exist. 
 
-After all jobs finished, collect results of the likelihood scan with bash script (Hadd_2Dscan.bash)[https://github.com/raspereza/AZh/blob/main/combine/Hadd_2Dscan.bash]. You should pass as an argument the name of the folder, where results of the 2D likelihood scan are stored:
+ATTENTION : Beware, the script will remove all files within the folder 2Dscan_$sample_$mass if it is already exist. 
+
+After all jobs finished, collect results of the likelihood scan with bash script [Hadd_2Dscan.bash](https://github.com/raspereza/AZh/blob/main/combine/Hadd_2Dscan.bash). You should pass as an argument the name of the folder, where results of the 2D likelihood scan are stored:
 ```
 ./Hadd_2Dscan.bash 2Dscan_$sample_$mass
 ```
 
-The results of the 2D likelihood scan are plotted using RooT macro (Plot2Dscan.C)[https://github.com/raspereza/AZh/blob/main/combine/Plot2Dscan.C]
+The results of the 2D likelihood scan are plotted using RooT macro [Plot2Dscan.C](https://github.com/raspereza/AZh/blob/main/combine/Plot2Dscan.C)
 ```
 // ++++++++++++++++++++++
 // +++ Main subroutine
