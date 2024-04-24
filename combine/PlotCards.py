@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     inputfile, inputfile_s = utils.GetInputFiles(
         year=yearToAccess,
-        cat='0btag',
+        cat='btag',
         channel='mmtt',
         folder=args.folder,
         mass=mass)

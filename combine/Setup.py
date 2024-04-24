@@ -84,7 +84,12 @@ def RebinAndSave(**kwargs):
         for ib in range(750,1150,100):
             bins_ggA.append(ib)
         bins_ggA.append(2400)
-        bins_bbA=bins_ggA            
+        for ib in range(200,650,50):
+            bins_bbA.append(ib)
+        for ib in range(650,1150,100):
+            bins_bbA.append(ib)
+        bins_bbA.append(2400)
+        #        bins_bbA=bins_ggA            
     elif binning=='fine':
         for ib in range(200,500,10):
             bins_ggA.append(ib)    

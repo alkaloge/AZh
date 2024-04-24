@@ -386,7 +386,7 @@ def addHistos(hist1,hist2):
     nbins2 = hist2.GetNbinsX()
     if nbins1!=nbins2:
         print
-        print('addHistos: inconsistency of bins: %2i and %2i',nbins1,nbins2)
+        print('addHistos: inconsistency of bins: %2i and %2i in %s and %s '%(nbins1,nbins2,hist1.GetName(),hist2.GetName()))
     else:
         for ib in range(1,nbins1+1):
             x1 = hist1.GetBinContent(ib)
@@ -715,11 +715,33 @@ def Plot(hists,**kwargs):
 
     ymax = 0
     nbins = data_hist.GetNbinsX()
+    xdata = []
+    exdata = []
+    ydata = []
+    eyldata = []
+    eyhdata = []
     for ib in range(1,nbins+1):
         x = data_hist.GetBinContent(ib)
         err = data_hist.GetBinError(ib)
+        xcenter = data_hist.GetBinCenter(ib)
+        xdata.append(xcenter)
+        exdata.append(0.0)
+        ydata.append(x)
+        eyldata.append(-0.5+math.sqrt(x+0.25))
+        eyhdata.append(0.5+math.sqrt(x+0.25))
         xsum = x+err
         if xsum>ymax: ymax = xsum
+    data_graph = ROOT.TGraphAsymmErrors(nbins,
+                                        array('d',list(xdata)),
+                                        array('d',list(ydata)),
+                                        array('d',list(exdata)),
+                                        array('d',list(exdata)),
+                                        array('d',list(eyldata)),
+                                        array('d',list(eyhdata)))
+
+    data_graph.SetMarkerStyle(20)
+    data_graph.SetMarkerSize(1.5)
+    data_graph.SetMarkerColor(1)
 
     if blind: 
         ymax = tot_hist.GetMaximum()
@@ -746,7 +768,9 @@ def Plot(hists,**kwargs):
     fake_hist.Draw('hsame')
     other_hist.Draw('hsame')
     tot_hist.Draw('e2same')
-    if not blind: data_hist.Draw('e1same')
+    if not blind: 
+        #        data_hist.Draw('e1same')
+        data_graph.Draw('pe1same')
     ggA_hist.Draw('hsame')
     if isBBA: bbA_hist.Draw('hsame')
 
