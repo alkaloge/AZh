@@ -283,9 +283,9 @@ void PlotComparisonHig18023(TString Era = "2016", // year
   float yLegend = 0.41;
   float sizeLeg = 0.27;
 
-  TLegend * leg = new TLegend(0.40,0.60,0.70,0.80);
+  TLegend * leg = new TLegend(0.20,0.20,0.70,0.40);
   leg->SetFillColor(0);
-  leg->SetTextSize(0.035);
+  leg->SetTextSize(0.04);
   leg->SetBorderSize(0);
   if (!blindData) 
     leg->AddEntry(obsG,"Observed","lp");

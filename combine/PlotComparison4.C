@@ -1,18 +1,24 @@
 #include "HttStylesNew.cc"
 #include "CMS_lumi.C"
 
-void PlotComparison(TString Era1 = "Run2", // year2 
-		    TString Era2 = "Run2", // year2
-		    TString Process = "bbA", // process
-		    TString folder1 = "limits_noem_fine", // folder with output 
-		    TString folder2 = "limits_newfake", // second folder 
-		    TString leg1 = "r_{ggA}=0",
-		    TString leg2 = "r_{ggA} profiled",
-		    TString postfix = "profile_fine",
-		    float YMax = 7, // maximum of Y axis
-		    float XMin = 225., // minimum of X axis
-		    float XMax = 1000., // maximum of X axis
-		    bool blindData = true) {
+void PlotComparison4(TString Era1 = "Run2", // year2 
+		     TString Era2 = "Run2", // year2
+		     TString Era3 = "Run2", // 
+		     TString Era4 = "Run2", // 
+		     TString Process = "bbA", // process
+		     TString folder1 = "limits_et", // first folder 
+		     TString folder2 = "limits_mt", // second folder 
+		     TString folder3 = "limits_tt", // 
+		     TString folder4 = "limits_em", // 
+		     TString leg1 = "#tau_{e}#tau_{h}",
+		     TString leg2 = "#tau_{#mu}#tau_{h}",
+		     TString leg3 = "#tau_{h}#tau_{h}",
+		     TString leg4 = "#tau_{e}#tau_{#mu}",
+		     TString postfix = "channels",
+		     float YMax = 20, // maximum of Y axis
+		     float XMin = 225., // minimum of X axis
+		     float XMax = 2000., // maximum of X axis
+		     bool blindData = true) {
 
 
   std::vector<TString> masses = {"225","250","275","300","325","350","375","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
@@ -50,13 +56,33 @@ void PlotComparison(TString Era1 = "Run2", // year2
   double plus1[nPoints];
   double plus2[nPoints];
 
-
   double minus2R_H[nPoints];
   double minus1R_H[nPoints];
   double median_H[nPoints];
   double plus2R_H[nPoints];
   double plus1R_H[nPoints];
   double mA_H[nPoints];
+
+  double minus2R_G[nPoints];
+  double minus1R_G[nPoints];
+  double median_G[nPoints];
+  double plus2R_G[nPoints];
+  double plus1R_G[nPoints];
+  double mA_G[nPoints];
+
+  double minus2R_L[nPoints];
+  double minus1R_L[nPoints];
+  double median_L[nPoints];
+  double plus2R_L[nPoints];
+  double plus1R_L[nPoints];
+  double mA_L[nPoints];
+
+  double minus2R_M[nPoints];
+  double minus1R_M[nPoints];
+  double median_M[nPoints];
+  double plus2R_M[nPoints];
+  double plus1R_M[nPoints];
+  double mA_M[nPoints];
 
   double MH;
   double LIMIT;
@@ -137,21 +163,7 @@ void PlotComparison(TString Era1 = "Run2", // year2
     tree->GetEntry(1);
     minus1R_H[counter_H] = scale*float(LIMIT);
 
-
     tree->GetEntry(2);
-
-    scale = 1.0;
-    if (MH>1900.)
-      scale *= 1.1;
-    else if (MH>1700.)
-      scale *= 1.05;
-    else if (MH>1500.)
-      scale *= 1.05;
-    else if (MH>1300.)
-      scale *= 1.05;
-    else if (MH>1100.)
-      scale *= 1.05;
-
     mA_H[counter_H] = float(MH);
     median_H[counter_H] = scale*float(LIMIT);
 
@@ -165,9 +177,89 @@ void PlotComparison(TString Era1 = "Run2", // year2
 
   }
 
-  std::cout << " m(A)  -2s   -1s   exp   +1s   +2s   obs " << std::endl; 
-  //           "100  24.1  28.2  33.8  40.8  48.2  23.0
+  int counter_L = 0;
+  std::cout << std::endl;
 
+  for (auto mass : masses) {
+    
+    TString fileName = folder3 + "/higgsCombine.azh_"+Era3+"_"+Process+".AsymptoticLimits.mH"+mass+".root";
+    
+    TFile * file = new TFile(fileName);
+    if (file==NULL||file->IsZombie()) {
+      std::cout << "file " << fileName << " does not exist... quitting" << std::endl;
+      return;
+    }
+
+    TTree * tree = (TTree*)file->Get("limit");
+
+    //    std::cout << "file : " << file << std::endl;
+    //    std::cout << "tree : " << tree << std::endl;
+
+    tree->SetBranchAddress("limit",&LIMIT);
+    tree->SetBranchAddress("mh",&MH);
+
+    tree->GetEntry(0);
+    minus2R_L[counter_L] = scale*float(LIMIT);
+    
+    tree->GetEntry(1);
+    minus1R_L[counter_L] = scale*float(LIMIT);
+
+    tree->GetEntry(2);
+    mA_L[counter_L] = float(MH);
+    median_L[counter_L] = scale*float(LIMIT);
+
+    tree->GetEntry(3);
+    plus1R_L[counter_L] = scale*float(LIMIT);
+    
+    tree->GetEntry(4);
+    plus2R_L[counter_L] = scale*float(LIMIT);
+
+    counter_L++;
+
+  }
+
+  int counter_M = 0;
+  std::cout << std::endl;
+
+  for (auto mass : masses) {
+    
+    TString fileName = folder4 + "/higgsCombine.azh_"+Era4+"_"+Process+".AsymptoticLimits.mH"+mass+".root";
+    
+    TFile * file = new TFile(fileName);
+    if (file==NULL||file->IsZombie()) {
+      std::cout << "file " << fileName << " does not exist... quitting" << std::endl;
+      return;
+    }
+
+    TTree * tree = (TTree*)file->Get("limit");
+
+    //    std::cout << "file : " << file << std::endl;
+    //    std::cout << "tree : " << tree << std::endl;
+
+    tree->SetBranchAddress("limit",&LIMIT);
+    tree->SetBranchAddress("mh",&MH);
+
+    tree->GetEntry(0);
+    minus2R_M[counter_M] = scale*float(LIMIT);
+    
+    tree->GetEntry(1);
+    minus1R_M[counter_M] = scale*float(LIMIT);
+
+    tree->GetEntry(2);
+    mA_M[counter_M] = float(MH);
+    median_M[counter_M] = scale*float(LIMIT);
+
+    tree->GetEntry(3);
+    plus1R_M[counter_M] = scale*float(LIMIT);
+    
+    tree->GetEntry(4);
+    plus2R_M[counter_M] = scale*float(LIMIT);
+
+    counter_M++;
+
+  }
+
+  std::cout << " m(A)  -2s   -1s   exp   +1s   +2s   obs " << std::endl; 
 
   for (int i=0; i<counter; ++i) {
 
@@ -183,18 +275,6 @@ void PlotComparison(TString Era1 = "Run2", // year2
 	    int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i]);
     std::cout << strOut << std::endl;
 
-  }
-  std::cout << std::endl;
-  std::cout << std::endl;
-  std::cout << " m(A)  -2s   -1s   exp   +1s   +2s   obs " << std::endl; 
-  //           "100  24.1  28.2  33.8  40.8  48.2  23.0
-  for (int i=0; i<counter_H; ++i) {
-
-
-    char strOut[200];
-    sprintf(strOut,"%4i  %5.2f  %5.2f  %5.2f  %5.2f  %5.2f",
-	    int(mA_H[i]),minus2R_H[i],minus1R_H[i],median_H[i],plus1R_H[i],plus2R_H[i]);
-    std::cout << strOut << std::endl;
   }
 
   double zeros[nPoints];
@@ -212,40 +292,34 @@ void PlotComparison(TString Era1 = "Run2", // year2
     lower[i] = central[i] - obs[i];
   }
   
-  int nPointsX = counter;
+  int nPointsG = counter;
   int nPointsH = counter_H;
-
-  TGraph * obsG = new TGraph(nPointsX, mA, obs);
-  obsG->SetLineWidth(3);
-  obsG->SetLineColor(1);
-  obsG->SetLineWidth(2);
-  obsG->SetMarkerColor(1);
-  obsG->SetMarkerStyle(20);
-  obsG->SetMarkerSize(1.4);
+  int nPointsL = counter_L;
+  int nPointsM = counter_M;
 
   TGraph * expH = new TGraph(nPointsH, mA_H, median_H);
   expH->SetLineWidth(3);
   expH->SetLineColor(4);
-  expH->SetLineStyle(2);
+  expH->SetLineStyle(1);
   expH->SetMarkerSize(0);
 
-  TGraph * expG = new TGraph(nPointsX, mA, median);
+  TGraph * expG = new TGraph(nPointsG, mA, median);
   expG->SetLineWidth(3);
   expG->SetLineColor(2);
-  expG->SetLineStyle(2);
+  expG->SetLineStyle(1);
+  expG->SetMarkerSize(0);
   
+  TGraph * expL = new TGraph(nPointsL, mA_L, median_L);
+  expL->SetLineWidth(3);
+  expL->SetLineColor(1);
+  expL->SetLineStyle(1);
+  expL->SetMarkerSize(0);
 
-  TGraphAsymmErrors * observed = new TGraphAsymmErrors(nPointsX, mA, central, zeros, zeros, lower, upper);
-  observed->SetFillColor(kCyan-4);
-  observed->SetLineWidth(3);
-
-  TGraphAsymmErrors * innerBand = new TGraphAsymmErrors(nPointsX, mA, median, zeros, zeros, minus1, plus1);
-  innerBand->SetFillColor(kGreen);
-  innerBand->SetLineColor(kGreen);
-
-  TGraphAsymmErrors * outerBand = new TGraphAsymmErrors(nPointsX, mA, median, zeros, zeros, minus2, plus2);
-  outerBand->SetFillColor(kYellow);
-  outerBand->SetLineColor(kYellow);
+  TGraph * expM = new TGraph(nPointsM, mA_M, median_M);
+  expM->SetLineWidth(3);
+  expM->SetLineColor(kGreen+2);
+  expM->SetLineStyle(1);
+  expM->SetMarkerSize(0);
 
   TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,0,YMax);
   frame->GetXaxis()->SetTitle("m_{A} (GeV)");
@@ -254,18 +328,14 @@ void PlotComparison(TString Era1 = "Run2", // year2
   frame->GetYaxis()->SetNdivisions(206);
   frame->GetYaxis()->SetTitleOffset(1.25);  
   frame->GetYaxis()->SetTitleSize(0.048);  
-  
 
   TCanvas *canv = MakeCanvas("canv", "histograms", 600, 600);
 
   frame->Draw();
-
-  //  outerBand->Draw("3same");
-  //  innerBand->Draw("3same");
   expG->Draw("lsame");
   expH->Draw("lsame");
-  if (!blindData)
-    obsG->Draw("lpsame");
+  expL->Draw("lsame");
+  expM->Draw("lsame");
 
   float xLeg = 0.18;
   float yLeg = 0.83;
@@ -273,16 +343,14 @@ void PlotComparison(TString Era1 = "Run2", // year2
   float yLegend = 0.41;
   float sizeLeg = 0.27;
 
-  TLegend * leg = new TLegend(0.35,0.65,0.60,0.80);
+  TLegend * leg = new TLegend(0.45,0.5,0.60,0.80);
   leg->SetFillColor(0);
-  leg->SetTextSize(0.04);
+  leg->SetTextSize(0.05);
   leg->SetBorderSize(0);
-  if (!blindData) 
-    leg->AddEntry(obsG,"Observed","lp");
   leg->AddEntry(expG,leg1,"l");
   leg->AddEntry(expH,leg2,"l");
-  //  leg->AddEntry(innerBand,"#pm1#sigma Expected","f");
-  //  leg->AddEntry(outerBand,"#pm2#sigma Expected","f");
+  leg->AddEntry(expL,leg3,"l");
+  leg->AddEntry(expM,leg4,"l");
   leg->Draw();
 
   extraText = "Internal";

@@ -1,6 +1,16 @@
-void PrintYields(TString hchannel = "et") {
+void PrintYields(TString hchannel = "mt",
+		 TString cat = "0btag",
+		 TString year="2016",
+		 TString folder="preapp") {
   
   vector<TString> zchannels = {"mm","ee"};
+
+  std::cout << "+++++++++++++++++++++++" << std::endl;
+  std::cout << "Year      : " << year << std::endl;
+  std::cout << "Folder    : " << folder << std::endl;
+  std::cout << "Channel   : " << hchannel << std::endl;
+  std::cout << "Category  : " << cat << std::endl;
+  std::cout << std::endl;
 
   map<TString, TString> backgrounds = {
     {"ZZ"         , "ZZ       "},
@@ -26,12 +36,11 @@ void PrintYields(TString hchannel = "et") {
     {"WHtt"    , 0},
     {"TTW"     , 0},
     {"TTZ"     , 0},
-    {"reducible", 0},
-    {"data_obs", 0}};
+    {"reducible", 0}};
 
+  TFile * file = new TFile("root_files/"+folder+"/MC_"+cat+"_"+year+".root");
   for (auto zchannel : zchannels) {
     TString channel = zchannel + hchannel;
-    TFile * file = new TFile("root_files/MC_data_0btag_2016.root");
     for (auto bkg_yield : bkg_yields) {
       TString name = bkg_yield.first;
       TH1D * hist = (TH1D*)file->Get(channel+"/"+name);
@@ -40,16 +49,23 @@ void PrintYields(TString hchannel = "et") {
     
   }
   
-  TFile * file = new TFile("root_files/signal_300_0btag_2016.root");
+  file = new TFile("root_files/"+folder+"/signal_300_"+cat+"_"+year+".root");
   double signalYield = 0;
   for (auto zchannel : zchannels) {
     TString channel = zchannel + hchannel;
     TH1D * hist = (TH1D*)file->Get(channel+"/ggA");
     signalYield += hist->GetSumOfWeights();
   }
-
+  file = new TFile("root_files/"+folder+"/data_"+cat+"_"+year+".root");
+  double dataYield = 0;
+  for (auto zchannel : zchannels) {
+    TString channel = zchannel + hchannel;
+    TH1D * hist = (TH1D*)file->Get(channel+"/data");
+    dataYield += hist->GetSumOfWeights();
+  }
+  
   double total = 0;
-  printf("ggA300        : %5.3f\n",signalYield);
+  printf("ggA300    : %5.3f\n",signalYield);
   for (auto bkgd : backgrounds) {
     TString name = bkgd.first;
     TString title = bkgd.second;
@@ -59,5 +75,5 @@ void PrintYields(TString hchannel = "et") {
     printf(" : %5.3f\n",yield);
   }
   printf("Total : %5.3f\n",total);
-  printf("Data  : %4.2f\n",bkg_yields["data_obs"]);
+  printf("Data  : %4.2f\n",dataYield);
 }

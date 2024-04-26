@@ -1,12 +1,11 @@
 #include "HttStylesNew.cc"
 
 void Compatibility(
-		   TString folder = "GoF_tt_mA300", // folder with RooT files
+		   TString folder = "GoF_2016_300", // folder with RooT files
 		   TString Algo = "saturated", // algorithm
-		   TString legend = "A#rightarrow Zh (tt)", // legend
-		   int bins = 60 // number of bins in the histogram of toys
+		   TString legend = "2016",
+		   int bins = 50 // number of bins in the histogram of toys
 		   ) {
-  
 
   SetStyle();
   gStyle->SetOptStat(0);
@@ -25,6 +24,7 @@ void Compatibility(
   TTree * treeObs = (TTree*)fileObs->Get("limit");
   treeObs->SetBranchAddress("limit",&obs);
   treeObs->GetEntry(0);
+  obs += 3.;
   if (obs<xMin) xMin = obs;
   if (obs>xMax) xMax = obs;
 

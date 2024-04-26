@@ -101,15 +101,22 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // ++++++++++++++++++++++
 // +++ Main subroutine
 // ++++++++++++++++++++++
-void Plot2Dscan(TString folder="2Dscan_Run2_300",
-		double xmax_frame = 5,
-		double ymax_frame = 5) {
+void Plot2Dscan(TString mass = "250",
+		double xmax_frame = 3,
+		double ymax_frame = 3) {
 
   SetStyle();
+
+  TString folder = "2Dscan_Run2_" + mass;
 
   //  gROOT->SetBatch(true);
 
   TFile * fileInfo = new TFile(folder+"/Info_2D.root");
+  if (fileInfo==NULL || fileInfo->IsZombie()) {
+    std::cout << "File " << folder << "/Info_2D.root does not exist or not properly closed" << std::endl; 
+    return;
+  }
+
   TTree * treeInfo = (TTree*)fileInfo->Get("info");
   int nPoints;
   double xmax;
@@ -126,8 +133,18 @@ void Plot2Dscan(TString folder="2Dscan_Run2_300",
 
 
   TFile * file = new TFile(folder+"/Scan_obs.root");
-  TTree * tree = (TTree*)file->Get("limit");
   TFile * fileE = new TFile(folder+"/Scan_exp.root");
+  if (file==NULL || file->IsZombie()) {
+    std::cout << "File " << folder << "/Scan_obs.root does not exist or not properly closed" << std::endl;
+    return;
+  }
+
+  if (fileE==NULL || fileE->IsZombie()) {
+    std::cout << "File " << folder << "/Scan_exp.root does not exist or not properly closed" << std::endl;
+    return;
+  }
+ 
+  TTree * tree = (TTree*)file->Get("limit");
   TTree * treeE = (TTree*)fileE->Get("limit");
 
   double xmin =  0.0;
@@ -148,10 +165,12 @@ void Plot2Dscan(TString folder="2Dscan_Run2_300",
   double xE_1sigma[200];
   double ylowE_1sigma[200];
   double yhighE_1sigma[200];
+  double ycentreE_1sigma[200];
 
   double xE_2sigma[200];
   double ylowE_2sigma[200];
   double yhighE_2sigma[200];
+  double ycentreE_2sigma[200];
   
   double xbest[1];
   double ybest[1];
@@ -167,14 +186,14 @@ void Plot2Dscan(TString folder="2Dscan_Run2_300",
   for (unsigned int i=0; i<200; ++i)
     xe[i] = 0;
 
-  int nGraph_1sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,tree,
+  int nGraph_1sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,treeE,
 			      dnll_1sigma,xbest,ybest,x_1sigma,ylow_1sigma,yhigh_1sigma);
-  int nGraph_2sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,tree,
+  int nGraph_2sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,treeE,
 			      dnll_2sigma,xbest,ybest,x_2sigma,ylow_2sigma,yhigh_2sigma);
 
-  int nGraphE_1sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,treeE,
+  int nGraphE_1sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,tree,
 			       dnll_1sigma,xbestE,ybestE,xE_1sigma,ylowE_1sigma,yhighE_1sigma);
-  int nGraphE_2sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,treeE,
+  int nGraphE_2sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,tree,
 			       dnll_2sigma,xbestE,ybestE,xE_2sigma,ylowE_2sigma,yhighE_2sigma);
 
   for (int i=0; i<nGraph_1sigma; ++i) {
@@ -216,6 +235,17 @@ void Plot2Dscan(TString folder="2Dscan_Run2_300",
   contour_2sigma->SetFillColor(kYellow);
   contour_2sigma->SetLineColor(kYellow);
 
+  double xx = xE_1sigma[nGraphE_1sigma-1];
+  xE_1sigma[nGraphE_1sigma] = xx;
+  yhighE_1sigma[nGraphE_1sigma] = 0.;
+  nGraphE_1sigma++;
+  
+  xx = xE_2sigma[nGraphE_2sigma-1];
+  xE_2sigma[nGraphE_2sigma] = xx;
+  yhighE_2sigma[nGraphE_2sigma] = 0.;
+  nGraphE_2sigma++;
+  
+
   TGraph * graph_1sigma = new TGraph(nGraphE_1sigma,xE_1sigma,yhighE_1sigma);
   graph_1sigma->SetLineColor(kBlue);
   graph_1sigma->SetLineStyle(2);
@@ -227,7 +257,7 @@ void Plot2Dscan(TString folder="2Dscan_Run2_300",
   graph_2sigma->SetLineWidth(3);
 
   //Best fit 
-  TGraph * graphBest = new TGraph(1,xbest,ybest);
+  TGraph * graphBest = new TGraph(1,xbestE,ybestE);
   graphBest->SetMarkerStyle(43);
   graphBest->SetMarkerSize(4.0);
   graphBest->SetMarkerColor(kBlack);
@@ -250,13 +280,15 @@ void Plot2Dscan(TString folder="2Dscan_Run2_300",
   graph_2sigma->Draw("lsame");
   graphBest->Draw("psame");
 
-  TLegend * leg = new TLegend(0.6,0.45,0.85,0.7);
+  TLegend * leg = new TLegend(0.7,0.45,0.85,0.75);
   SetLegendStyle(leg);
-  leg->SetTextSize(0.045);
+  leg->SetTextSize(0.033);
+  leg->SetHeader("m_{A} = "+mass+" GeV");
   leg->AddEntry(contour_1sigma,"exp 68%","f");
   leg->AddEntry(contour_2sigma,"exp 95%","f");
   leg->AddEntry(graph_1sigma,"obs 68%","l");
   leg->AddEntry(graph_2sigma,"obs 95%","l");
+  leg->AddEntry(graphBest,"best fit","p");
   leg->Draw();
 
   lumi_13TeV = "138 fb^{-1}";
