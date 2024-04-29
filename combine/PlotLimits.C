@@ -4,7 +4,7 @@
 void PlotLimits(TString Era = "Run2", // year
 		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt
 		TString Process = "bbA", // process
-		TString folder = "limits_noFitAsimov", // input folder (output of macro RunLimits.py)
+		TString folder = "limits", // input folder (output of macro RunLimits.py)
 		TString postfix = "noFitAsimov",
 		float YMax = 20, // upper boundary of Y axis
 		float XMin = 225., // lower boundary of X axis
