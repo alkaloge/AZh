@@ -1,5 +1,16 @@
 #include "HttStylesNew.cc"
 #include "CMS_lumi.C"
+
+// x1 = a*y1 + b
+// x2 = a*y2 + b
+// a = (x1-x2)/(y1-y2)
+// b = x1 - a*y1
+double linear_int(double x1, double x2, double y1, double y2) {
+  double a = (x1-x2)/(y1-y2);
+  double b = x1 - a*y1;
+  return b;
+}
+
 int Find_2D(int nPoints, // sqrt(number_of_points) 
 	    double x1, // lower boundary of r_qqH
 	    double x2,  // upper boundary of r_qqH
@@ -101,7 +112,7 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // ++++++++++++++++++++++
 // +++ Main subroutine
 // ++++++++++++++++++++++
-void Plot2Dscan(TString mass = "250",
+void Plot2Dscan(TString mass = "225",
 		double xmax_frame = 3,
 		double ymax_frame = 3) {
 
@@ -130,6 +141,8 @@ void Plot2Dscan(TString mass = "250",
   std::cout << "xmax = " << xmax << std::endl;
   std::cout << "ymax = " << ymax << std::endl;
   //  return;
+  double dx = xmax/double(nPoints);
+  double dy = ymax/double(nPoints);
 
 
   TFile * file = new TFile(folder+"/Scan_obs.root");
@@ -235,15 +248,41 @@ void Plot2Dscan(TString mass = "250",
   contour_2sigma->SetFillColor(kYellow);
   contour_2sigma->SetLineColor(kYellow);
 
-  double xx = xE_1sigma[nGraphE_1sigma-1];
-  xE_1sigma[nGraphE_1sigma] = xx;
-  yhighE_1sigma[nGraphE_1sigma] = 0.;
-  nGraphE_1sigma++;
+  int NP = nGraphE_1sigma-1;
+  for (int ip=NP; ip>0; --ip) {
+    if (ylowE_1sigma[ip]<dy&&ylowE_1sigma[ip]>0) {
+      xE_1sigma[nGraphE_1sigma]=linear_int(xE_1sigma[ip-1],
+					   xE_1sigma[ip],
+					   yhighE_1sigma[ip-1],
+					   yhighE_1sigma[ip]);
+      yhighE_1sigma[nGraphE_1sigma]=0.;
+      nGraphE_1sigma++;
+      break;
+    }
+    else {
+      xE_1sigma[nGraphE_1sigma]=xE_1sigma[ip];		
+      yhighE_1sigma[nGraphE_1sigma]=ylowE_1sigma[ip];
+      nGraphE_1sigma++;
+    }
+  }
   
-  xx = xE_2sigma[nGraphE_2sigma-1];
-  xE_2sigma[nGraphE_2sigma] = xx;
-  yhighE_2sigma[nGraphE_2sigma] = 0.;
-  nGraphE_2sigma++;
+  NP = nGraphE_2sigma-1;
+  for (int ip=NP; ip>0; --ip) {
+    if (ylowE_2sigma[ip]<dy&&ylowE_2sigma[ip]>0) {
+      xE_2sigma[nGraphE_2sigma]=linear_int(xE_2sigma[ip-1],
+					   xE_2sigma[ip],
+					   yhighE_2sigma[ip-1],
+					   yhighE_2sigma[ip]);
+      yhighE_2sigma[nGraphE_2sigma]=0.;
+      nGraphE_2sigma++;
+      break;
+    }
+    else {
+      xE_2sigma[nGraphE_2sigma]=xE_2sigma[ip];		
+      yhighE_2sigma[nGraphE_2sigma]=ylowE_2sigma[ip];
+      nGraphE_2sigma++;
+    }
+  }
   
 
   TGraph * graph_1sigma = new TGraph(nGraphE_1sigma,xE_1sigma,yhighE_1sigma);

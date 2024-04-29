@@ -17,7 +17,13 @@ def ExtractHistoFromFit(hist,fitfile,**kwargs):
     templ = kwargs.get('templ','ggA')
     
     histname = 'shapes_%s/azh_%s_%s_%s_%s/%s'%(fittype,year,cat,channel,mass,templ)
-    reference = fitfile.Get(histname)
+    try: 
+        reference = fitfile.Get(histname)
+    except RuntimeError:
+        print('Histogram %s is not found in fitDiagnostics.Test.root')
+        print('You have to run fit first and save shapes -> ./RunFit.py --saveShapes')
+        exit()
+
     norm = reference.GetSumOfWeights()
     is_positive = norm>0.0
     nbins = reference.GetNbinsX()
@@ -40,13 +46,13 @@ if __name__ == "__main__":
     styles.SetStyle()
 
     parser = argparse.ArgumentParser(description="Plotting final discriminants")
-    parser.add_argument('-year','--year',dest='year',default='all')
-    parser.add_argument('-cat','--cat',dest='cat',default='0btag')
-    parser.add_argument('-channel','--channel',dest='channel',default='all')
+    parser.add_argument('-year','--year',dest='year',default='all',choices=['2016','2017','2018','all'])
+    parser.add_argument('-cat','--cat',dest='cat',default='0btag',choices=['btag','0btag','all'])
+    parser.add_argument('-channel','--channel',dest='channel',default='all',choices=['et','mt','tt','all'])
     parser.add_argument('-folder','--folder',dest='folder',default='datacards')
     parser.add_argument('-mass','--mass',dest='mass',required=True)
     parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=200)
-    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=2500)
+    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1000)
     parser.add_argument('-logx','--logx',dest='logx',action='store_true')
     parser.add_argument('-fittype','--fittype',dest='fittype',default='prefit',choices=['prefit','fit_b','fit_s'])
     parser.add_argument('-unblind','--unblind',dest='unblind',action='store_true')
@@ -148,11 +154,14 @@ if __name__ == "__main__":
     fitfilename = utils.BaseFolder + '/fit_'+year_legend+'_mA'+mass+'_obs/fitDiagnostics.Test.root'
     if not os.path.isfile(fitfilename): 
         print('input file %s does not exist'%(fitfilename))
-        print('Run script ./RunFit.py --sample Run2 --mass %s --saveShapes -obs --batch')
+        print('Run script ./RunFit.py --sample Run2 --mass [mass] --saveShapes -obs --batch')
         exit()
     
     fitfile = ROOT.TFile(fitfilename)
-   
+    if fitfile==None or fitfile.IsZombie():
+        print('file %s not properly closed'%(fitfile))
+        exit()
+
     print
     print('histogram binning')
     for ib in range(1,nbins+1):
