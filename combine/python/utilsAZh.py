@@ -277,8 +277,10 @@ def symmetrizeUnc(hists):
         delta = 0.5*(xup-xdown)
         up = max(0,xcentral+delta)
         down = max(0,xcentral-delta)
+        # symmetrize shape templates
         #        onesided = (xcentral<xdown and xcentral<xup) or (xcentral>xdown and xcentral>xup)
         #        if onesided:
+
         histUp.SetBinContent(ib,up)
         histDown.SetBinContent(ib,down)
 
