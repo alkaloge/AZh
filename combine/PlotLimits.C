@@ -4,13 +4,13 @@
 void PlotLimits(TString Era = "Run2", // year
 		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt
 		TString Process = "bbA", // process
-		TString folder = "limits_noFitAsimov", // input folder (output of macro RunLimits.py)
+		TString folder = "limits", // input folder (output of macro RunLimits.py)
 		TString postfix = "noFitAsimov",
-		float YMax = 10, // upper boundary of Y axis
+		float YMax = 20, // upper boundary of Y axis
 		float XMin = 225., // lower boundary of X axis
-		float XMax = 1200., // upper boundary of X axis
-		bool logx = true, // log scale of X axis
-		bool blindData =false // blinding observed limit
+		float XMax = 2000., // upper boundary of X axis
+		bool logx = false, // log scale of X axis
+		bool blindData = true // blinding observed limit
 		) {
 
 
@@ -157,10 +157,14 @@ void PlotLimits(TString Era = "Run2", // year
   TGraphAsymmErrors * innerBand = new TGraphAsymmErrors(nPointsX, mA, median, zeros, zeros, minus1, plus1);
   innerBand->SetFillColor(kGreen);
   innerBand->SetLineColor(kGreen);
+  innerBand->SetFillColor(TColor::GetColor("#85D1FBff"));
+  innerBand->SetLineColor(TColor::GetColor("#85D1FBff"));
 
   TGraphAsymmErrors * outerBand = new TGraphAsymmErrors(nPointsX, mA, median, zeros, zeros, minus2, plus2);
   outerBand->SetFillColor(kYellow);
   outerBand->SetLineColor(kYellow);
+  outerBand->SetFillColor(TColor::GetColor("#FFDF7Fff"));
+  outerBand->SetLineColor(TColor::GetColor("#FFDF7Fff"));
 
   TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,0,YMax);
   frame->GetXaxis()->SetTitle("m_{A} (GeV)");
