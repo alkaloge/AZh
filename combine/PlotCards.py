@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Plotting final discriminants")
     parser.add_argument('-year','--year',dest='year',default='all',choices=['2016','2017','2018','all'])
-    parser.add_argument('-cat','--cat',dest='cat',default='0btag',choices=['btag','0btag','all'])
+    parser.add_argument('-cat','--cat',dest='cat',default='0btag',choices=['btag','0btag'])
     parser.add_argument('-channel','--channel',dest='channel',default='all',choices=['mt','tt','et','all'])
     parser.add_argument('-folder','--folder',dest='folder',default='datacards')
     parser.add_argument('-mass','--mass',dest='mass',default='300')
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
     inputfile, inputfile_s = utils.GetInputFiles(
         year=yearToAccess,
-        cat='btag',
+        cat=args.cat,
         channel='mmtt',
         folder=args.folder,
         mass=mass)
