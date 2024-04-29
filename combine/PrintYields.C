@@ -1,7 +1,7 @@
 void PrintYields(TString hchannel = "mt",
 		 TString cat = "0btag",
-		 TString year="2016",
-		 TString folder="preapp") {
+		 TString year="2018",
+		 TString folder="root_files") {
   
   vector<TString> zchannels = {"mm","ee"};
 
@@ -38,7 +38,7 @@ void PrintYields(TString hchannel = "mt",
     {"TTZ"     , 0},
     {"reducible", 0}};
 
-  TFile * file = new TFile("root_files/"+folder+"/MC_"+cat+"_"+year+".root");
+  TFile * file = new TFile(folder+"/MC_data_"+cat+"_"+year+".root");
   for (auto zchannel : zchannels) {
     TString channel = zchannel + hchannel;
     for (auto bkg_yield : bkg_yields) {
@@ -49,18 +49,18 @@ void PrintYields(TString hchannel = "mt",
     
   }
   
-  file = new TFile("root_files/"+folder+"/signal_300_"+cat+"_"+year+".root");
+  file = new TFile(folder+"/signal_300_"+cat+"_"+year+".root");
   double signalYield = 0;
   for (auto zchannel : zchannels) {
     TString channel = zchannel + hchannel;
     TH1D * hist = (TH1D*)file->Get(channel+"/ggA");
     signalYield += hist->GetSumOfWeights();
   }
-  file = new TFile("root_files/"+folder+"/data_"+cat+"_"+year+".root");
+  file = new TFile(folder+"/MC_data_"+cat+"_"+year+".root");
   double dataYield = 0;
   for (auto zchannel : zchannels) {
     TString channel = zchannel + hchannel;
-    TH1D * hist = (TH1D*)file->Get(channel+"/data");
+    TH1D * hist = (TH1D*)file->Get(channel+"/data_obs");
     dataYield += hist->GetSumOfWeights();
   }
   
