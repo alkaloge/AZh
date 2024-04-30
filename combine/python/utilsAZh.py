@@ -702,6 +702,10 @@ def Plot(hists,**kwargs):
     styles.InitHist(ZZ_hist,"m(4l) [GeV]","Events",ROOT.TColor.GetColor("#4496C8"),1001)
     styles.InitHist(fake_hist,"","",ROOT.TColor.GetColor("#c6f74a"),1001)
     styles.InitHist(other_hist,"","",ROOT.TColor.GetColor("#FFCCFF"),1001)
+
+    styles.InitHist(ZZ_hist,"m(4l) [GeV]","Events",ROOT.TColor.GetColor("#ffa90e"),1001) #red
+    styles.InitHist(fake_hist,"","",ROOT.TColor.GetColor("#e76300"),1001)
+    styles.InitHist(other_hist,"","",ROOT.TColor.GetColor("#3f90da"),1001)
     styles.InitModel(ggA_hist,ROOT.kRed,1)
     if isBBA: styles.InitModel(bbA_hist,ROOT.kBlue,2)
     styles.InitTotalHist(tot_hist)

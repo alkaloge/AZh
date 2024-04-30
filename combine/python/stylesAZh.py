@@ -294,7 +294,7 @@ def InitLowerPad(pad):
 def CMS_label(pad,**kwargs):
 
     iPeriod = kwargs.get('Period',4)
-    iPosX = kwargs.get('PosX',33)
+    iPosX = kwargs.get('PosX',11)
     writeExtraText = kwargs.get('writeExtraText',True)
     era = kwargs.get('era',"UL2018")
     extraText = kwargs.get('extraText',"Internal")
