@@ -35,8 +35,6 @@ def MakeCommand(**kwargs):
             command += '--setParameterRanges r_%s=-20,20 '%(proc)
             command += '--freezeParameters r_%s '%(otherProc)
         command += '--redefineSignalPOIs r_%s '%(proc) 
-        if noFitAsimov:
-            command += '--noFitAsimov '
     else:
         command += '%s/HIG-18-023/%s/ws.root '%(utils.BaseFolder,mass)
         command += '--rMin=0.001 --rMax=50. '

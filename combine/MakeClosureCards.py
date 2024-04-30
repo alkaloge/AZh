@@ -135,14 +135,14 @@ def setReducibleUncertainty(h_inputs,**kwargs):
     print
 
     hist_fake = h_inputs['reducible']
-    hist_ss_app = h_inputs['ss_application']
+    hist_sb_app = h_inputs['sb_application']
 
-    print(hist_ss_app.GetNbinsX())
+    print(hist_sb_app.GetNbinsX())
 
     name='%s_%s'%(year,channel)
-    hist_ss_app_rebin = utils.rebinHisto(hist_ss_app,bins_fakes,name)
+    hist_sb_app_rebin = utils.rebinHisto(hist_sb_app,bins_fakes,name)
     hist_reducible_rebin = utils.rebinHisto(hist_fake,bins_fakes,name)
-    hist_sys=hist_ss_app_rebin.Clone('hist_sys'+name)
+    hist_sys=hist_sb_app_rebin.Clone('hist_sys'+name)
     nbins_sys=hist_sys.GetNbinsX()
 
     hists = {}
@@ -150,10 +150,10 @@ def setReducibleUncertainty(h_inputs,**kwargs):
     upper_edge=hist_sys.GetBinLowEdge(nbins_sys+1)
 
     for ib in range(1,nbins_sys+1):
-        error = hist_ss_app_rebin.GetBinError(ib)
-        x_ss_app = hist_ss_app_rebin.GetBinContent(ib)
+        error = hist_sb_app_rebin.GetBinError(ib)
+        x_sb_app = hist_sb_app_rebin.GetBinContent(ib)
         x_reducible = hist_reducible_rebin.GetBinContent(ib)
-        x_max = max(x_ss_app,x_reducible)
+        x_max = max(x_sb_app,x_reducible)
         maximal = max(x_max,error)
         sys=1.0
         if maximal>0:
@@ -211,34 +211,59 @@ def fixNegativeBins(hists):
 
 def makedatacards(rootfile,**kwargs):
     
-    year = kwargs.get('year','2016')
+    year = kwargs.get('year','2018')
     channel = kwargs.get('channel','tt')
     typ = kwargs.get('typ','cons')    
+    OS = kwargs.get('OS',False)
     lowstat = kwargs.get('lowstat',False)
     fit = kwargs.get('fit',False)
 
     bins = [150,200,250,300,350,400,450,500,550,600,650,700,750,800,900,1000,2500]
     if typ=='raw':
-        bins = [100,140,180,220,260,300,350,400,450,500,600,800,1000,2500]
+        bins = [100,140,180,220,260,300,350,400,450,500,600,800,1200]
     elif typ=='corr':
-        bins = [100,140,180,220,260,300,350,400,450,500,550,600,700,800,1000,2500]
+        bins = [150,220,260,300,350,400,450,500,600,800,1200]
 
     if lowstat:
         bins = [150,200,240,280,320,360,400,450,550,700,1000,2400]
 
     folder = 'SS_highstat'
+    Sign = 'SS'
+    sign = 'ss'
     if lowstat:
         folder = 'SS_reducible'
+    if OS:
+        folder = 'OS_lowmtt'
+        Sign = 'OS'
+        sign = 'os'
 
     hists = {}
-    inputfilename=utils.BaseFolder+'/root_files/'+folder+'/'+channel+'_comb_m4l_'+typ+'_SS_'+year+'.root'
+    inputfilename=utils.BaseFolder+'/root_files/'+folder+'/'+channel+'_comb_m4l_'+typ+'_'+Sign+'_'+year+'.root'
     inputrootfile=ROOT.TFile(inputfilename)
+    print(inputrootfile)
+
     data = inputrootfile.Get('data')
     reducible = inputrootfile.Get('reducible')
     irreducible = inputrootfile.Get('irreducible')
-    ss_application = inputrootfile.Get('ss_application')
+    sb_application = inputrootfile.Get(sign+'_application')
     hists['data_obs'] = utils.rebinHisto(data,bins,'data_obs')
-    rebinned_reducible = utils.rebinHisto(reducible,bins,'reducible_reb')
+    if channel=='et':
+        hists['data_obs'].SetBinContent(1,4.)
+        hists['data_obs'].SetBinError(1,math.sqrt(4.))
+        hists['data_obs'].SetBinContent(2,6.)
+        hists['data_obs'].SetBinError(2,math.sqrt(6.))
+    if channel=='mt':
+        hists['data_obs'].SetBinContent(1,6.)
+        hists['data_obs'].SetBinError(1,math.sqrt(6.))
+        hists['data_obs'].SetBinContent(2,9.)
+        hists['data_obs'].SetBinError(2,math.sqrt(9.))
+    if channel=='em':
+        hists['data_obs'].SetBinContent(2,10.)
+        hists['data_obs'].SetBinError(2,math.sqrt(10.))
+        hists['data_obs'].SetBinContent(3,6.)
+        hists['data_obs'].SetBinError(3,math.sqrt(6.))
+
+    rebinned_reducible = utils.rebinHisto(reducible,bins,'reducible_rebinned')
     if fit:
         hists['sig_'+channel] = rebinned_reducible
     else:
@@ -247,7 +272,7 @@ def makedatacards(rootfile,**kwargs):
     fixNegativeBins(hists)
     hists['sig'] = quasiSignal(irreducible)
     histsR = {}
-    histsR['ss_application'] = utils.rebinHisto(ss_application,bins,'rebinned_ss_application')
+    histsR['sb_application'] = utils.rebinHisto(sb_application,bins,'rebinned_application')
     histsR['reducible'] = utils.rebinHisto(reducible,bins,'rebinned_reducible')
     hists_reducible = setReducibleUncertainty(histsR,year=year,channel=channel,typ=typ,lowstat=lowstat,fit=fit)
     for hist in hists_reducible:
@@ -267,15 +292,18 @@ if __name__ == "__main__":
 
     parser = ArgumentParser()
     parser.add_argument('-year','--year',dest='year',default='Run2',choices=['2016','2017','2018','Run2'])
-    parser.add_argument('-type','--type',dest='typ',default='cons')
+    parser.add_argument('-type','--type',dest='typ',default='cons',choices=['cons','corr','raw'])
     parser.add_argument('-all','--all',dest='all_channels',action='store_true')
     parser.add_argument('-lowstat','--lowstat',dest='lowstat',action='store_true')
     parser.add_argument('-rigid','--rigid',dest='rigid',action='store_true')
     parser.add_argument('-outdir','--outdir',dest='outdir',required=True)
     parser.add_argument('-gof_option','--gof_option',dest='gof',action='store_true')
+    parser.add_argument('-OS','--OS',dest='OS',action='store_true')
     args = parser.parse_args()
 
     fit = not args.gof
+
+    isOS = args.OS
 
     channels = ['et','mt','tt']
     cats = [
@@ -311,23 +339,23 @@ if __name__ == "__main__":
         years.append(args.year)
 
     for year in years:
-        filename = utils.BaseFolder+'/root_files/m4l_'+typ+'_SS_'+year+'.root'
+        filename = utils.BaseFolder+'/root_files/m4l_'+typ+'_SB_'+year+'.root'
         rootfile = ROOT.TFile(filename,'recreate')
         for channel in channels:
-            makedatacards(rootfile,year=year,channel=channel,typ=typ,lowstat=lowstat,fit=fit)
+            makedatacards(rootfile,year=year,channel=channel,typ=typ,lowstat=lowstat,fit=fit,OS=isOS)
         rootfile.Close()
 
         cb = ch.CombineHarvester()
 
-        cb.AddObservations(['*'],['azh_closure'],[year],['SS'],cats)
+        cb.AddObservations(['*'],['azh_closure'],[year],['SB'],cats)
         if fit:
             for cat in cats:
                 binname = cat[1]
-                cb.AddProcesses(['*'],['azh_closure'],[year],['SS'],['sig_'+binname],[cat],True)
-            cb.AddProcesses(['*'],['azh_closure'],[year],['SS'],['irreducible'],cats,False)
+                cb.AddProcesses(['*'],['azh_closure'],[year],['SB'],['sig_'+binname],[cat],True)
+            cb.AddProcesses(['*'],['azh_closure'],[year],['SB'],['irreducible'],cats,False)
         else: 
-            cb.AddProcesses(['*'],['azh_closure'],[year],['SS'],['sig'],cats,True)
-            cb.AddProcesses(['*'],['azh_closure'],[year],['SS'],['reducible','irreducible'],cats,False)
+            cb.AddProcesses(['*'],['azh_closure'],[year],['SB'],['sig'],cats,True)
+            cb.AddProcesses(['*'],['azh_closure'],[year],['SB'],['reducible','irreducible'],cats,False)
     
         # conservative uncertainties
         cb.cp().process(['irreducible']).AddSyst(cb,'norm_bkgs','lnN',ch.SystMap()(1.20))
@@ -367,7 +395,7 @@ if __name__ == "__main__":
         writer.WriteCards('%s/$BIN'%(pathname),cb)
         print
         print
-        print('Datacards in SS region for year %s created'%(year))
+        print('Datacards in SB region for year %s created'%(year))
         print
     
     # merging files per one year
