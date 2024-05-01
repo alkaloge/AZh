@@ -1,9 +1,9 @@
 #include "HttStylesNew.cc"
 
 void Compatibility(
-		   TString folder = "GoF_2016_300", // folder with RooT files
+		   TString folder = "GoF_Closure_OS_lowmtt_em", // folder with RooT files
 		   TString Algo = "saturated", // algorithm
-		   TString legend = "2016",
+		   TString legend = "e#mu (2018 OS low m_{#tau#tau})",
 		   int bins = 50 // number of bins in the histogram of toys
 		   ) {
 
@@ -24,7 +24,6 @@ void Compatibility(
   TTree * treeObs = (TTree*)fileObs->Get("limit");
   treeObs->SetBranchAddress("limit",&obs);
   treeObs->GetEntry(0);
-  obs += 3.;
   if (obs<xMin) xMin = obs;
   if (obs>xMax) xMax = obs;
 
