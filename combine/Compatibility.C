@@ -1,9 +1,9 @@
 #include "HttStylesNew.cc"
 
 void Compatibility(
-		   TString folder = "GoF_Closure_OS_lowmtt_em", // folder with RooT files
+		   TString folder = "GoF_Run2", // folder with RooT files
 		   TString Algo = "saturated", // algorithm
-		   TString legend = "e#mu (2018 OS low m_{#tau#tau})",
+		   TString legend = "Run2 (comb)",
 		   int bins = 50 // number of bins in the histogram of toys
 		   ) {
 
