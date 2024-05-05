@@ -21,7 +21,7 @@ class AZhModel(PhysicsModel):
         self.SYST_DICT = defaultdict(list)
         self.NUISANCES = set()
         self.scenario = 'hMSSM_13'
-        self.tanbeta = 4.0
+        self.tanbeta = 2.0
         self.mA = 300.0
         self.debug_output = None
 
@@ -47,11 +47,11 @@ class AZhModel(PhysicsModel):
         self.buildModel()
 
     def buildModel(self):
-        mass = ROOT.RooRealVar('mH', 'm_{A} [GeV]', self.mA)
+        mass = ROOT.RooRealVar('mA', 'm_{A} [GeV]', self.mA)
         tanb = ROOT.RooRealVar('tanb', 'tan#beta',self.tanbeta)
         pars = [mass, tanb]
 
-        print('mass = %4.0f  tanbeta=%4.1f'%(mass.getVal(),tanb.getVal()))
+        print('Building model : mA = %4.0f  tanbeta=%4.1f'%(mass.getVal(),tanb.getVal()))
 
         # Open input root file to read the histograms
         rf = ROOT.TFile(self.filename, "read")
@@ -86,7 +86,7 @@ class AZhModel(PhysicsModel):
             for proc in self.DC.exp[bin].keys():
                 if self.DC.isSignal[proc]:
                     scaling = 'scaling_%s' % proc
-                    print(scaling)
+                    #                    print(scaling)
                     params = self.modelBuilder.out.function(scaling).getParameters(ROOT.RooArgSet()).contentsString().split(',')
                     for param in params:
                         if param in self.NUISANCES:
@@ -101,13 +101,13 @@ class AZhModel(PhysicsModel):
         self.modelBuilder.doSet('POI', 'r')
 
         # We don't intend on actually floating these in any fits...
-        self.modelBuilder.out.var('mH').setConstant(True)
+        self.modelBuilder.out.var('mA').setConstant(True)
         self.modelBuilder.out.var('tanb').setConstant(True)
         #        self.modelBuilder.out.var('br_Zll').setConstant(True)
 
         for proc in self.PROC_SETS:
             # Set up list of terms used in the scaling of the considered process
-            terms = ['xs_%s' % proc,'br_AZh','br_htautau','110.0','r']
+            terms = ['xs_%s' % proc,'br_AZh','br_htautau','100.0','r']
             # Check if a term was added that is associated with
             # a systematic uncertainty. If this is the case add
             # the systematic uncertainty to the scaling of the process
