@@ -247,21 +247,28 @@ def makedatacards(rootfile,**kwargs):
     irreducible = inputrootfile.Get('irreducible')
     sb_application = inputrootfile.Get(sign+'_application')
     hists['data_obs'] = utils.rebinHisto(data,bins,'data_obs')
+    if channel=='tt':
+        hists['data_obs'].SetBinContent(1,8.)
+        hists['data_obs'].SetBinError(1,math.sqrt(8.))
+        hists['data_obs'].SetBinContent(2,15.)
+        hists['data_obs'].SetBinError(2,math.sqrt(15.))
     if channel=='et':
-        hists['data_obs'].SetBinContent(1,4.)
-        hists['data_obs'].SetBinError(1,math.sqrt(4.))
+        hists['data_obs'].SetBinContent(1,5.)
+        hists['data_obs'].SetBinError(1,math.sqrt(5.))
         hists['data_obs'].SetBinContent(2,6.)
         hists['data_obs'].SetBinError(2,math.sqrt(6.))
+        hists['data_obs'].SetBinContent(5,2.)
+        hists['data_obs'].SetBinError(5,math.sqrt(2.))
     if channel=='mt':
         hists['data_obs'].SetBinContent(1,6.)
         hists['data_obs'].SetBinError(1,math.sqrt(6.))
         hists['data_obs'].SetBinContent(2,9.)
         hists['data_obs'].SetBinError(2,math.sqrt(9.))
     if channel=='em':
-        hists['data_obs'].SetBinContent(2,10.)
-        hists['data_obs'].SetBinError(2,math.sqrt(10.))
-        hists['data_obs'].SetBinContent(3,6.)
-        hists['data_obs'].SetBinError(3,math.sqrt(6.))
+        hists['data_obs'].SetBinContent(2,9.)
+        hists['data_obs'].SetBinError(2,math.sqrt(9.))
+        hists['data_obs'].SetBinContent(3,4.)
+        hists['data_obs'].SetBinError(3,math.sqrt(4.))
 
     rebinned_reducible = utils.rebinHisto(reducible,bins,'reducible_rebinned')
     if fit:

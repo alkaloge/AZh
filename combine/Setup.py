@@ -85,15 +85,18 @@ def RebinAndSave(**kwargs):
             bins_ggA.append(ib)
         bins_ggA.append(2400)
         bins_bbA=bins_ggA            
-    elif binning=='fine':
-        for ib in range(200,500,10):
+    elif binning=='mass':
+        bins_ggA.append(199)
+        for ib in range(220,500,20):
             bins_ggA.append(ib)    
-        for ib in range(500,750,25):
+        for ib in range(500,650,25):
             bins_ggA.append(ib)
-        for ib in range(750,1150,100):
+        for ib in range(650,950,50):
+            bins_ggA.append(ib)
+        for ib in range(950,1250,100):
             bins_ggA.append(ib)
         bins_ggA.append(2400)
-        bins_bbA=bins_ggA
+        bins_bbA=bins_ggA        
     else:
         for ib in range(200,400,20):
             bins_ggA.append(ib)
@@ -488,8 +491,8 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument('-year','--year',dest='year',default='Run2',help=""" year : 2016 2017 2018 Run2""",choices=utils.years_ext)
-    parser.add_argument('-folder','--folder',dest='folder',default='coffea',help=""" folder with ROOT files""")
-    parser.add_argument('-binning','--binning',dest='binning',default='nominal',help=""" binning """,choices=['nominal','fine','coarse'])
+    parser.add_argument('-folder','--folder',dest='folder',default='preapp',help=""" folder with ROOT files""")
+    parser.add_argument('-binning','--binning',dest='binning',default='nominal',help=""" binning """,choices=['nominal','mass','old'])
     args = parser.parse_args()
 
     ROOT.gROOT.SetBatch(True)

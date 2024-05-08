@@ -553,7 +553,7 @@ def PlotTemplate(hists,**kwargs):
                   %(Yield,YieldUp,YieldDown))
         print
     
-    styles.InitData(hist,"m(4l) [GeV]","Events")
+    styles.InitData(hist,"m_{ll#tau#tau} [GeV]","Events/bin")
     hist.GetXaxis().SetNdivisions(505)
     if sys.lower()!='none':
         styles.InitModel(histUp,ROOT.kRed,1)
@@ -799,7 +799,7 @@ def Plot(hists,**kwargs):
         leg.AddEntry(ggA_hist,'ggA'+mass+' (5 fb)','l')
         if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' (5 fb)','l')
     leg.Draw()
-    styles.CMS_label(canv,era=year,extraText='Internal')
+    styles.CMS_label(canv,era=year,extraText='Preliminary')
     canv.SetLogx(logx)
     canv.RedrawAxis()
     canv.Update()
