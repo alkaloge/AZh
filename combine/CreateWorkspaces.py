@@ -35,8 +35,8 @@ if __name__ == "__main__":
     else:
         masses.append(args.mass)
 
-    samples = ['em_btag','em_0btag']
-#    samples = ['2016','2017','2018','Run2','et','mt','tt','btag','0btag']
+#    samples = ['em_btag','em_0btag']
+    samples = ['2016','2017','2018','Run2','et','mt','tt','btag','0btag']
 
 
     batch=False
