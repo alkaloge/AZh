@@ -1,9 +1,9 @@
 #include "HttStylesNew.cc"
 
 void Compatibility(
-		   TString folder = "GoF_Run2", // folder with RooT files
+		   TString folder = "GoF_em_btag_300", // folder with RooT files
 		   TString Algo = "saturated", // algorithm
-		   TString legend = "Run2 (comb)",
+		   TString legend = "#tau_{e}#tau_{#mu} (btag, Run2)",
 		   int bins = 50 // number of bins in the histogram of toys
 		   ) {
 
@@ -24,6 +24,7 @@ void Compatibility(
   TTree * treeObs = (TTree*)fileObs->Get("limit");
   treeObs->SetBranchAddress("limit",&obs);
   treeObs->GetEntry(0);
+  //  obs += 1.0;
   if (obs<xMin) xMin = obs;
   if (obs>xMax) xMax = obs;
 
@@ -54,6 +55,8 @@ void Compatibility(
       count += 1.0;
     }
   }
+
+  xMax = 120.;
 
   float xlower = 0.8*xMin;
   float xupper = 1.2*xMax;

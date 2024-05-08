@@ -3,13 +3,13 @@
 
 void PlotLimits(TString Era = "Run2", // year
 		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt
-		TString Process = "bbA", // process
-		TString folder = "limits", // input folder (output of macro RunLimits.py)
-		TString postfix = "noFitAsimov",
-		float YMax = 20, // upper boundary of Y axis
+		TString Process = "ggA", // process
+		TString folder = "limits_v0/limits_2POI", // input folder (output of macro RunLimits.py)
+		TString postfix = "2POI",
+		float YMax = 7, // upper boundary of Y axis
 		float XMin = 225., // lower boundary of X axis
-		float XMax = 2000., // upper boundary of X axis
-		bool logx = false, // log scale of X axis
+		float XMax = 1000., // upper boundary of X axis
+		bool logx = true, // log scale of X axis
 		bool blindData = true // blinding observed limit
 		) {
 
@@ -17,7 +17,7 @@ void PlotLimits(TString Era = "Run2", // year
   std::vector<TString> masses = {"225","250","275","300","325","350","375","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
 
   std::map<TString,TString> lumiLabel = {
-    {"Run2","Run 2, 138 fb^{-1}"},
+    {"Run2","138 fb^{-1}"},
     {"2018","2018, 59.8 fb^{-1}"},
     {"2017","2017, 41.5 fb^{-1}"},
     {"2016","2016, 36.3 fb^{-1}"}
@@ -171,6 +171,8 @@ void PlotLimits(TString Era = "Run2", // year
   frame->GetYaxis()->SetTitle("#sigma("+Process+")#timesB(A#rightarrowZh) [fb]");
   frame->GetXaxis()->SetNdivisions(505);
   frame->GetYaxis()->SetNdivisions(206);
+  frame->GetXaxis()->SetMoreLogLabels();
+  frame->GetXaxis()->SetNoExponent();
   frame->GetYaxis()->SetTitleOffset(1.25);  
   frame->GetYaxis()->SetTitleSize(0.048);  
   
@@ -191,7 +193,7 @@ void PlotLimits(TString Era = "Run2", // year
   float yLegend = 0.41;
   float sizeLeg = 0.27;
 
-  TLegend * leg = new TLegend(0.40,0.60,0.70,0.80);
+  TLegend * leg = new TLegend(0.55,0.5,0.85,0.7);
   leg->SetFillColor(0);
   leg->SetTextSize(0.035);
   leg->SetBorderSize(0);

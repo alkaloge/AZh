@@ -114,7 +114,8 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // ++++++++++++++++++++++
 void Plot2Dscan(TString mass = "225",
 		double xmax_frame = 3,
-		double ymax_frame = 3) {
+		double ymax_frame = 3,
+		bool unblind = true) {
 
   SetStyle();
 
@@ -234,8 +235,8 @@ void Plot2Dscan(TString mass = "225",
 							     xe, 
 							     ylow_1sigma, 
 							     yhigh_1sigma);
-  contour_1sigma->SetFillColor(kGreen);
-  contour_1sigma->SetLineColor(kGreen);
+  contour_1sigma->SetFillColor(TColor::GetColor("#85D1FBff"));
+  contour_1sigma->SetLineColor(TColor::GetColor("#85D1FBff"));
 
 
   TGraphAsymmErrors * contour_2sigma = new TGraphAsymmErrors(nGraph_2sigma, 
@@ -245,8 +246,8 @@ void Plot2Dscan(TString mass = "225",
 							     xe, 
 							     ylow_2sigma, 
 							     yhigh_2sigma);
-  contour_2sigma->SetFillColor(kYellow);
-  contour_2sigma->SetLineColor(kYellow);
+  contour_2sigma->SetFillColor(TColor::GetColor("#FFDF7Fff"));
+  contour_2sigma->SetLineColor(TColor::GetColor("#FFDF7Fff"));
 
   int NP = nGraphE_1sigma-1;
   for (int ip=NP; ip>0; --ip) {
@@ -286,8 +287,8 @@ void Plot2Dscan(TString mass = "225",
   
 
   TGraph * graph_1sigma = new TGraph(nGraphE_1sigma,xE_1sigma,yhighE_1sigma);
-  graph_1sigma->SetLineColor(kBlue);
-  graph_1sigma->SetLineStyle(2);
+  graph_1sigma->SetLineColor(kRed);
+  graph_1sigma->SetLineStyle(1);
   graph_1sigma->SetLineWidth(3);
 
   TGraph * graph_2sigma = new TGraph(nGraphE_2sigma,xE_2sigma,yhighE_2sigma);
@@ -315,9 +316,11 @@ void Plot2Dscan(TString mass = "225",
 
   contour_2sigma->Draw("3same");
   contour_1sigma->Draw("3same");
-  graph_1sigma->Draw("lsame");
-  graph_2sigma->Draw("lsame");
-  graphBest->Draw("psame");
+  if (unblind) {
+    graph_1sigma->Draw("lsame");
+    graph_2sigma->Draw("lsame");
+    graphBest->Draw("psame");
+  }
 
   TLegend * leg = new TLegend(0.7,0.45,0.85,0.75);
   SetLegendStyle(leg);
@@ -325,9 +328,11 @@ void Plot2Dscan(TString mass = "225",
   leg->SetHeader("m_{A} = "+mass+" GeV");
   leg->AddEntry(contour_1sigma,"exp 68%","f");
   leg->AddEntry(contour_2sigma,"exp 95%","f");
-  leg->AddEntry(graph_1sigma,"obs 68%","l");
-  leg->AddEntry(graph_2sigma,"obs 95%","l");
-  leg->AddEntry(graphBest,"best fit","p");
+  if (unblind) {
+    leg->AddEntry(graph_1sigma,"obs 68%","l");
+    leg->AddEntry(graph_2sigma,"obs 95%","l");
+    leg->AddEntry(graphBest,"best fit","p");
+  }
   leg->Draw();
 
   lumi_13TeV = "138 fb^{-1}";
