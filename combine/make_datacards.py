@@ -239,25 +239,30 @@ cb.cp().process(["ggHWW", "VBFHWW", "WHWW", "ZHWW", "ggZHWW"]).AddSyst(
 )
 
 # CMS electron efficiencies
-# 1% correlated part and 1% decorrelated
-syst_map = ch.SystMap("bin_id")([1, 2], 1.03)([3, 4], 1.02)([5, 6], 1.01)([7, 8], 1.0)
-cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_e_"+year, "lnN", syst_map)
-cb.cp().signals().AddSyst(cb, "CMS_eff_e_"+year, "lnN", syst_map)
-
-syst_map = ch.SystMap("bin_id")([1, 2], 1.03)([3, 4], 1.02)([5, 6], 1.01)([7, 8], 1.0)
+# 1.5% correlated across years
+syst_map = ch.SystMap("bin_id")([1], 1.045)([2, 3], 1.03)([4], 1.015)([5, 6], 1.0)
 cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_e", "lnN", syst_map)
 cb.cp().signals().AddSyst(cb, "CMS_eff_e", "lnN", syst_map)
 
+# CMS electron trigger
+# 1.5 uncertainty correlated across years
+syst_map = ch.SystMap("bin_id")([1, 2, 3], 1.015)([4, 5, 6], 1.0)
+cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_trg_e", "lnN", syst_map)
+cb.cp().signals().AddSyst(cb, "CMS_trg_e", "lnN", syst_map)
+
 
 # CMS muon efficiencies
-# 1% correlated and 1% decorrelated
-syst_map = ch.SystMap("bin_id")([5, 7], 1.03)([6, 8], 1.02)([1, 3], 1.01)([2, 4], 1.0)
-cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_m_"+year, "lnN", syst_map)
-cb.cp().signals().AddSyst(cb, "CMS_eff_m_"+year, "lnN", syst_map)
-
-syst_map = ch.SystMap("bin_id")([5, 7], 1.03)([6, 8], 1.02)([1, 3], 1.01)([2, 4], 1.0)
+# 1.5% correlated across years
+syst_map = ch.SystMap("bin_id")([5], 1.045)([4, 6], 1.03)([2], 1.015)([1, 3], 1.0)
 cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_m", "lnN", syst_map)
 cb.cp().signals().AddSyst(cb, "CMS_eff_m", "lnN", syst_map)
+
+# CMS muon trigger
+# 1.5% correlated across years
+syst_map = ch.SystMap("bin_id")([4, 5, 6], 1.015)([1, 2, 3], 1.0)
+cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_trg_m", "lnN", syst_map)
+cb.cp().signals().AddSyst(cb, "CMS_trg_m", "lnN", syst_map)
+
 
 # refs:
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV
@@ -321,9 +326,9 @@ for proc in mc_bkgd:
             binid = cat[0]
             histBtagName = '%s_%s_%s_%s'%(proc,chan,args['btag'],sys)
             histBtag = btagFile.Get(histBtagName)
-            value = histBtag.GetBinContent(1) - 1.0
-            value_correlated = 0.6*value + 1.0 # 60% correlated
-            value_uncorrelated = 0.8*value + 1.0 #60% uncorrelated
+            value = histBtag.GetBinContent(2) - 1.0
+            value_correlated = 1.2*value + 1.0
+            value_uncorrelated = 0.8*value + 1.0
             value_corr = float(int(1000*value_correlated))/1000.0
             value_uncorr = float(int(1000*value_uncorrelated))/1000.0
             cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys+"_"+year, "lnN", ch.SystMap()(value_uncorr))
@@ -337,13 +342,12 @@ for proc in signals:
             binid = cat[0]
             histBtagName = '%s%s_%s_%s_%s'%(proc,mass,chan,args['btag'],sys)
             histBtag = btagFile.Get(histBtagName)
-            value = histBtag.GetBinContent(1) - 1.0
-            value_correlated = 0.6*value + 1.0 # 60% correlated
-            value_uncorrelated = 0.8*value + 1.0 #60% uncorrelated
+            value = histBtag.GetBinContent(2) - 1.0
+            value_correlated = 1.2*value + 1.0
+            value_uncorrelated = 0.8*value + 1.0
             value_corr = float(int(1000*value_correlated))/1000.0
             value_uncorr = float(int(1000*value_uncorrelated))/1000.0
-            value = float(int(1000*histBtag.GetBinContent(1)))/1000.0
-            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys+"_"+year, "lnN", ch.SystMap()(value))
+            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys+"_"+year, "lnN", ch.SystMap()(value_uncorr))
             cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys, "lnN", ch.SystMap()(value_corr))
 
 
