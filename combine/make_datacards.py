@@ -94,7 +94,23 @@ nonclosure_reducible = {
 }
 
 # add JES uncertainty once available
-expUnc = ['unclMET','tauID0','tauID1','tauID10','tauID11','tauES','efake','mfake','eleES','muES','pileup','l1prefire','eleSmear','JES','JER']
+expUnc = {
+    'unclMET' : 'CMS_scale_met_unclustered',
+    'tauID0' : 'CMS_eff_t_1prong',
+    'tauID1' : 'CMS_eff_t_1prong1pizero',
+    'tauID10' : 'CMS_eff_t_3prong',
+    'tauID11': 'CMS_eff_t_3prong1pizero',
+    'tauES' : 'CMS_scale_t',
+    'efake' : 'CMS_azh_efake',
+    'mfake' : 'CMS_azh_mfake',
+    'eleES' : 'CMS_scale_e',
+    'muES' : 'CMS_scale_m',
+    'pileup' : 'CMS_pileup',
+    'l1prefire' : 'CMS_l1prefire',
+    'eleSmear' : 'CMS_res_e',
+    'JES' : 'CMS_scale_j',
+    'JER' : 'CMS_res_j'
+}
 
 fakeUnc = ['bin1','bin2','bin3']
 
@@ -112,7 +128,7 @@ h_channel_map={
 # decorrelating instrumental uncs across years
 def DecorrelateUncertainties(cb,year,channel):
     for unc in expUnc:
-        cb.cp().RenameSystematic(cb,unc,unc+"_"+year)
+        cb.cp().RenameSystematic(cb,unc,expUnc[unc]+"_"+year)
 
 parser = argparse.ArgumentParser(description="Datacards producer for AZh analysis")
 parser.add_argument("-year", "--year", required=True,help=""" year : 2016, 2017 or 2018 """,choices=utils.years)
@@ -183,8 +199,8 @@ cb.AddProcesses(["*"], ["azh"], [year], [btag_label], mc_bkgd, cats, False)
 mc_processes = signals + mc_bkgd
 # luminosity
 if year=='2016':
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2016','lnN', ch.SystMap()(1.010))
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Correlated','lnN', ch.SystMap()(1.006)) 
+    cb.cp().process(mc_processes).AddSyst(cb,'CMS_lumi_13TeV_Uncorrelated_2016','lnN', ch.SystMap()(1.010))
+    cb.cp().process(mc_processes).AddSyst(cb,'CMS_lumi_13TeV_Correlated','lnN', ch.SystMap()(1.006)) 
 #    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2016','lnN', ch.SystMap()(1.010))
 #    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Beam_Deflection','lnN', ch.SystMap()(1.004))
 #    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_X_Y_Factorization','lnN', ch.SystMap()(1.009))
@@ -192,9 +208,9 @@ if year=='2016':
 #    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Dynamic_Beta','lnN', ch.SystMap()(1.005))
 
 if year=='2017':
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2017','lnN', ch.SystMap()(1.020))
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Correlated','lnN', ch.SystMap()(1.009))
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Correlated1718','lnN', ch.SystMap()(1.006))
+    cb.cp().process(mc_processes).AddSyst(cb,'CMS_lumi_13TeV_Uncorrelated_2017','lnN', ch.SystMap()(1.020))
+    cb.cp().process(mc_processes).AddSyst(cb,'CMS_lumi_13TeV_Correlated','lnN', ch.SystMap()(1.009))
+    cb.cp().process(mc_processes).AddSyst(cb,'CMS_lumi_13TeV_Correlated1718','lnN', ch.SystMap()(1.006))
 #    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2017','lnN', ch.SystMap()(1.020))
 #    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Beam_Deflection','lnN', ch.SystMap()(1.004))
 #    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_X_Y_Factorization','lnN', ch.SystMap()(1.008))
@@ -204,9 +220,9 @@ if year=='2017':
 #    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Dynamic_Beta','lnN', ch.SystMap()(1.005))
 
 if year=='2018':
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2018','lnN', ch.SystMap()(1.015))
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Correlated','lnN', ch.SystMap()(1.02))
-    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Correlated1718','lnN', ch.SystMap()(1.002))
+    cb.cp().process(mc_processes).AddSyst(cb,'CMS_lumi_13TeV_Uncorrelated_2018','lnN', ch.SystMap()(1.015))
+    cb.cp().process(mc_processes).AddSyst(cb,'CMS_lumi_13TeV_Correlated','lnN', ch.SystMap()(1.02))
+    cb.cp().process(mc_processes).AddSyst(cb,'CMS_lumi_13TeV_Correlated1718','lnN', ch.SystMap()(1.002))
 #    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Uncorrelated_2018','lnN', ch.SystMap()(1.015))
 #    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_Beam_Beam_Deflection','lnN', ch.SystMap()(1.002))
 #    cb.cp().process(mc_processes).AddSyst(cb,'lumi_13TeV_X_Y_Factorization','lnN', ch.SystMap()(1.02))
@@ -240,41 +256,38 @@ cb.cp().process(["ggHWW", "VBFHWW", "WHWW", "ZHWW", "ggZHWW"]).AddSyst(
 
 # CMS electron efficiencies
 # 1.5% correlated across years
-syst_map = ch.SystMap("bin_id")([1], 1.045)([2, 3], 1.03)([4], 1.015)([5, 6], 1.0)
+syst_map = ch.SystMap("bin_id")([1], 1.045)([2, 3], 1.03)([4], 1.015)#([5, 6], 1.0)
 cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_e", "lnN", syst_map)
 cb.cp().signals().AddSyst(cb, "CMS_eff_e", "lnN", syst_map)
 
 # CMS electron trigger
 # 1.5 uncertainty correlated across years
-syst_map = ch.SystMap("bin_id")([1, 2, 3], 1.015)([4, 5, 6], 1.0)
-cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_trg_e", "lnN", syst_map)
-cb.cp().signals().AddSyst(cb, "CMS_trg_e", "lnN", syst_map)
+syst_map = ch.SystMap("bin_id")([1, 2, 3], 1.015)#([4, 5, 6], 1.0)
+cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_trigger_e", "lnN", syst_map)
+cb.cp().signals().AddSyst(cb, "CMS_eff_trigger_e", "lnN", syst_map)
 
 
 # CMS muon efficiencies
 # 1.5% correlated across years
-syst_map = ch.SystMap("bin_id")([5], 1.045)([4, 6], 1.03)([2], 1.015)([1, 3], 1.0)
+syst_map = ch.SystMap("bin_id")([5], 1.045)([4, 6], 1.03)([2], 1.015)#([1, 3], 1.0)
 cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_m", "lnN", syst_map)
 cb.cp().signals().AddSyst(cb, "CMS_eff_m", "lnN", syst_map)
 
 # CMS muon trigger
 # 1.5% correlated across years
-syst_map = ch.SystMap("bin_id")([4, 5, 6], 1.015)([1, 2, 3], 1.0)
-cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_trg_m", "lnN", syst_map)
-cb.cp().signals().AddSyst(cb, "CMS_trg_m", "lnN", syst_map)
-
+syst_map = ch.SystMap("bin_id")([4, 5, 6], 1.015)#([1, 2, 3], 1.0)
+cb.cp().process(mc_bkgd).AddSyst(cb, "CMS_eff_trigger_m", "lnN", syst_map)
+cb.cp().signals().AddSyst(cb, "CMS_eff_trigger_m", "lnN", syst_map)
 
 # refs:
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat13TeV
 
 # cross sections
-cb.cp().process(["ggZZ"]).AddSyst(cb, "CMS_xsec_ggZZ", "lnN", ch.SystMap()(1.15))
-cb.cp().process(["TT"]).AddSyst(cb, "CMS_xsec_top", "lnN", ch.SystMap()(1.06))
-cb.cp().process(["TTW"]).AddSyst(cb, "CMS_xsec_ttW", "lnN", ch.SystMap()(1.25))
-cb.cp().process(["TTZ"]).AddSyst(cb, "CMS_xsec_ttZ", "lnN", ch.SystMap()(1.25))
-
-cb.cp().process(["ZZ", "WZ"]).AddSyst(cb, "CMS_xsec_vv", "lnN", ch.SystMap()(1.05))
-cb.cp().process(["VVV"]).AddSyst(cb, "CMS_xsec_vvv", "lnN", ch.SystMap()(1.25))
+cb.cp().process(["ggZZ"]).AddSyst(cb, "CMS_azh_ggzzXsec", "lnN", ch.SystMap()(1.15))
+cb.cp().process(["TT"]).AddSyst(cb, "CMS_azh_tjXsec", "lnN", ch.SystMap()(1.06))
+cb.cp().process(["TTW","TTZ"]).AddSyst(cb, "CMS_azh_ttvXsec", "lnN", ch.SystMap()(1.25))
+cb.cp().process(["ZZ", "WZ"]).AddSyst(cb, "CMS_azh_vvXsec", "lnN", ch.SystMap()(1.05))
+cb.cp().process(["VVV"]).AddSyst(cb, "CMS_azh_vvvXsec", "lnN", ch.SystMap()(1.25))
 
 # QCD scale VH
 cb.cp().process(
@@ -284,22 +297,22 @@ cb.cp().process(
     ]
 ).AddSyst(cb, "QCDscale_VH", "lnN", ch.SystMap()(1.008))
 cb.cp().process(["ZHtt", "ZHWW", "ggZHWW"]).AddSyst(
-    cb, "QCDscale_VH", "lnN", ch.SystMap()(1.009)
+    cb, "QCDscale_ZH", "lnN", ch.SystMap()(1.009)
 )
 cb.cp().process(["ggHtt", "ggHWW", "ggHZZ"]).AddSyst(
-    cb, "QCDscale_ggh", "lnN", ch.SystMap()(1.039)
+    cb, "QCDscale_ggH", "lnN", ch.SystMap()(1.039)
 )
 cb.cp().process(["VBFHtt", "VBFHWW"]).AddSyst(
-    cb, "QCDscale_qqh", "lnN", ch.SystMap()(1.005)
+    cb, "QCDscale_qqH", "lnN", ch.SystMap()(1.005)
 )
-cb.cp().process(["TTHtt"]).AddSyst(cb, "QCDscale_tth", "lnN", ch.SystMap()(1.08))
+cb.cp().process(["TTHtt"]).AddSyst(cb, "QCDscale_ttH", "lnN", ch.SystMap()(1.08))
 
 # pdf Higgs
 cb.cp().process(["WHtt", "WHWW"]).AddSyst(
-    cb, "pdf_Higgs_VH", "lnN", ch.SystMap()(1.018)
+    cb, "pdf_Higgs_qqbar", "lnN", ch.SystMap()(1.018)
 )
 cb.cp().process(["ZHtt", "ZHWW", "ggZHWW"]).AddSyst(
-    cb, "pdf_Higgs_VH", "lnN", ch.SystMap()(1.013)
+    cb, "pdf_Higgs_qqbar", "lnN", ch.SystMap()(1.013)
 )
 cb.cp().process(["ggHtt", "ggHWW", "ggHZZ"]).AddSyst(
     cb, "pdf_Higgs_gg", "lnN", ch.SystMap()(1.032)
@@ -307,7 +320,7 @@ cb.cp().process(["ggHtt", "ggHWW", "ggHZZ"]).AddSyst(
 cb.cp().process(["VBFHtt", "VBFHWW"]).AddSyst(
     cb, "pdf_Higgs_qqbar", "lnN", ch.SystMap()(1.021)
 )
-cb.cp().process(["TTHtt"]).AddSyst(cb, "pdf_Higgs_ttH", "lnN", ch.SystMap()(1.036))
+cb.cp().process(["TTHtt"]).AddSyst(cb, "pdf_Higgs_gg", "lnN", ch.SystMap()(1.036))
 
 # add shape systematics
 bkgd = mc_bkgd + signals
@@ -317,8 +330,12 @@ bkgd_tauID = [b for b in bkgd]
 #for unc in fakeUnc:
 #    cb.cp().process(reducible).AddSyst(cb, unc, "shape", ch.SystMap()(1.00))
 
-btagFile = ROOT.TFile('jet_systematics/systematics_%s_bkg.root'%(year))
 # btag uncertainties
+btagFile = ROOT.TFile('jet_systematics/systematics_%s_bkg.root'%(year))
+btagmap = {
+    'btag' : 'eff_b',
+    'mistag' : 'mistag_b'
+}
 for proc in mc_bkgd:
     for cat in cats:
         for sys in ['btag','mistag']:
@@ -331,8 +348,8 @@ for proc in mc_bkgd:
             value_uncorrelated = 0.8*value + 1.0
             value_corr = float(int(1000*value_correlated))/1000.0
             value_uncorr = float(int(1000*value_uncorrelated))/1000.0
-            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys+"_"+year, "lnN", ch.SystMap()(value_uncorr))
-            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys, "lnN", ch.SystMap()(value_corr))
+            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, "CMS_azh_"+btagmap[sys]+"_"+year, "lnN", ch.SystMap()(value_uncorr))
+            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, "CMS_azh_"+btagmap[sys], "lnN", ch.SystMap()(value_corr))
 
 btagFile = ROOT.TFile('jet_systematics/systematics_%s_sig.root'%(year))
 for proc in signals:
@@ -347,8 +364,8 @@ for proc in signals:
             value_uncorrelated = 0.8*value + 1.0
             value_corr = float(int(1000*value_correlated))/1000.0
             value_uncorr = float(int(1000*value_uncorrelated))/1000.0
-            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys+"_"+year, "lnN", ch.SystMap()(value_uncorr))
-            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, sys, "lnN", ch.SystMap()(value_corr))
+            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, "CMS_azh_"+btagmap[sys]+"_"+year, "lnN", ch.SystMap()(value_uncorr))
+            cb.cp().process([proc]).bin_id([binid]).AddSyst(cb, "CMS_azh_"+btagmap[sys], "lnN", ch.SystMap()(value_corr))
 
 
 # JES uncertainty
@@ -380,10 +397,10 @@ for cat in cats:
     h_channel = h_channel_map[ib_name]
     value = stat_unc[h_channel]
 #    print(ib_name,h_channel,value)
-    cb.cp().process(['reducible']).channel([btag_label]).bin_id([ib]).AddSyst(cb, "stat_fakes_"+ib_name+"_"+year,"lnN", ch.SystMap()(value))
+    cb.cp().process(['reducible']).channel([btag_label]).bin_id([ib]).AddSyst(cb, "CMS_azh_stat_fakes_"+ib_name+"_"+year,"lnN", ch.SystMap()(value))
     value = nonclosure_reducible[h_channel]
 #    print(ib_name,h_channel,value)
-    cb.cp().process(['reducible']).channel([btag_label]).bin_id([ib]).AddSyst(cb, "nonclosure_fakes_"+h_channel,"lnN", ch.SystMap()(value))
+    cb.cp().process(['reducible']).channel([btag_label]).bin_id([ib]).AddSyst(cb, "CMS_azh_sys_fakes_"+h_channel,"lnN", ch.SystMap()(value))
 
 cb.cp().process(bkgd).AddSyst(cb, "eleES", "shape", ch.SystMap()(1.00)) 
 cb.cp().process(bkgd).AddSyst(cb, "eleSmear", "shape", ch.SystMap()(1.00))
