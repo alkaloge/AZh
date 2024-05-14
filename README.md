@@ -490,12 +490,14 @@ The results of the 2D likelihood scan are plotted using RooT macro [Plot2Dscan.C
 // +++ Main subroutine
 // ++++++++++++++++++++++
 void Plot2Dscan(
-TString folder="2Dscan_Run2_300",
+TString sample="Run2",
+TString mass="300",
 double xmax_frame = 5,
 double ymax_frame = 5) 
 ```
 with the following input parameters
-* `folder` : the name of the folder with the results of likelihood scan;
+* `sample` : sample (2016, 2017, 2018, Run2, et, mt, tt);
+* `mass` : mA;
 * `xmax_frame` : the maximum range of X-axis corresponding to `r_ggA`;
 * `xmin_frame` : the maximum range of Y-axis corresponding to `r_bbA`. 
 
