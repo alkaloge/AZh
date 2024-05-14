@@ -6,6 +6,26 @@ import argparse
 import ROOT
 import os
 
+# add JES uncertainty once available
+expUnc = {
+    'unclMET' : 'CMS_scale_met_unclustered',
+    'tauID0' : 'CMS_eff_t_1prong',
+    'tauID1' : 'CMS_eff_t_1prong1pizero',
+    'tauID10' : 'CMS_eff_t_3prong',
+    'tauID11': 'CMS_eff_t_3prong1pizero',
+    'tauES' : 'CMS_scale_t',
+    'efake' : 'CMS_azh_efake',
+    'mfake' : 'CMS_azh_mfake',
+    'eleES' : 'CMS_scale_e',
+    'muES' : 'CMS_scale_m',
+    'pileup' : 'CMS_pileup',
+    'l1prefire' : 'CMS_l1prefire',
+    'eleSmear' : 'CMS_res_e',
+    'JES' : 'CMS_scale_j',
+    'JER' : 'CMS_res_j'
+}
+
+
 ############
 ### MAIN ###
 ############
@@ -142,17 +162,17 @@ if __name__ == "__main__":
         if hist==None:
             print('template %s not found in folder %s'%(template,dirname))
             continue
-        systematics=uncs
+        systematics=expUnc
         if xt=='reducible':
             if analysis=='root' or analysis=='azh':
                 systematics=fake_uncs
             
-        for unc in systematics:
+        for unc in expUnc:
             histUp = hist
             histDown = hist
             if unc.lower()!='none':
-                histUp = inputfile.Get(dirname+prefix+template+'_'+unc+unc_postfix+'Up')
-                histDown = inputfile.Get(dirname+prefix+template+'_'+unc+unc_postfix+'Down')
+                histUp = inputfile.Get(dirname+prefix+template+'_'+expUnc[unc]+unc_postfix+'Up')
+                histDown = inputfile.Get(dirname+prefix+template+'_'+expUnc[unc]+unc_postfix+'Down')
             if histUp==None or histDown==None:
                 print('template %s with systematics %s not found'%(template,unc))
                 continue

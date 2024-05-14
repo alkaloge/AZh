@@ -125,5 +125,6 @@ if __name__ == "__main__":
         full_mode=full_mode,
         indir=indir)
     os.system(command)
+#    print(command)
 
 

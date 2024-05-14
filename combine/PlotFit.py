@@ -80,7 +80,9 @@ if __name__ == "__main__":
     channels = []
 
     year_legend = year
-    cat_legend = cat
+    cat_legend = '0-btag'
+    if cat=='btag':
+        cat_legend = 'btag'
     channel_legend = channel
 
     signals['bbA'] = 'bbA'+mass
@@ -295,8 +297,8 @@ if __name__ == "__main__":
                blind=blind,
                xmin=xmin,
                xmax=xmax,
-               scale_bbA=1.0,
-               scale_ggA=1.0,
+               scale_bbA=scale_bbA,
+               scale_ggA=scale_ggA,
                logx=logx,
                fits=fits,
                postfix=fittype)

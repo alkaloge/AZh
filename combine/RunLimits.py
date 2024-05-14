@@ -14,8 +14,8 @@ def MakeCommand(**kwargs):
     mass = kwargs.get('mass','1000')
     batch = kwargs.get('batch',False)
     folder = kwargs.get('folder','datacards')
-    indir = utils.BaseFolder + '/' + folder
     noFitAsimov = kwargs.get('noFitAsimov',False)
+    indir = utils.BaseFolder + '/' + folder
 
     otherProc = 'bbA'
     if proc=='bbA': otherProc = 'ggA'
