@@ -56,7 +56,7 @@ void Compatibility(
     }
   }
 
-  xMax = 120.;
+  //  xMax = 120.;
 
   float xlower = 0.8*xMin;
   float xupper = 1.2*xMax;
