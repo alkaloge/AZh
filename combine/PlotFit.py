@@ -56,6 +56,7 @@ if __name__ == "__main__":
     parser.add_argument('-logx','--logx',dest='logx',action='store_true')
     parser.add_argument('-fittype','--fittype',dest='fittype',default='prefit',choices=['prefit','fit_b','fit_s'])
     parser.add_argument('-unblind','--unblind',dest='unblind',action='store_true')
+    parser.add_argument('-plotSignal','--plotSignal',dest='plotSignal',action='store_true')
     args = parser.parse_args()
 
     blind = not args.unblind
@@ -174,6 +175,21 @@ if __name__ == "__main__":
 
     print
 
+    fractions = {
+        'et' : 0,
+        'mt' : 0,
+        'tt' : 0
+    }
+
+    h_channel = {
+        'eeet' : 'et',
+        'mmet' : 'et',
+        'eemt' : 'mt',
+        'mmmt' : 'mt',
+        'eett' : 'tt',
+        'mmtt' : 'tt'
+    }
+
     for year in years:
         for cat in cats:
             for channel in channels:        
@@ -206,6 +222,8 @@ if __name__ == "__main__":
                     hists_bkg[bkg] = hist_bkg.Clone(bkg+suffix)
                     sumofweights = hists_bkg[bkg].GetSumOfWeights()
                     print('%15s %6.2f'%(bkg,sumofweights))
+                    if bkg=='reducible':
+                        fractions[h_channel[channel]] += sumofweights
 
                 # grouping backgrounds
                 hists_grp = utils.GroupBackgrounds(hists_bkg,group)
@@ -284,11 +302,8 @@ if __name__ == "__main__":
         scale_ggA = 5.0
         scale_bbA = 5.0
 
-    fits=False
-    if fittype=='fit_s':
-        fits=True
-
     utils.Plot(hists,
+               fractions,
                analysis='azh',
                year=year_legend,
                cat=cat_legend,
@@ -300,6 +315,7 @@ if __name__ == "__main__":
                scale_bbA=scale_bbA,
                scale_ggA=scale_ggA,
                logx=logx,
-               fits=fits,
+               fittype=fittype,
+               plotSignal=args.plotSignal,
                postfix=fittype)
 

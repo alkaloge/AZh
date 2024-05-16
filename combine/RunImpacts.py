@@ -82,7 +82,7 @@ if __name__ == "__main__":
     parser.add_argument('-r_bbA_max','--r_bbA_max',dest='r_bbA_max',default='10')
     parser.add_argument('-folder','--folder',dest='folder',default='datacards')
     parser.add_argument('-freezeOtherPOI','--freezeOtherPOI',action='store_true')
-    parser.add_argument('-minimizer_strategy','--minimizer_strategy',dest='strategy',type=int,default=1)
+    parser.add_argument('-minimizer','--minimizer',dest='strategy',type=int,default=1)
     parser.add_argument('-full_mode','--full_mode',dest='full_mode',action='store_true')
     parser.add_argument('-obs','--obs',dest='obs',action='store_true')
     args = parser.parse_args()

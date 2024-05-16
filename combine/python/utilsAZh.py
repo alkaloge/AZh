@@ -665,7 +665,7 @@ def PlotTemplate(hists,**kwargs):
 ###############################################
 # plotting final discriminant from datacards 
                 
-def Plot(hists,**kwargs):
+def Plot(hists,fractions,**kwargs):
 
     isBBA = False
     for hist in hists:
@@ -682,8 +682,9 @@ def Plot(hists,**kwargs):
     xmax = kwargs.get('xmax',700)
     blind = kwargs.get('blind',True)
     logx = kwargs.get('logx',True)
-    fits = kwargs.get('fits',False)
+    fittype = kwargs.get('fittype','prefit')
     postfix = kwargs.get('postfix','cards')
+    plotSignal = kwargs.get('plotSignal',False)
 
     data_hist = hists['data'].Clone('data_hist')
     ggA_hist = hists['ggA'].Clone('ggA_hist')
@@ -699,11 +700,11 @@ def Plot(hists,**kwargs):
     tot_hist = hists['tot_bkg']
     
     styles.InitData(data_hist,"","")    
-    styles.InitHist(ZZ_hist,"m(4l) [GeV]","Events",ROOT.TColor.GetColor("#4496C8"),1001)
+    styles.InitHist(ZZ_hist,"m_{ll#tau#tau}^{cons} [GeV]","Events / 20 GeV",ROOT.TColor.GetColor("#4496C8"),1001)
     styles.InitHist(fake_hist,"","",ROOT.TColor.GetColor("#c6f74a"),1001)
     styles.InitHist(other_hist,"","",ROOT.TColor.GetColor("#FFCCFF"),1001)
 
-    styles.InitHist(ZZ_hist,"m(4l) [GeV]","Events",ROOT.TColor.GetColor("#ffa90e"),1001) #red
+    styles.InitHist(ZZ_hist,"m_{ll#tau#tau}^{cons} [GeV]","Events / 20 GeV",ROOT.TColor.GetColor("#ffa90e"),1001) #red
     styles.InitHist(fake_hist,"","",ROOT.TColor.GetColor("#e76300"),1001)
     styles.InitHist(other_hist,"","",ROOT.TColor.GetColor("#3f90da"),1001)
     styles.InitModel(ggA_hist,ROOT.kRed,1)
@@ -719,6 +720,16 @@ def Plot(hists,**kwargs):
     zeroBinErrors(ggA_hist)
     zeroBinErrors(bbA_hist)
 
+    # prefit and postfit correlated constraints (xsecs for ZZ, ttZ, VV and Higgs bkg  and reducible systematics)
+    other_sys = 0.25
+    ZZ_sys = 0.05
+    fake_total = fractions['et'] + fractions['mt'] + fractions['tt']
+    fake_sys = (0.2*fractions['et']+0.15*fractions['mt']+0.15*fractions['tt'])/fake_total
+    if fittype=='fit_b' or fittype=='fit_s':
+        fake_sys = (0.15*fractions['et']+0.1*fractions['mt']+0.1*fractions['tt'])/fake_total
+        ZZ_sys = 0.03
+        other_sys = 0.21
+
     ymax = 0
     nbins = data_hist.GetNbinsX()
     xdata = []
@@ -730,13 +741,34 @@ def Plot(hists,**kwargs):
         x = data_hist.GetBinContent(ib)
         err = data_hist.GetBinError(ib)
         xcenter = data_hist.GetBinCenter(ib)
-        xdata.append(xcenter)
-        exdata.append(0.0)
-        ydata.append(x)
-        eyldata.append(-0.5+math.sqrt(x+0.25))
-        eyhdata.append(0.5+math.sqrt(x+0.25))
-        xsum = x+err
-        if xsum>ymax: ymax = xsum
+        binwidth = data_hist.GetBinWidth(ib)
+        binratio = 20.0/binwidth
+        err_ZZ = ZZ_hist.GetBinContent(ib)*ZZ_sys
+        err_other = other_hist.GetBinContent(ib)*other_sys
+        err_fake = fake_hist.GetBinContent(ib)*fake_sys
+        err_tot = tot_hist.GetBinError(ib)
+        err_tot = math.sqrt(err_tot*err_tot+err_ZZ*err_ZZ+err_fake*err_fake+err_other*err_other)
+        tot_hist.SetBinError(ib,err_tot)
+        ZZ_hist.SetBinContent(ib,binratio*ZZ_hist.GetBinContent(ib))
+        ZZ_hist.SetBinError(ib,binratio*ZZ_hist.GetBinError(ib))
+        fake_hist.SetBinContent(ib,binratio*fake_hist.GetBinContent(ib))
+        fake_hist.SetBinError(ib,binratio*fake_hist.GetBinError(ib))
+        other_hist.SetBinContent(ib,binratio*other_hist.GetBinContent(ib))
+        other_hist.SetBinError(ib,binratio*other_hist.GetBinError(ib))
+        tot_hist.SetBinContent(ib,binratio*tot_hist.GetBinContent(ib))
+        tot_hist.SetBinError(ib,binratio*tot_hist.GetBinError(ib))
+        ggA_hist.SetBinContent(ib,binratio*ggA_hist.GetBinContent(ib))
+        if isBBA: bbA_hist.SetBinContent(ib,binratio*bbA_hist.GetBinContent(ib))
+        
+        if x>0:
+            xdata.append(xcenter)
+            exdata.append(0.0)
+            ydata.append(x)
+            eyldata.append(-0.5+math.sqrt(x+0.25))
+            eyhdata.append(0.5+math.sqrt(x+0.25))
+            xsum = x+err
+            if xsum>ymax: ymax = xsum
+
     data_graph = ROOT.TGraphAsymmErrors(nbins,
                                         array('d',list(xdata)),
                                         array('d',list(ydata)),
@@ -777,14 +809,15 @@ def Plot(hists,**kwargs):
     if not blind: 
         #        data_hist.Draw('e1same')
         data_graph.Draw('pe1same')
-    ggA_hist.Draw('hsame')
-    if isBBA: bbA_hist.Draw('hsame')
+    if plotSignal:
+        ggA_hist.Draw('hsame')
+        if isBBA: bbA_hist.Draw('hsame')
 
     legTitle = cat;
     if channel!='':
         legTitle + styles.fullchan_map[channel]
 
-    leg = ROOT.TLegend(0.6,0.45,0.9,0.7)
+    leg = ROOT.TLegend(0.6,0.45,0.9,0.75)
     styles.SetLegendStyle(leg)
     leg.SetTextSize(0.04)
     leg.SetHeader(legTitle)
@@ -792,12 +825,13 @@ def Plot(hists,**kwargs):
     leg.AddEntry(ZZ_hist,'ZZ','f')
     leg.AddEntry(fake_hist,'reducible','f')
     leg.AddEntry(other_hist,'other','f')
-    if fits:
-        leg.AddEntry(ggA_hist,'ggA'+mass+' ','l')
-        if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' ','l')
-    else:
-        leg.AddEntry(ggA_hist,'ggA'+mass+' (5 fb)','l')
-        if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' (5 fb)','l')
+    if plotSignal:
+        if fittype=='fit_s':
+            leg.AddEntry(ggA_hist,'ggA'+mass+' ','l')
+            if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' ','l')
+        else:
+            leg.AddEntry(ggA_hist,'ggA'+mass+' (5 fb)','l')
+            if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' (5 fb)','l')
     leg.Draw()
     styles.CMS_label(canv,era=year,extraText='Preliminary')
     canv.SetLogx(logx)
