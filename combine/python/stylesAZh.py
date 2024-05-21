@@ -38,7 +38,7 @@ eraLumiLabel = {
     "UL2016_preVFP"  : "2016 preVFP, 19.5 fb^{-1} (13TeV)",
     "UL2017" : "2017, 41.5 fb^{-1} (13TeV)",
     "UL2018" : "2018, 59.8 fb^{-1} (13TeV)",
-    "Run2"   : "Run 2, 138 fb^{-1} (13TeV)"
+    "Run2"   : "138 fb^{-1} (13TeV)"
 }
 
 def InitROOT():
@@ -381,12 +381,12 @@ def CMS_label(pad,**kwargs):
         latex.SetTextFont(cmsTextFont)
         latex.SetTextSize(cmsTextSize*t)
         latex.SetTextAlign(align_)
-        latex.DrawLatex(posX_, posY_, cmsText)
+        latex.DrawLatex(posX_-0.06, posY_, cmsText)
         if  writeExtraText:
             latex.SetTextFont(extraTextFont)
             latex.SetTextAlign(align_)
             latex.SetTextSize(extraTextSize*t)
-            latex.DrawLatex(posX_, posY_- relExtraDY*cmsTextSize*t + 0.01, extraText)
+            latex.DrawLatex(posX_-0.06, posY_- relExtraDY*cmsTextSize*t + 0.01, extraText)
     elif writeExtraText:
         if iPosX==0: 
             posX_ =   l +  relPosX*(1-l-r)

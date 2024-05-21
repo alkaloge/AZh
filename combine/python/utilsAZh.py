@@ -815,6 +815,18 @@ def Plot(hists,fractions,**kwargs):
     unit_ratio.GetYaxis().SetRangeUser(ratiomin,ratiomax)
     unit_ratio.GetXaxis().SetRangeUser(xmin,xmax)
 
+    ggA_unit = ggA_hist.Clone('ggA_unit')
+
+    if fittype=='fit_s':
+        for ib in range(1,nbins+1):
+            sig_ggA = ggA_hist.GetBinContent(ib)
+            sig_bbA = bbA_hist.GetBinContent(ib)
+            bkg = tot_hist.GetBinContent(ib)
+            total = sig_ggA + sig_bbA + bkg
+            ratio_sig = total/bkg
+            ggA_hist.SetBinContent(ib,total)
+            ggA_unit.SetBinContent(ib,ratio_sig)
+
     if blind: 
         ymax = tot_hist.GetMaximum()
 
@@ -875,18 +887,18 @@ def Plot(hists,fractions,**kwargs):
         data_graph.Draw('pe1same')
     if plotSignal:
         if fittype=='fit_s':
-            if isBBA: 
-                ggA_hist.Add(ggA_hist,bbA_hist)
             ggA_hist.Draw('hsame')
         else:
             ggA_hist.Draw('hsame')
             if isBBA: bbA_hist.Draw('hsame')
+    if not blind:
+        data_graph.Draw('pe1same')
 
     legTitle = cat;
-    if channel!='':
+    if channel in ['et','mt','tt']:
         legTitle + styles.fullchan_map[channel]
 
-    leg = ROOT.TLegend(0.7,0.45,0.9,0.75)
+    leg = ROOT.TLegend(0.7,0.40,0.9,0.70)
     styles.SetLegendStyle(leg)
     leg.SetTextSize(0.045)
     leg.SetHeader(legTitle)
@@ -897,7 +909,6 @@ def Plot(hists,fractions,**kwargs):
     if plotSignal:
         if fittype=='fit_s':
             leg.AddEntry(ggA_hist,'A('+mass+')','l')
-            #            if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' ','l')
         else:
             leg.AddEntry(ggA_hist,'ggA'+mass+' (5 fb)','l')
             if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' (5 fb)','l')
@@ -920,6 +931,8 @@ def Plot(hists,fractions,**kwargs):
     styles.InitLowerPad(lower)
 
     frameRatio.Draw('h')
+    if fittype=='fit_s' and plotSignal: 
+        ggA_unit.Draw('hsame')
     line = ROOT.TLine(xmin,1.,xmax,1.)
     line.SetLineColor(4)
     line.Draw()
