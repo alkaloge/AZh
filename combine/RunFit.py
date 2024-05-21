@@ -12,7 +12,8 @@ def MakeCommandFit(**kwargs):
     robustHesse = kwargs.get('robustHesse',True)
     saveShapes = kwargs.get('saveShapes',True)
     folder =  kwargs.get('folder','datacards')
-    minimizer = kwargs.get('minimizer','1')
+    minimizer = kwargs.get('minimizer','0')
+    releaseOtherPOI = kwargs.get('releaseOtherPOI',False)
     r_ggA = kwargs.get('r_ggA','0')
     r_bbA = kwargs.get('r_ggA','0')
     rmin = kwargs.get('rmin','-10')
@@ -37,9 +38,12 @@ def MakeCommandFit(**kwargs):
     if expected:
         command += ' -t -1'
     command += ' --setParameters r_ggA=%s,r_bbA=%s'%(r_ggA,r_bbA) 
-    command += ' --setParameterRanges r_%s=%s,%s '%(proc,rmin,rmax)
     command += ' --redefineSignalPOIs r_%s '%(proc)
-    command += ' --freezeParameters r_%s '%(otherProcess)
+    if releaseOtherPOI:
+        command += ' --setParameterRanges r_%s=%s,%s:r_%s=%s,%s '%(proc,rmin,rmax,otherProcess,rmin,rmax)
+    else:
+        command += ' --setParameterRanges r_%s=%s,%s '%(proc,rmin,rmax)
+        command += ' --freezeParameters r_%s '%(otherProcess)
     command += ' --cminDefaultMinimizerTolerance 0.1 --X-rtd MINIMIZER_analytic --X-rtd FITTER_NEW_CROSSING_ALGO '
     command += ' --cminDefaultMinimizerStrategy=%s -m %s'%(minimizer,mass)
     if batch:
@@ -69,6 +73,7 @@ if __name__ == "__main__":
     parser.add_argument('-folder','--folder',dest='folder',default='datacards')
     parser.add_argument('-saveShapes','--saveShapes',dest='saveShapes',action='store_true')
     parser.add_argument('-robustHesse','--robustHesse',dest='robustHesse',action='store_true')
+    parser.add_argument('-releaseOtherPOI','--releaseOtherPOI',dest='releaseOtherPOI',action='store_true')
     parser.add_argument('-minimizer','--minimizer',dest='minimizer',default='0')
     parser.add_argument('-batch','--batch',action='store_true')
     args = parser.parse_args()
@@ -91,6 +96,7 @@ if __name__ == "__main__":
         saveShapes=args.saveShapes,
         folder=args.folder,
         minimizer=args.minimizer,
+        releaseOtherPOI=args.releaseOtherPOI,
         proc=args.proc,
         rmin=args.r_min,
         rmax=args.r_max,
