@@ -1,8 +1,8 @@
 import ROOT
 
 #############################################
-# ROOT styles (High tau pT analysis)        #
-# Author : Alexei Raspereza (December 2022) #
+# ROOT styles (AZh analysis)                #
+# Author : Alexei Raspereza (December 2023) #
 #############################################
 
 chan_map = {

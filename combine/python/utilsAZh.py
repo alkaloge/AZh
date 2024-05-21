@@ -553,7 +553,7 @@ def PlotTemplate(hists,**kwargs):
                   %(Yield,YieldUp,YieldDown))
         print
     
-    styles.InitData(hist,"m_{ll#tau#tau} [GeV]","Events/bin")
+    styles.InitData(hist,"m_{ll#tau#tau}^{cons} [GeV]","dN/dm [1/GeV]")
     hist.GetXaxis().SetNdivisions(505)
     if sys.lower()!='none':
         styles.InitModel(histUp,ROOT.kRed,1)
@@ -675,13 +675,16 @@ def Plot(hists,fractions,**kwargs):
     year = kwargs.get('year','2018')
     cat = kwargs.get('cat','0btag')
     channel = kwargs.get('channel','mmtt')
-    mass = kwargs.get('mass','400')
+    mass = kwargs.get('mass','300')
     scale_bbA = kwargs.get('scale_bbA',5.)
     scale_ggA = kwargs.get('scale_ggA',5.)
-    xmin = kwargs.get('xmin',200)
-    xmax = kwargs.get('xmax',700)
+    xmin = kwargs.get('xmin',199.9)
+    xmax = kwargs.get('xmax',1125)
+    ratiomin = kwargs.get('ratiomin',0.)
+    ratiomax = kwargs.get('ratiomax',2.2)
     blind = kwargs.get('blind',True)
     logx = kwargs.get('logx',True)
+    logy = kwargs.get('logy',False)
     fittype = kwargs.get('fittype','prefit')
     postfix = kwargs.get('postfix','cards')
     plotSignal = kwargs.get('plotSignal',False)
@@ -700,11 +703,11 @@ def Plot(hists,fractions,**kwargs):
     tot_hist = hists['tot_bkg']
     
     styles.InitData(data_hist,"","")    
-    styles.InitHist(ZZ_hist,"m_{ll#tau#tau}^{cons} [GeV]","Events / 20 GeV",ROOT.TColor.GetColor("#4496C8"),1001)
+    styles.InitHist(ZZ_hist,"m_{ll#tau#tau}^{cons} [GeV]","",ROOT.TColor.GetColor("#4496C8"),1001)
     styles.InitHist(fake_hist,"","",ROOT.TColor.GetColor("#c6f74a"),1001)
     styles.InitHist(other_hist,"","",ROOT.TColor.GetColor("#FFCCFF"),1001)
 
-    styles.InitHist(ZZ_hist,"m_{ll#tau#tau}^{cons} [GeV]","Events / 20 GeV",ROOT.TColor.GetColor("#ffa90e"),1001) #red
+    styles.InitHist(ZZ_hist,"m_{ll#tau#tau}^{cons} [GeV]","Events / GeV",ROOT.TColor.GetColor("#ffa90e"),1001) #red
     styles.InitHist(fake_hist,"","",ROOT.TColor.GetColor("#e76300"),1001)
     styles.InitHist(other_hist,"","",ROOT.TColor.GetColor("#3f90da"),1001)
     styles.InitModel(ggA_hist,ROOT.kRed,1)
@@ -720,7 +723,9 @@ def Plot(hists,fractions,**kwargs):
     zeroBinErrors(ggA_hist)
     zeroBinErrors(bbA_hist)
 
-    # prefit and postfit correlated constraints (xsecs for ZZ, ttZ, VV and Higgs bkg  and reducible systematics)
+    # prefit and postfit correlated constraints 
+    # xsecs for ZZ, ttZ, VV and Higgs bkg
+    # and reducible systematics
     other_sys = 0.25
     ZZ_sys = 0.05
     fake_total = fractions['et'] + fractions['mt'] + fractions['tt']
@@ -730,19 +735,23 @@ def Plot(hists,fractions,**kwargs):
         ZZ_sys = 0.03
         other_sys = 0.21
 
-    ymax = 0
+    ymin = 0.
+    ymax = 0.
     nbins = data_hist.GetNbinsX()
     xdata = []
     exdata = []
     ydata = []
     eyldata = []
     eyhdata = []
+    ydata_ratio = []
+    eyldata_ratio = []
+    eyhdata_ratio = []
     for ib in range(1,nbins+1):
         x = data_hist.GetBinContent(ib)
         err = data_hist.GetBinError(ib)
         xcenter = data_hist.GetBinCenter(ib)
         binwidth = data_hist.GetBinWidth(ib)
-        binratio = 20.0/binwidth
+        binratio = 1.0/binwidth
         err_ZZ = ZZ_hist.GetBinContent(ib)*ZZ_sys
         err_other = other_hist.GetBinContent(ib)*other_sys
         err_fake = fake_hist.GetBinContent(ib)*fake_sys
@@ -760,14 +769,20 @@ def Plot(hists,fractions,**kwargs):
         ggA_hist.SetBinContent(ib,binratio*ggA_hist.GetBinContent(ib))
         if isBBA: bbA_hist.SetBinContent(ib,binratio*bbA_hist.GetBinContent(ib))
         
-        if x>0:
-            xdata.append(xcenter)
-            exdata.append(0.0)
-            ydata.append(x)
-            eyldata.append(-0.5+math.sqrt(x+0.25))
-            eyhdata.append(0.5+math.sqrt(x+0.25))
-            xsum = x+err
-            if xsum>ymax: ymax = xsum
+        # filling vectors for data graph and data/MC ratio graph
+        xdata.append(xcenter)
+        exdata.append(0.0)
+        y_obs = x*binratio
+        if logy and x==0:
+            y_obs = 1e-8
+        ydata.append(y_obs)
+        eyldata.append(binratio*(-0.5+math.sqrt(x+0.25)))
+        eyhdata.append(binratio*(0.5+math.sqrt(x+0.25)))
+        ydata_ratio.append(y_obs/tot_hist.GetBinContent(ib))
+        eyldata_ratio.append(binratio*(-0.5+math.sqrt(x+0.25))/tot_hist.GetBinContent(ib))
+        eyhdata_ratio.append(binratio*(0.5+math.sqrt(x+0.25))/tot_hist.GetBinContent(ib))
+        xsum = (x+err)*binratio
+        if xsum>ymax: ymax = xsum
 
     data_graph = ROOT.TGraphAsymmErrors(nbins,
                                         array('d',list(xdata)),
@@ -777,9 +792,25 @@ def Plot(hists,fractions,**kwargs):
                                         array('d',list(eyldata)),
                                         array('d',list(eyhdata)))
 
+    data_graph_ratio = ROOT.TGraphAsymmErrors(nbins,
+                                              array('d',list(xdata)),
+                                              array('d',list(ydata_ratio)),
+                                              array('d',list(exdata)),
+                                              array('d',list(exdata)),
+                                              array('d',list(eyldata_ratio)),
+                                              array('d',list(eyhdata_ratio)))
+
     data_graph.SetMarkerStyle(20)
     data_graph.SetMarkerSize(1.5)
     data_graph.SetMarkerColor(1)
+
+    data_graph_ratio.SetMarkerStyle(20)
+    data_graph_ratio.SetMarkerSize(1.5)
+    data_graph_ratio.SetMarkerColor(1)
+
+    unit_ratio = createUnitHisto(tot_hist,'unit_ratio')
+    unit_ratio.GetYaxis().SetRangeUser(ratiomin,ratiomax)
+    unit_ratio.GetXaxis().SetRangeUser(xmin,xmax)
 
     if blind: 
         ymax = tot_hist.GetMaximum()
@@ -792,22 +823,50 @@ def Plot(hists,fractions,**kwargs):
         if bbA_hist.GetMaximum()>ymax:
             ymax = bbA_hist.GetMaximum()
 
-    ZZ_hist.GetXaxis().SetRangeUser(xmin,xmax)
-    ZZ_hist.GetYaxis().SetRangeUser(0,1.2*ymax)
+    if logy:
+        ymin = 1e-3
+        ymax *= 50.
+    else:
+        ymin = 0.
+        ymax *= 1.1
+
+
+    frame = ROOT.TH2D('frame','',2,xmin,xmax,2,ymin,ymax)
+    styles.InitTotalHist(frame)
+    frame.GetYaxis().SetTitle("dN/dm (1/GeV)")
+    frame.GetYaxis().SetTitleOffset(1.2)
+    frame.GetYaxis().SetTitleSize(0.06)
+    frame.GetYaxis().SetLabelSize(0.055)
+    frame.GetXaxis().SetLabelSize(0)
+
+    frameRatio = ROOT.TH2D('frameRatio','',2,xmin,xmax,2,ratiomin,ratiomax)
+    styles.InitTotalHist(frameRatio)
+    styles.InitRatioHist(frameRatio)
+    frameRatio.GetYaxis().SetTitle("obs/bkg")
+    frameRatio.GetXaxis().SetTitle("m_{ll#tau#tau}^{cons} (GeV)")
 
     if logx:
-        ZZ_hist.GetXaxis().SetNdivisions(505)
-        ZZ_hist.GetXaxis().SetMoreLogLabels()
-        ZZ_hist.GetXaxis().SetNoExponent()
-        ZZ_hist.GetXaxis().SetMoreLogLabels()
+        frame.GetXaxis().SetNdivisions(505)
+        frame.GetXaxis().SetMoreLogLabels()
+        frame.GetXaxis().SetNoExponent()
+        frameRatio.GetXaxis().SetNdivisions(505)
+        frameRatio.GetXaxis().SetMoreLogLabels()
+        frameRatio.GetXaxis().SetNoExponent()
+
+    canv = styles.MakeCanvas('canv','',600,700) 
+
+    # upper pad
+    upper = ROOT.TPad("upper", "pad",0,0.31,1,1)
+    upper.Draw()
+    upper.cd()
+    styles.InitUpperPad(upper)
     
-    canv = styles.MakeCanvas('canv','',600,600) 
-    ZZ_hist.Draw('h')
+    frame.Draw('h')
+    ZZ_hist.Draw('hsame')
     fake_hist.Draw('hsame')
     other_hist.Draw('hsame')
     tot_hist.Draw('e2same')
     if not blind: 
-        #        data_hist.Draw('e1same')
         data_graph.Draw('pe1same')
     if plotSignal:
         ggA_hist.Draw('hsame')
@@ -817,9 +876,9 @@ def Plot(hists,fractions,**kwargs):
     if channel!='':
         legTitle + styles.fullchan_map[channel]
 
-    leg = ROOT.TLegend(0.6,0.45,0.9,0.75)
+    leg = ROOT.TLegend(0.7,0.45,0.9,0.75)
     styles.SetLegendStyle(leg)
-    leg.SetTextSize(0.04)
+    leg.SetTextSize(0.045)
     leg.SetHeader(legTitle)
     if not blind: leg.AddEntry(data_hist,'data','lp')
     leg.AddEntry(ZZ_hist,'ZZ','f')
@@ -833,10 +892,42 @@ def Plot(hists,fractions,**kwargs):
             leg.AddEntry(ggA_hist,'ggA'+mass+' (5 fb)','l')
             if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' (5 fb)','l')
     leg.Draw()
-    styles.CMS_label(canv,era=year,extraText='Preliminary')
-    canv.SetLogx(logx)
-    canv.RedrawAxis()
+    styles.CMS_label(upper,era=year,extraText='Preliminary')
+
+    upper.SetLogx(logx)
+    upper.SetLogy(logy)
+    upper.Draw("SAME")
+    upper.RedrawAxis()
+    upper.Modified()
+    upper.Update()
+    canv.cd()
     canv.Update()
+
+    # lower pad
+    lower = ROOT.TPad("lower", "pad",0,0,1,0.30)
+    lower.Draw()
+    lower.cd()
+    styles.InitLowerPad(lower)
+
+    frameRatio.Draw('h')
+    line = ROOT.TLine(xmin,1.,xmax,1.)
+    line.SetLineColor(4)
+    line.Draw()
+
+    unit_ratio.Draw('e2same')
+    data_graph_ratio.Draw('pe1same')
+
+    lower.Modified()
+    lower.RedrawAxis()
+    lower.SetLogx(logx)
+    lower.SetGridx(True)
+    canv.cd()
+    canv.Modified()
+    canv.SetSelected(canv)
+    canv.Update()
+
+    if logy:
+        postfix += '_logy'
     if cat=='':
         if channel=='':
             canv.Print('%s/m4l_%s_%s_%s.png'%(FiguresFolder,year,mass,postfix))

@@ -51,9 +51,12 @@ if __name__ == "__main__":
     parser.add_argument('-channel','--channel',dest='channel',default='all',choices=['et','mt','tt','all'])
     parser.add_argument('-folder','--folder',dest='folder',default='datacards')
     parser.add_argument('-mass','--mass',dest='mass',required=True)
-    parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=200)
-    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1000)
+    parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=199.9)
+    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1050.1)
+    parser.add_argument('-ymin','--ymin',dest='ymin',type=float,default=0.)
+    parser.add_argument('-ymax','--ymax',dest='ymax',type=float,default=2.2)
     parser.add_argument('-logx','--logx',dest='logx',action='store_true')
+    parser.add_argument('-logy','--logy',dest='logy',action='store_true')
     parser.add_argument('-fittype','--fittype',dest='fittype',default='prefit',choices=['prefit','fit_b','fit_s'])
     parser.add_argument('-unblind','--unblind',dest='unblind',action='store_true')
     parser.add_argument('-plotSignal','--plotSignal',dest='plotSignal',action='store_true')
@@ -66,9 +69,12 @@ if __name__ == "__main__":
     mass = args.mass
     fittype = args.fittype
     logx = args.logx
+    logy = args.logy
 
     xmin = args.xmin
     xmax = args.xmax
+    ratiomin = args.ymin
+    ratiomax = args.ymax
 
     prefix = ''
     suffix = '_%s_%s_%s'%(year,cat,channel)
@@ -312,9 +318,12 @@ if __name__ == "__main__":
                blind=blind,
                xmin=xmin,
                xmax=xmax,
+               ratiomin=ratiomin,
+               ratiomax=ratiomax,
                scale_bbA=scale_bbA,
                scale_ggA=scale_ggA,
                logx=logx,
+               logy=logy,
                fittype=fittype,
                plotSignal=args.plotSignal,
                postfix=fittype)
