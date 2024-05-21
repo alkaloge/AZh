@@ -679,7 +679,7 @@ def Plot(hists,fractions,**kwargs):
     scale_bbA = kwargs.get('scale_bbA',5.)
     scale_ggA = kwargs.get('scale_ggA',5.)
     xmin = kwargs.get('xmin',199.9)
-    xmax = kwargs.get('xmax',1125)
+    xmax = kwargs.get('xmax',1150.1)
     ratiomin = kwargs.get('ratiomin',0.)
     ratiomax = kwargs.get('ratiomax',2.2)
     blind = kwargs.get('blind',True)
@@ -688,6 +688,7 @@ def Plot(hists,fractions,**kwargs):
     fittype = kwargs.get('fittype','prefit')
     postfix = kwargs.get('postfix','cards')
     plotSignal = kwargs.get('plotSignal',False)
+    show_yield = kwargs.get('show_yield',False)
 
     data_hist = hists['data'].Clone('data_hist')
     ggA_hist = hists['ggA'].Clone('ggA_hist')
@@ -703,11 +704,11 @@ def Plot(hists,fractions,**kwargs):
     tot_hist = hists['tot_bkg']
     
     styles.InitData(data_hist,"","")    
-    styles.InitHist(ZZ_hist,"m_{ll#tau#tau}^{cons} [GeV]","",ROOT.TColor.GetColor("#4496C8"),1001)
+    styles.InitHist(ZZ_hist,"","",ROOT.TColor.GetColor("#4496C8"),1001)
     styles.InitHist(fake_hist,"","",ROOT.TColor.GetColor("#c6f74a"),1001)
     styles.InitHist(other_hist,"","",ROOT.TColor.GetColor("#FFCCFF"),1001)
 
-    styles.InitHist(ZZ_hist,"m_{ll#tau#tau}^{cons} [GeV]","Events / GeV",ROOT.TColor.GetColor("#ffa90e"),1001) #red
+    styles.InitHist(ZZ_hist,"","",ROOT.TColor.GetColor("#ffa90e"),1001) #red
     styles.InitHist(fake_hist,"","",ROOT.TColor.GetColor("#e76300"),1001)
     styles.InitHist(other_hist,"","",ROOT.TColor.GetColor("#3f90da"),1001)
     styles.InitModel(ggA_hist,ROOT.kRed,1)
@@ -752,6 +753,8 @@ def Plot(hists,fractions,**kwargs):
         xcenter = data_hist.GetBinCenter(ib)
         binwidth = data_hist.GetBinWidth(ib)
         binratio = 1.0/binwidth
+        if show_yield:
+            binratio = 1.0
         err_ZZ = ZZ_hist.GetBinContent(ib)*ZZ_sys
         err_other = other_hist.GetBinContent(ib)*other_sys
         err_fake = fake_hist.GetBinContent(ib)*fake_sys
@@ -834,6 +837,8 @@ def Plot(hists,fractions,**kwargs):
     frame = ROOT.TH2D('frame','',2,xmin,xmax,2,ymin,ymax)
     styles.InitTotalHist(frame)
     frame.GetYaxis().SetTitle("dN/dm (1/GeV)")
+    if show_yield:
+        frame.GetYaxis().SetTitle("Events / bin")
     frame.GetYaxis().SetTitleOffset(1.2)
     frame.GetYaxis().SetTitleSize(0.06)
     frame.GetYaxis().SetLabelSize(0.055)
@@ -869,8 +874,13 @@ def Plot(hists,fractions,**kwargs):
     if not blind: 
         data_graph.Draw('pe1same')
     if plotSignal:
-        ggA_hist.Draw('hsame')
-        if isBBA: bbA_hist.Draw('hsame')
+        if fittype=='fit_s':
+            if isBBA: 
+                ggA_hist.Add(ggA_hist,bbA_hist)
+            ggA_hist.Draw('hsame')
+        else:
+            ggA_hist.Draw('hsame')
+            if isBBA: bbA_hist.Draw('hsame')
 
     legTitle = cat;
     if channel!='':
@@ -886,8 +896,8 @@ def Plot(hists,fractions,**kwargs):
     leg.AddEntry(other_hist,'other','f')
     if plotSignal:
         if fittype=='fit_s':
-            leg.AddEntry(ggA_hist,'ggA'+mass+' ','l')
-            if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' ','l')
+            leg.AddEntry(ggA_hist,'A('+mass+')','l')
+            #            if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' ','l')
         else:
             leg.AddEntry(ggA_hist,'ggA'+mass+' (5 fb)','l')
             if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' (5 fb)','l')

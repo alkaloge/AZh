@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import AZh.combine.stylesAZh as styles
 import AZh.combine.utilsAZh as utils
@@ -58,6 +58,7 @@ if __name__ == "__main__":
     parser.add_argument('-logx','--logx',dest='logx',action='store_true')
     parser.add_argument('-logy','--logy',dest='logy',action='store_true')
     parser.add_argument('-fittype','--fittype',dest='fittype',default='prefit',choices=['prefit','fit_b','fit_s'])
+    parser.add_argument('-show_yield','--show_yield',dest='show_yield',action='store_true')
     parser.add_argument('-unblind','--unblind',dest='unblind',action='store_true')
     parser.add_argument('-plotSignal','--plotSignal',dest='plotSignal',action='store_true')
     args = parser.parse_args()
@@ -75,6 +76,8 @@ if __name__ == "__main__":
     xmax = args.xmax
     ratiomin = args.ymin
     ratiomax = args.ymax
+
+    show_yield = args.show_yield
 
     prefix = ''
     suffix = '_%s_%s_%s'%(year,cat,channel)
@@ -325,6 +328,7 @@ if __name__ == "__main__":
                logx=logx,
                logy=logy,
                fittype=fittype,
+               show_yield=show_yield,
                plotSignal=args.plotSignal,
                postfix=fittype)
 
