@@ -14,7 +14,6 @@ def MakeCommand(**kwargs):
     mass = kwargs.get('mass','1000')
     batch = kwargs.get('batch',False)
     folder = kwargs.get('folder','datacards')
-    noFitAsimov = kwargs.get('noFitAsimov',False)
     indir = utils.BaseFolder + '/' + folder
 
     otherProc = 'bbA'
@@ -32,7 +31,7 @@ def MakeCommand(**kwargs):
         if release:
             command += '--setParameterRanges r_%s=0,20:r_%s=0,20 '%(proc,otherProc)
         else:
-            command += '--setParameterRanges r_%s=-20,20 '%(proc)
+            command += '--setParameterRanges r_%s=0,20 '%(proc)
             command += '--freezeParameters r_%s '%(otherProc)
         command += '--redefineSignalPOIs r_%s '%(proc) 
     else:
@@ -44,7 +43,7 @@ def MakeCommand(**kwargs):
     if not obs:
         command +='-t -1 --noFitAsimov '
     else: 
-        if noFitAsimov: 
+        if release:
             command +='--noFitAsimov '
     command += '-n ".%s_%s_%s" '%(analysis,sample,proc)
     command += '-m %s '%(mass)
@@ -66,7 +65,6 @@ if __name__ == "__main__":
     parser.add_argument('-mass','--mass',dest='mass',type=str,required=True,help=""" tested mass of A boson, if \'all\' is specified, limits are computed for all masses""")
     parser.add_argument('-obs','--obs',dest='obs',action='store_true',help=""" compute observed limits """)
     parser.add_argument('-releaseOtherPOI','--releaseOtherPOI',dest='releaseOtherPOI',action='store_true',help=""" release other POI, for example r_bbA when running limits on r_ggA or vice versa""")
-    parser.add_argument('-noFitAsimov','--noFitAsimov',dest='noFitAsimov',action='store_true',help=""" no fit to Asimov""")
     parser.add_argument('-folder','--folder',dest='folder',default="datacards",help=""" input folder twith datacards""")
     parser.add_argument('-batch','--batch',dest='batch',action='store_true')
     args = parser.parse_args()
@@ -79,7 +77,6 @@ if __name__ == "__main__":
     analysis = args.analysis
     releaseOtherPOI = args.releaseOtherPOI
     obs = args.obs
-    noFitAsimov = args.noFitAsimov
 
     DatacardsFolder = utils.BaseFolder + '/' + folder
 
@@ -168,7 +165,6 @@ if __name__ == "__main__":
                                   sample=sample,
                                   obs=obs,
                                   releaseOtherPOI=releaseOtherPOI,
-                                  noFitAsimov=noFitAsimov,
                                   mass=mA,
                                   folder=folder,
                                   proc=proc,
