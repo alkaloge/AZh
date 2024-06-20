@@ -24,7 +24,7 @@ if __name__ == "__main__":
     parser.add_argument('-folder','--folder',dest='folder',default='datacards')
     parser.add_argument('-mass','--mass',dest='mass',default='300')
     parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=200)
-    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1000)
+    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1150)
     parser.add_argument('-logx','--logx',dest='logx',action='store_true')
     parser.add_argument('-unblind','--unblind',dest='unblind',action='store_true')
     args = parser.parse_args()
@@ -223,8 +223,15 @@ if __name__ == "__main__":
         sumofweights = hists[template].GetSumOfWeights()
         print('%15s %6.0f'%(template,sumofweights))
 
-    print
+    print('')
+    # fractions of reducible background
+    fractions = {
+        'et' : 0.30,
+        'mt' : 0.30,
+        'tt' : 0.40
+    }
     utils.Plot(hists,
+               fractions,
                year=year_legend,
                cat=cat_legend,
                channel=channel_legend,
