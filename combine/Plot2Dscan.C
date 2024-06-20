@@ -112,9 +112,9 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // ++++++++++++++++++++++
 // +++ Main subroutine
 // ++++++++++++++++++++++
-void Plot2Dscan(TString mass = "300",
-		double xmax_frame = 700,
-		double ymax_frame = 800,
+void Plot2Dscan(TString mass = "1000",
+		double xmax_frame = 80,
+		double ymax_frame = 80,
 		bool BR_AZh = true,
 		bool pb = false,
 		bool unblind = true) {
@@ -317,9 +317,11 @@ void Plot2Dscan(TString mass = "300",
   graph_2sigma->SetLineWidth(3);
 
   //Best fit 
+  xbestE[0] *= scaleBR;
+  ybestE[0] *= scaleBR;
   TGraph * graphBest = new TGraph(1,xbestE,ybestE);
-  graphBest->SetMarkerStyle(43);
-  graphBest->SetMarkerSize(5.0);
+  graphBest->SetMarkerStyle(34);
+  graphBest->SetMarkerSize(3.);
   graphBest->SetMarkerColor(kBlack);
 
   TH2D * frame = new TH2D("frame","",2,xmin_frame,xmax_frame,2,ymin_frame,ymax_frame);
@@ -331,15 +333,24 @@ void Plot2Dscan(TString mass = "300",
     frame->GetXaxis()->SetTitle("#sigma(ggA)#timesBR(A#rightarrowZh)#timesBR(Z#rightarrowll)#timesBR(h#rightarrow#tau#tau) ["+unit+"]");
     frame->GetYaxis()->SetTitle("#sigma(bbA)#timesBR(A#rightarrowZh)#timesBR(Z#rightarrowll)#timesBR(h#rightarrow#tau#tau) ["+unit+"]");
   }
-  frame->GetYaxis()->SetTitleOffset(1.2);
-  frame->GetXaxis()->SetTitleSize(0.06);
-  frame->GetYaxis()->SetTitleSize(0.06);
+
+  frame->GetXaxis()->SetTitleOffset(1.3);
+  frame->GetYaxis()->SetTitleOffset(1.7);
+
+  frame->GetXaxis()->SetTitleSize(0.045);
+  frame->GetYaxis()->SetTitleSize(0.045);
+
   frame->GetXaxis()->SetNdivisions(206);
   frame->GetYaxis()->SetNdivisions(206);
-  
+
+  frame->GetXaxis()->SetLabelOffset(0.02);
+  frame->GetYaxis()->SetLabelOffset(0.02);
+
+  frame->GetXaxis()->SetLabelSize(0.045);
+  frame->GetYaxis()->SetLabelSize(0.045);
+
   TCanvas * canv = MakeCanvas("canv","",800,700);    
   frame->Draw();
-
   contour_2sigma->Draw("3same");
   contour_1sigma->Draw("3same");
   if (unblind) {
@@ -348,8 +359,9 @@ void Plot2Dscan(TString mass = "300",
     graphBest->Draw("psame");
   }
 
-  TLegend * leg = new TLegend(0.65,0.45,0.85,0.75);
-  SetLegendStyle(leg);
+  TLegend * leg = new TLegend(0.7,0.45,0.9,0.75);
+  leg->SetFillColor(0);
+  leg->SetBorderSize(1);
   leg->SetTextSize(0.033);
   leg->SetHeader("m_{A} = "+mass+" GeV");
   leg->AddEntry(contour_1sigma," exp 68%","f");
@@ -359,13 +371,15 @@ void Plot2Dscan(TString mass = "300",
     leg->AddEntry(graph_2sigma," obs 95%","l");
     leg->AddEntry(graphBest," best fit","p");
   }
-  leg->Draw();
 
   lumi_13TeV = "138 fb^{-1}";
   extraText = "Preliminary";
   writeExtraText = true;
   CMS_lumi(canv,4,33); 
+  canv->SetGridx(true);
+  canv->SetGridy(true);
   canv->RedrawAxis();
+  leg->Draw();
   canv->Update();
 
   canv->Print("figures/"+folder+"_"+unit+".png");

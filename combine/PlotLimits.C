@@ -7,9 +7,9 @@ void PlotLimits(TString Era = "Run2", // year
 		TString folder = "limits_obs", // input folder (output of macro RunLimits.py)
 		TString postfix = "BRAZh",
 		float YMin = 0.,  // lower boundary of Y axis 
-		float YMax = 1500., // upper boundary of Y axis
+		float YMax = 1200., // upper boundary of Y axis
 		float XMin = 225., // lower boundary of X axis
-		float XMax = 2000., // upper boundary of X axis
+		float XMax = 1000., // upper boundary of X axis
 		bool logy = false, // log scale of Y axis
 		bool logx = true, // log scale of X axis
 		bool BR_AZh = true, // produce results in terms of sigma x BR(A->Zh)
@@ -198,7 +198,7 @@ void PlotLimits(TString Era = "Run2", // year
     frame->GetYaxis()->SetTitle("#sigma("+Process+")#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
   }
   frame->GetXaxis()->SetNdivisions(510);
-  frame->GetYaxis()->SetNdivisions(505);
+  frame->GetYaxis()->SetNdivisions(210);
   frame->GetXaxis()->SetMoreLogLabels(2);
   frame->GetXaxis()->SetNoExponent();
   frame->GetYaxis()->SetTitleOffset(1.55);  
@@ -224,7 +224,7 @@ void PlotLimits(TString Era = "Run2", // year
   TLegend * leg = new TLegend(0.5,0.55,0.8,0.75);
   leg->SetFillColor(0);
   leg->SetTextSize(0.035);
-  leg->SetBorderSize(0);
+  leg->SetBorderSize(1);
   if (!blindData) 
     leg->AddEntry(obsG,"Observed","lp");
   leg->AddEntry(expG,"Expected","l");
@@ -237,6 +237,8 @@ void PlotLimits(TString Era = "Run2", // year
   CMS_lumi(canv,4,33); 
   canv->SetLogx(logx);
   canv->SetLogy(logy);
+  canv->SetGridx(true);
+  canv->SetGridy(true);
   canv->RedrawAxis();
 
   leg->Draw();
