@@ -170,6 +170,16 @@ def InitModel(hist,color,style):
     hist.SetMarkerStyle(0)
     hist.SetMarkerSize(0)
     hist.SetMarkerColor(color)
+    hist.SetTitleSize  (0.055,"Y")
+    hist.SetTitleOffset(1.400,"Y")
+    hist.SetLabelOffset(0.014,"Y")
+    hist.SetLabelSize  (0.040,"Y")
+    hist.SetLabelFont  (42   ,"Y")
+    hist.SetTitleSize  (0.055,"X")
+    hist.SetTitleOffset(1.300,"X")
+    hist.SetLabelOffset(0.014,"X")
+    hist.SetLabelSize  (0.050,"X")
+    hist.SetLabelFont  (42   ,"X")
     
 
 
