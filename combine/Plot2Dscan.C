@@ -112,12 +112,20 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // ++++++++++++++++++++++
 // +++ Main subroutine
 // ++++++++++++++++++++++
-void Plot2Dscan(TString mass = "225",
-		double xmax_frame = 3,
-		double ymax_frame = 3,
+void Plot2Dscan(TString mass = "300",
+		double xmax_frame = 700,
+		double ymax_frame = 800,
+		bool BR_AZh = true,
+		bool pb = false,
 		bool unblind = true) {
 
   SetStyle();
+
+  double scaleBR = 1.0;
+  if (BR_AZh) scaleBR = 1.0/(0.1*0.062);
+  if (pb) scaleBR *= 1e-3;
+  TString unit = "fb";
+  if (pb) unit = "pb";
 
   TString folder = "2Dscan_Run2_" + mass;
 
@@ -214,18 +222,20 @@ void Plot2Dscan(TString mass = "225",
     double ycenter = 0.5*(yhigh_1sigma[i]+ylow_1sigma[i]);
     double yup = yhigh_1sigma[i] - ycenter;
     double ydown = ycenter - ylow_1sigma[i];
-    ycentre_1sigma[i] = ycenter;
-    yhigh_1sigma[i] = yup;
-    ylow_1sigma[i] = ydown;
+    ycentre_1sigma[i] = scaleBR*ycenter;
+    yhigh_1sigma[i] = scaleBR*yup;
+    ylow_1sigma[i] = scaleBR*ydown;
+    x_1sigma[i] *= scaleBR;
   }
 
   for (int i=0; i<nGraph_2sigma; ++i) {
     double ycenter = 0.5*(yhigh_2sigma[i]+ylow_2sigma[i]);
     double yup = yhigh_2sigma[i] - ycenter;
     double ydown = ycenter - ylow_2sigma[i];
-    ycentre_2sigma[i] = ycenter;
-    yhigh_2sigma[i] = yup;
-    ylow_2sigma[i] = ydown;
+    ycentre_2sigma[i] = scaleBR*ycenter;
+    yhigh_2sigma[i] = scaleBR*yup;
+    ylow_2sigma[i] = scaleBR*ydown;
+    x_2sigma[i] *= scaleBR;
   }
   
   TGraphAsymmErrors * contour_1sigma = new TGraphAsymmErrors(nGraph_1sigma, 
@@ -282,29 +292,45 @@ void Plot2Dscan(TString mass = "225",
       xE_2sigma[nGraphE_2sigma]=xE_2sigma[ip];		
       yhighE_2sigma[nGraphE_2sigma]=ylowE_2sigma[ip];
       nGraphE_2sigma++;
+      
     }
   }
   
+  for (int iPoint=0; iPoint<nGraphE_1sigma; ++iPoint) {
+    xE_1sigma[iPoint] *= scaleBR;
+    yhighE_1sigma[iPoint] *= scaleBR;
+  }
+
+  for (int iPoint=0; iPoint<nGraphE_2sigma; ++iPoint) {
+    xE_2sigma[iPoint] *= scaleBR;
+    yhighE_2sigma[iPoint] *= scaleBR;
+  }
 
   TGraph * graph_1sigma = new TGraph(nGraphE_1sigma,xE_1sigma,yhighE_1sigma);
-  graph_1sigma->SetLineColor(kRed);
+  graph_1sigma->SetLineColor(kBlack);
   graph_1sigma->SetLineStyle(1);
   graph_1sigma->SetLineWidth(3);
 
   TGraph * graph_2sigma = new TGraph(nGraphE_2sigma,xE_2sigma,yhighE_2sigma);
-  graph_2sigma->SetLineColor(kRed);
+  graph_2sigma->SetLineColor(kBlack);
   graph_2sigma->SetLineStyle(2);
   graph_2sigma->SetLineWidth(3);
 
   //Best fit 
   TGraph * graphBest = new TGraph(1,xbestE,ybestE);
   graphBest->SetMarkerStyle(43);
-  graphBest->SetMarkerSize(4.0);
+  graphBest->SetMarkerSize(5.0);
   graphBest->SetMarkerColor(kBlack);
 
   TH2D * frame = new TH2D("frame","",2,xmin_frame,xmax_frame,2,ymin_frame,ymax_frame);
-  frame->GetXaxis()->SetTitle("#sigma(ggA)#timesBR [fb]");
-  frame->GetYaxis()->SetTitle("#sigma(bbA)#timesBR [fb]");
+  if (BR_AZh) {
+    frame->GetXaxis()->SetTitle("#sigma(ggA)#timesBR(A#rightarrowZh) ["+unit+"]");
+    frame->GetYaxis()->SetTitle("#sigma(bbA)#timesBR(A#rightarrowZh) ["+unit+"]");
+  }
+  else {
+    frame->GetXaxis()->SetTitle("#sigma(ggA)#timesBR(A#rightarrowZh)#timesBR(Z#rightarrowll)#timesBR(h#rightarrow#tau#tau) ["+unit+"]");
+    frame->GetYaxis()->SetTitle("#sigma(bbA)#timesBR(A#rightarrowZh)#timesBR(Z#rightarrowll)#timesBR(h#rightarrow#tau#tau) ["+unit+"]");
+  }
   frame->GetYaxis()->SetTitleOffset(1.2);
   frame->GetXaxis()->SetTitleSize(0.06);
   frame->GetYaxis()->SetTitleSize(0.06);
@@ -322,16 +348,16 @@ void Plot2Dscan(TString mass = "225",
     graphBest->Draw("psame");
   }
 
-  TLegend * leg = new TLegend(0.7,0.45,0.85,0.75);
+  TLegend * leg = new TLegend(0.65,0.45,0.85,0.75);
   SetLegendStyle(leg);
   leg->SetTextSize(0.033);
   leg->SetHeader("m_{A} = "+mass+" GeV");
-  leg->AddEntry(contour_1sigma,"exp 68%","f");
-  leg->AddEntry(contour_2sigma,"exp 95%","f");
+  leg->AddEntry(contour_1sigma," exp 68%","f");
+  leg->AddEntry(contour_2sigma," exp 95%","f");
   if (unblind) {
-    leg->AddEntry(graph_1sigma,"obs 68%","l");
-    leg->AddEntry(graph_2sigma,"obs 95%","l");
-    leg->AddEntry(graphBest,"best fit","p");
+    leg->AddEntry(graph_1sigma," obs 68%","l");
+    leg->AddEntry(graph_2sigma," obs 95%","l");
+    leg->AddEntry(graphBest," best fit","p");
   }
   leg->Draw();
 
@@ -341,6 +367,7 @@ void Plot2Dscan(TString mass = "225",
   CMS_lumi(canv,4,33); 
   canv->RedrawAxis();
   canv->Update();
-  canv->Print("figures/"+folder+".png");
+
+  canv->Print("figures/"+folder+"_"+unit+".png");
 
 }

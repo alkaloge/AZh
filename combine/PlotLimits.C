@@ -3,16 +3,26 @@
 
 void PlotLimits(TString Era = "Run2", // year
 		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt
-		TString Process = "ggA", // process
-		TString folder = "limits_v0/limits_2POI", // input folder (output of macro RunLimits.py)
-		TString postfix = "2POI",
-		float YMax = 7, // upper boundary of Y axis
+		TString Process = "bbA", // process
+		TString folder = "limits_obs", // input folder (output of macro RunLimits.py)
+		TString postfix = "BRAZh",
+		float YMin = 0.,  // lower boundary of Y axis 
+		float YMax = 1500., // upper boundary of Y axis
 		float XMin = 225., // lower boundary of X axis
-		float XMax = 1000., // upper boundary of X axis
+		float XMax = 2000., // upper boundary of X axis
+		bool logy = false, // log scale of Y axis
 		bool logx = true, // log scale of X axis
-		bool blindData = true // blinding observed limit
+		bool BR_AZh = true, // produce results in terms of sigma x BR(A->Zh)
+		bool pb = false, // limits in picobarn
+		bool blindData = false // blinding observed limit
 		) {
 
+
+  double scaleBR = 1.0;
+  if (BR_AZh) scaleBR = 1.0/(0.1*0.062);
+  if (pb) scaleBR *= 1e-3; 
+  TString unit = "fb";
+  if (pb) unit = "pb";
 
   std::vector<TString> masses = {"225","250","275","300","325","350","375","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
 
@@ -70,24 +80,22 @@ void PlotLimits(TString Era = "Run2", // year
 
     tree->GetEntry(0);
     mA[counter] = float(MH);
-    minus2R[counter] = float(LIMIT);
-
-    //    std::cout << mA[counter] << std::endl;
+    minus2R[counter] = float(LIMIT)*scaleBR;
     
     tree->GetEntry(1);
-    minus1R[counter] = float(LIMIT);
+    minus1R[counter] = float(LIMIT)*scaleBR;
 
     tree->GetEntry(2);
-    medianR[counter] = float(LIMIT);
+    medianR[counter] = float(LIMIT)*scaleBR;
 
     tree->GetEntry(3);
-    plus1R[counter] = float(LIMIT);
+    plus1R[counter] = float(LIMIT)*scaleBR;
 
     tree->GetEntry(4);
-    plus2R[counter] = float(LIMIT);
+    plus2R[counter] = float(LIMIT)*scaleBR;
 
     tree->GetEntry(5);
-    obsR[counter] = float(LIMIT);
+    obsR[counter] = float(LIMIT)*scaleBR;
     if (blindData)
       obsR[counter] = medianR[counter];
 
@@ -97,8 +105,7 @@ void PlotLimits(TString Era = "Run2", // year
 
 
   std::cout << " mA    -2s    -1s    exp    +1s    +2s   obs " << std::endl; 
-  //           " 225   2.37   3.21   4.57   6.61   9.21  6.50
-  //           "100  24.1  28.2  33.8  40.8  48.2  23.0
+  //           "225   2.37   3.21   4.57   6.61   9.21  6.50
 
 
   for (int i=0; i<counter; ++i) {
@@ -111,10 +118,26 @@ void PlotLimits(TString Era = "Run2", // year
     plus2[i]  = plus2R[i];
 
     char strOut[200];
-    if (blindData) sprintf(strOut,"%4i  %5.2f  %5.2f  %5.2f  %5.2f  %5.2f",
-			   int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i]);
-    else sprintf(strOut,"%4i  %5.2f  %5.2f  %5.2f  %5.2f  %5.2f %5.2f",
-		 int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i],obs[i]);
+    if (BR_AZh) {
+      if (pb) {
+	if (blindData) sprintf(strOut,"%4i  %5.3f  %5.3f  %5.3f  %5.3f  %5.3f",
+			       int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i]);
+	else sprintf(strOut,"%4i  %5.3f  %5.3f  %5.3f  %5.3f  %5.3f %5.3f",
+		     int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i],obs[i]);	
+      }
+      else {
+	if (blindData) sprintf(strOut,"%4i  %5.0f  %5.0f  %5.0f  %5.0f  %5.0f",
+			       int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i]);
+	else sprintf(strOut,"%4i  %5.0f  %5.0f  %5.0f  %5.0f  %5.0f %5.0f",
+		     int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i],obs[i]);
+      }
+    }
+    else {
+      if (blindData) sprintf(strOut,"%4i  %5.2f  %5.2f  %5.2f  %5.2f  %5.2f",
+			     int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i]);
+      else sprintf(strOut,"%4i  %5.2f  %5.2f  %5.2f  %5.2f  %5.2f %5.2f",
+		   int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i],obs[i]);
+    }
     std::cout << strOut << std::endl;
 
   }
@@ -125,12 +148,12 @@ void PlotLimits(TString Era = "Run2", // year
   double central[nPoints];
   for (int i=0; i<counter; ++i) {
     zeros[i] = 0;
-    central[i] = 15; 
+    central[i] = 15.0*scaleBR; 
     minus2[i] = median[i] - minus2[i];
     minus1[i] = median[i] - minus1[i];
     plus1[i]  = plus1[i]  - median[i];
     plus2[i]  = plus2[i]  - median[i];
-    upper[i] = 15 - central[i];
+    upper[i] = 15.0*scaleBR - central[i];
     lower[i] = central[i] - obs[i];
   }
   
@@ -166,18 +189,23 @@ void PlotLimits(TString Era = "Run2", // year
   outerBand->SetFillColor(TColor::GetColor("#FFDF7Fff"));
   outerBand->SetLineColor(TColor::GetColor("#FFDF7Fff"));
 
-  TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,0,YMax);
+  TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,YMin,YMax);
   frame->GetXaxis()->SetTitle("m_{A} (GeV)");
-  frame->GetYaxis()->SetTitle("#sigma("+Process+")#timesB(A#rightarrowZh) [fb]");
-  frame->GetXaxis()->SetNdivisions(505);
-  frame->GetYaxis()->SetNdivisions(206);
-  frame->GetXaxis()->SetMoreLogLabels();
+  if (BR_AZh) {
+    frame->GetYaxis()->SetTitle("#sigma("+Process+")#timesB(A#rightarrowZh) ["+unit+"]");
+  }
+  else {
+    frame->GetYaxis()->SetTitle("#sigma("+Process+")#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
+  }
+  frame->GetXaxis()->SetNdivisions(510);
+  frame->GetYaxis()->SetNdivisions(505);
+  frame->GetXaxis()->SetMoreLogLabels(2);
   frame->GetXaxis()->SetNoExponent();
-  frame->GetYaxis()->SetTitleOffset(1.25);  
-  frame->GetYaxis()->SetTitleSize(0.048);  
+  frame->GetYaxis()->SetTitleOffset(1.55);  
+  frame->GetYaxis()->SetTitleSize(0.05);  
   
 
-  TCanvas *canv = MakeCanvas("canv", "histograms", 600, 600);
+  TCanvas *canv = MakeCanvas("canv", "histograms", 700, 600);
 
   frame->Draw();
 
@@ -193,7 +221,7 @@ void PlotLimits(TString Era = "Run2", // year
   float yLegend = 0.41;
   float sizeLeg = 0.27;
 
-  TLegend * leg = new TLegend(0.55,0.5,0.85,0.7);
+  TLegend * leg = new TLegend(0.5,0.55,0.8,0.75);
   leg->SetFillColor(0);
   leg->SetTextSize(0.035);
   leg->SetBorderSize(0);
@@ -208,6 +236,7 @@ void PlotLimits(TString Era = "Run2", // year
   writeExtraText = true;
   CMS_lumi(canv,4,33); 
   canv->SetLogx(logx);
+  canv->SetLogy(logy);
   canv->RedrawAxis();
 
   leg->Draw();
