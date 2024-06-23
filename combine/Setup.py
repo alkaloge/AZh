@@ -490,8 +490,8 @@ if __name__ == "__main__":
 
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('-year','--year',dest='year',default='Run2',help=""" year : 2016 2017 2018 Run2""",choices=utils.years_ext)
-    parser.add_argument('-folder','--folder',dest='folder',default='preapp',help=""" folder with ROOT files""")
+    parser.add_argument('-year','--year',dest='year',default='Run2',choices=utils.years_ext)
+    parser.add_argument('-folder','--folder',dest='folder',default='paper',help=""" folder with ROOT files""")
     parser.add_argument('-binning','--binning',dest='binning',default='nominal',help=""" binning """,choices=['nominal','mass','old'])
     args = parser.parse_args()
 
