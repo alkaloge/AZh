@@ -681,7 +681,7 @@ def Plot(hists,fractions,**kwargs):
     xmin = kwargs.get('xmin',199.9)
     xmax = kwargs.get('xmax',1150.1)
     ratiomin = kwargs.get('ratiomin',0.)
-    ratiomax = kwargs.get('ratiomax',2.2)
+    ratiomax = kwargs.get('ratiomax',3.3)
     blind = kwargs.get('blind',True)
     logx = kwargs.get('logx',True)
     logy = kwargs.get('logy',False)
@@ -898,11 +898,11 @@ def Plot(hists,fractions,**kwargs):
     if channel in ['et','mt','tt']:
         legTitle + styles.fullchan_map[channel]
 
-    leg = ROOT.TLegend(0.7,0.40,0.9,0.70)
+    leg = ROOT.TLegend(0.65,0.25,0.90,0.75)
     styles.SetLegendStyle(leg)
-    leg.SetTextSize(0.045)
+    leg.SetTextSize(0.055)
     leg.SetHeader(legTitle)
-    if not blind: leg.AddEntry(data_hist,'data','lp')
+    if not blind: leg.AddEntry(data_hist,'data','pe')
     leg.AddEntry(ZZ_hist,'ZZ','f')
     leg.AddEntry(fake_hist,'reducible','f')
     leg.AddEntry(other_hist,'other','f')
@@ -910,8 +910,8 @@ def Plot(hists,fractions,**kwargs):
         if fittype=='fit_s':
             leg.AddEntry(ggA_hist,'A('+mass+')','l')
         else:
-            leg.AddEntry(ggA_hist,'ggA'+mass+' (5 fb)','l')
-            if isBBA: leg.AddEntry(bbA_hist,'bbA'+mass+ ' (5 fb)','l')
+            leg.AddEntry(ggA_hist,'gg#rightarrowA('+mass+')','l')
+            if isBBA: leg.AddEntry(bbA_hist,'bbA('+mass+ ')','l')
     leg.Draw()
     styles.CMS_label(upper,era=year,extraText='Preliminary')
 

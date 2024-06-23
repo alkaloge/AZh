@@ -3,7 +3,7 @@
 #    definition of parameters to steer running of GoF tests    #
 ################################################################
 sample=$1        # options : 2016, 2017, 2018, Run2, et, mt, tt
-mA=300           # mass hypothesis
+mA=250           # mass hypothesis
 r_ggA=0          # signal strength of ggA process
 r_bbA=0          # signal strength of bbA process
 algo=saturated   # test-statistics, options saturated, KS, AD 
