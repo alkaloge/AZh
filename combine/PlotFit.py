@@ -54,7 +54,7 @@ if __name__ == "__main__":
     parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=199.9)
     parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1050.1)
     parser.add_argument('-ymin','--ymin',dest='ymin',type=float,default=0.)
-    parser.add_argument('-ymax','--ymax',dest='ymax',type=float,default=2.2)
+    parser.add_argument('-ymax','--ymax',dest='ymax',type=float,default=3.3)
     parser.add_argument('-logx','--logx',dest='logx',action='store_true')
     parser.add_argument('-logy','--logy',dest='logy',action='store_true')
     parser.add_argument('-fittype','--fittype',dest='fittype',default='prefit',choices=['prefit','fit_b','fit_s'])
@@ -303,13 +303,14 @@ if __name__ == "__main__":
         sumofweights = hists[template].GetSumOfWeights()
         print('%15s %6.0f'%(template,sumofweights))
 
-    print
+    print('')
 
-    scale_ggA = 1.0
-    scale_bbA = 1.0
+    scaleBR = 0.1*0.062
+    scale_ggA = 10*scaleBR
+    scale_bbA = 10*scaleBR
     if fittype=='prefit' or fittype=='fit_b':
-        scale_ggA = 5.0
-        scale_bbA = 5.0
+        scale_ggA = 500*scaleBR
+        scale_bbA = 500*scaleBR
 
     utils.Plot(hists,
                fractions,

@@ -2,18 +2,20 @@
 #include "CMS_lumi.C"
 
 void PlotLimits(TString Era = "Run2", // year
-		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt
+		TString Sample = "0btag", // options : 2016, 2017, 2018, Run2, et, mt, tt
 		TString Process = "bbA", // process
 		TString folder = "limits_obs", // input folder (output of macro RunLimits.py)
-		TString postfix = "BRAZh",
-		float YMin = 0.,  // lower boundary of Y axis 
-		float YMax = 1200., // upper boundary of Y axis
+		TString postfix = "comb",
+		float YMin = 0.01,  // lower boundary of Y axis 
+		float YMax = 50., // upper boundary of Y axis
 		float XMin = 225., // lower boundary of X axis
-		float XMax = 1000., // upper boundary of X axis
-		bool logy = false, // log scale of Y axis
+		float XMax = 2000., // upper boundary of X axis
+		bool logy = true, // log scale of Y axis
 		bool logx = true, // log scale of X axis
+		float xLeg = 0.40, // x coordinate of the legend box
+		float yLeg = 0.60, // y coordinate of the legend box
 		bool BR_AZh = true, // produce results in terms of sigma x BR(A->Zh)
-		bool pb = false, // limits in picobarn
+		bool pb = true, // limits in picobarn
 		bool blindData = false // blinding observed limit
 		) {
 
@@ -120,9 +122,9 @@ void PlotLimits(TString Era = "Run2", // year
     char strOut[200];
     if (BR_AZh) {
       if (pb) {
-	if (blindData) sprintf(strOut,"%4i  %5.3f  %5.3f  %5.3f  %5.3f  %5.3f",
+	if (blindData) sprintf(strOut,"%4i  %5.2f  %5.2f  %5.2f  %5.2f  %5.2f",
 			       int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i]);
-	else sprintf(strOut,"%4i  %5.3f  %5.3f  %5.3f  %5.3f  %5.3f %5.3f",
+	else sprintf(strOut,"%4i  %5.2f  %5.2f  %5.2f  %5.2f  %5.2f %5.2f",
 		     int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i],obs[i]);	
       }
       else {
@@ -215,13 +217,7 @@ void PlotLimits(TString Era = "Run2", // year
   if (!blindData)
     obsG->Draw("lpsame");
 
-  float xLeg = 0.18;
-  float yLeg = 0.83;
-  float xLegend = 0.57;
-  float yLegend = 0.41;
-  float sizeLeg = 0.27;
-
-  TLegend * leg = new TLegend(0.5,0.55,0.8,0.75);
+  TLegend * leg = new TLegend(xLeg,yLeg,xLeg+0.3,yLeg+0.2);
   leg->SetFillColor(0);
   leg->SetTextSize(0.035);
   leg->SetBorderSize(1);

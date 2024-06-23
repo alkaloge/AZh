@@ -237,8 +237,9 @@ if __name__ == "__main__":
                channel=channel_legend,
                mass=mass,
                blind=blind,
-               xmin=xmin,
-               xmax=xmax,
+#               xmin=xmin,
+#               xmax=xmax,
                logx=logx,
+               plotSignal=True,
                postfix='cards')
 

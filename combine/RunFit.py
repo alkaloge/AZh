@@ -63,7 +63,7 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument('-sample','--sample',dest='sample',default='Run2')
-    parser.add_argument('-mass','--mass',dest='mass',default='300',choices=utils.azh_masses)
+    parser.add_argument('-mass','--mass',dest='mass',default='350',choices=utils.azh_masses)
     parser.add_argument('-obs','--obs',dest='obs',action='store_true')
     parser.add_argument('-r_ggA','--r_ggA',dest='r_ggA',default='0')
     parser.add_argument('-r_bbA','--r_bbA',dest='r_bbA',default='0')
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     parser.add_argument('-saveShapes','--saveShapes',dest='saveShapes',action='store_true')
     parser.add_argument('-robustHesse','--robustHesse',dest='robustHesse',action='store_true')
     parser.add_argument('-releaseOtherPOI','--releaseOtherPOI',dest='releaseOtherPOI',action='store_true')
-    parser.add_argument('-minimizer','--minimizer',dest='minimizer',default='0')
+    parser.add_argument('-minimizer','--minimizer',dest='minimizer',default='1')
     parser.add_argument('-batch','--batch',action='store_true')
     args = parser.parse_args()
 

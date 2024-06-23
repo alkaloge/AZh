@@ -60,7 +60,7 @@ if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser()
     parser.add_argument('-analysis','--analysis',dest='analysis',default='azh',help=""" analysis : azh (this) or hig18023 (HIG-18-023)""",choices=['azh','hig18023'])
-    parser.add_argument('-sample','--sample',dest='sample',required=True,choices=['2016','2017','2018','Run2','et','mt','tt','em'])
+    parser.add_argument('-sample','--sample',dest='sample',required=True,choices=['2016','2017','2018','Run2','et','mt','tt','em','0btag','btag'])
     parser.add_argument('-outdir','--outdir',dest='outdir',required=True,help=""" output folder where results of limits are stored""")
     parser.add_argument('-mass','--mass',dest='mass',type=str,required=True,help=""" tested mass of A boson, if \'all\' is specified, limits are computed for all masses""")
     parser.add_argument('-obs','--obs',dest='obs',action='store_true',help=""" compute observed limits """)
