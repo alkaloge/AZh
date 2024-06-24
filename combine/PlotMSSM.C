@@ -37,12 +37,12 @@ float interpolate(int npoints, float * tanb, float * r) {
 
 void PlotMSSM(TString model = "mh125EFT_13",
 	      float YMin = 0.9999, // lower boundary of Y axis
-	      float YMax = 10.00001, // upper boundary of Y axis
+	      float YMax = 7.00001, // upper boundary of Y axis
 	      float XMin = 225., // lower boundary of X axis
 	      float XMax = 400., // upper boundary of X axis
 	      bool logx = false, // log scale of X axis
 	      bool logy = true, // log scale of Y axis
-	      bool blindData = true // blinding observed limit
+	      bool blindData = false // blinding observed limit
 	      ) {
 
 
@@ -232,6 +232,8 @@ void PlotMSSM(TString model = "mh125EFT_13",
   frame->GetYaxis()->SetTitle("tan#beta");
   frame->GetXaxis()->SetNdivisions(505);
   frame->GetYaxis()->SetNdivisions(206);
+  frame->GetYaxis()->SetMoreLogLabels();
+  frame->GetYaxis()->SetNoExponent();
   frame->GetYaxis()->SetTitleOffset(1.25);  
   frame->GetYaxis()->SetTitleSize(0.048);  
   
@@ -252,10 +254,10 @@ void PlotMSSM(TString model = "mh125EFT_13",
   float yLegend = 0.41;
   float sizeLeg = 0.27;
 
-  TLegend * leg = new TLegend(0.20,0.2,0.50,0.40);
+  TLegend * leg = new TLegend(0.23,0.2,0.53,0.45);
   leg->SetFillColor(0);
   leg->SetTextSize(0.035);
-  leg->SetBorderSize(0);
+  leg->SetBorderSize(1);
   leg->SetHeader(Title);
   if (!blindData) 
     leg->AddEntry(obsG,"Obs","lp");
@@ -270,6 +272,8 @@ void PlotMSSM(TString model = "mh125EFT_13",
   canv->SetLogx(logx);
   canv->SetLogy(logy);
   canv->RedrawAxis();
+  canv->SetGridy(true);
+  canv->SetGridx(true);
 
   leg->Draw();
   canv->Update();
