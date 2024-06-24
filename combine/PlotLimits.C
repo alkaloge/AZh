@@ -1,22 +1,22 @@
 #include "HttStylesNew.cc"
 #include "CMS_lumi.C"
 
-void PlotLimits(TString Era = "Run2", // year
-		TString Sample = "0btag", // options : 2016, 2017, 2018, Run2, et, mt, tt
-		TString Process = "bbA", // process
+void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
+		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt, btag, 0btag
+		TString Process = "ggA", // process : ggA, bbA
 		TString folder = "limits_obs", // input folder (output of macro RunLimits.py)
-		TString postfix = "comb",
-		float YMin = 0.01,  // lower boundary of Y axis 
-		float YMax = 50., // upper boundary of Y axis
-		float XMin = 225., // lower boundary of X axis
-		float XMax = 2000., // upper boundary of X axis
-		bool logy = true, // log scale of Y axis
-		bool logx = true, // log scale of X axis
-		float xLeg = 0.40, // x coordinate of the legend box
-		float yLeg = 0.60, // y coordinate of the legend box
+		TString postfix = "paper",     // postfix in the name of output png file
+		float YMin = 0.0,   // lower boundary of Y axis 
+		float YMax = 2.5,   // upper boundary of Y axis
+		float XMin = 225.,  // lower boundary of X axis
+		float XMax = 1000., // upper boundary of X axis
+		bool logy = false, // log scale of Y axis
+		bool logx = true,  // log scale of X axis
+		float xLeg = 0.60, // x coordinate of the legend box
+		float yLeg = 0.50, // y coordinate of the legend box
 		bool BR_AZh = true, // produce results in terms of sigma x BR(A->Zh)
-		bool pb = true, // limits in picobarn
-		bool blindData = false // blinding observed limit
+		bool pb = true,     // limits in picobarn
+		bool blindData = false // blinding observed limit?
 		) {
 
 
@@ -122,9 +122,9 @@ void PlotLimits(TString Era = "Run2", // year
     char strOut[200];
     if (BR_AZh) {
       if (pb) {
-	if (blindData) sprintf(strOut,"%4i  %5.2f  %5.2f  %5.2f  %5.2f  %5.2f",
+	if (blindData) sprintf(strOut,"%4i  %5.3f  %5.3f  %5.3f  %5.3f  %5.3f",
 			       int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i]);
-	else sprintf(strOut,"%4i  %5.2f  %5.2f  %5.2f  %5.2f  %5.2f %5.2f",
+	else sprintf(strOut,"%4i  %5.3f  %5.3f  %5.3f  %5.3f  %5.3f %5.3f",
 		     int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i],obs[i]);	
       }
       else {
@@ -193,11 +193,15 @@ void PlotLimits(TString Era = "Run2", // year
 
   TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,YMin,YMax);
   frame->GetXaxis()->SetTitle("m_{A} (GeV)");
+  std::map<TString, TString> process = {
+    {"bbA","bbA"},
+    {"ggA","gg#rightarrowA"}
+  };
   if (BR_AZh) {
-    frame->GetYaxis()->SetTitle("#sigma("+Process+")#timesB(A#rightarrowZh) ["+unit+"]");
+    frame->GetYaxis()->SetTitle("#sigma("+process[Process]+")#timesB(A#rightarrowZh) ["+unit+"]");
   }
   else {
-    frame->GetYaxis()->SetTitle("#sigma("+Process+")#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
+    frame->GetYaxis()->SetTitle("#sigma("+process[Process]+")#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
   }
   frame->GetXaxis()->SetNdivisions(510);
   frame->GetYaxis()->SetNdivisions(210);

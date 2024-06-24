@@ -204,6 +204,10 @@ if __name__ == "__main__":
                 print
 
 
+    scaleBR = 500.*0.1*0.062 # scale to sigma x BR = 500 fb
+    scale_ggA = scaleBR
+    scale_bbA = scaleBR
+
     print('accumulated yields ')
     print
 
@@ -216,7 +220,7 @@ if __name__ == "__main__":
         print('%15s %6.2f'%(template,sumofweights))
     print
     for template in templates_sig:
-        sumofweights = hists[template].GetSumOfWeights()
+        sumofweights = scaleBR*hists[template].GetSumOfWeights()
         print('%15s %6.2f'%(template,sumofweights))
     print
     for template in templates_data:

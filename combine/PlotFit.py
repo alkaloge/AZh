@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
-import AZh.combine.stylesAZh as styles
 import AZh.combine.utilsAZh as utils
+import AZh.combine.stylesAZh as styles
 import argparse
 from array import array
 import ROOT
@@ -284,6 +284,13 @@ if __name__ == "__main__":
                 print
 
 
+    scaleBR = 500.*0.1*0.062 # scale to sigma x BR = 500 fb
+    scale_ggA = scaleBR
+    scale_bbA = scaleBR
+#    if fittype=='prefit' or fittype=='fit_b':
+#        scale_ggA = 500*scaleBR
+#        scale_bbA = 500*scaleBR
+
     print('accumulated yields ')
     print
 
@@ -296,7 +303,7 @@ if __name__ == "__main__":
         print('%15s %6.2f'%(template,sumofweights))
     print
     for template in templates_sig:
-        sumofweights = hists[template].GetSumOfWeights()
+        sumofweights = scaleBR*hists[template].GetSumOfWeights()
         print('%15s %6.2f'%(template,sumofweights))
     print
     for template in templates_data:
@@ -305,12 +312,6 @@ if __name__ == "__main__":
 
     print('')
 
-    scaleBR = 0.1*0.062
-    scale_ggA = 10*scaleBR
-    scale_bbA = 10*scaleBR
-    if fittype=='prefit' or fittype=='fit_b':
-        scale_ggA = 500*scaleBR
-        scale_bbA = 500*scaleBR
 
     utils.Plot(hists,
                fractions,
