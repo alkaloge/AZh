@@ -113,10 +113,10 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // +++ Main subroutine
 // ++++++++++++++++++++++
 void Plot2Dscan(TString mass = "1000",
-		double xmax_frame = 80,
-		double ymax_frame = 80,
+		double xmax_frame = 0.08,
+		double ymax_frame = 0.08,
 		bool BR_AZh = true,
-		bool pb = false,
+		bool pb = true,
 		bool unblind = true) {
 
   SetStyle();
@@ -326,11 +326,11 @@ void Plot2Dscan(TString mass = "1000",
 
   TH2D * frame = new TH2D("frame","",2,xmin_frame,xmax_frame,2,ymin_frame,ymax_frame);
   if (BR_AZh) {
-    frame->GetXaxis()->SetTitle("#sigma(ggA)#timesBR(A#rightarrowZh) ["+unit+"]");
+    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesBR(A#rightarrowZh) ["+unit+"]");
     frame->GetYaxis()->SetTitle("#sigma(bbA)#timesBR(A#rightarrowZh) ["+unit+"]");
   }
   else {
-    frame->GetXaxis()->SetTitle("#sigma(ggA)#timesBR(A#rightarrowZh)#timesBR(Z#rightarrowll)#timesBR(h#rightarrow#tau#tau) ["+unit+"]");
+    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesBR(A#rightarrowZh)#timesBR(Z#rightarrowll)#timesBR(h#rightarrow#tau#tau) ["+unit+"]");
     frame->GetYaxis()->SetTitle("#sigma(bbA)#timesBR(A#rightarrowZh)#timesBR(Z#rightarrowll)#timesBR(h#rightarrow#tau#tau) ["+unit+"]");
   }
 
@@ -359,23 +359,23 @@ void Plot2Dscan(TString mass = "1000",
     graphBest->Draw("psame");
   }
 
-  TLegend * leg = new TLegend(0.7,0.45,0.9,0.75);
+  TLegend * leg = new TLegend(0.68,0.6,0.93,0.9);
   leg->SetFillColor(0);
   leg->SetBorderSize(1);
   leg->SetTextSize(0.033);
-  leg->SetHeader("m_{A} = "+mass+" GeV");
-  leg->AddEntry(contour_1sigma," exp 68%","f");
-  leg->AddEntry(contour_2sigma," exp 95%","f");
+  leg->SetHeader("  m_{A} = "+mass+" GeV");
+  leg->AddEntry(contour_1sigma,"  68% CL exp.","f");
+  leg->AddEntry(contour_2sigma,"  95% CL exp.","f");
   if (unblind) {
-    leg->AddEntry(graph_1sigma," obs 68%","l");
-    leg->AddEntry(graph_2sigma," obs 95%","l");
-    leg->AddEntry(graphBest," best fit","p");
+    leg->AddEntry(graph_1sigma,"  68% CL obs.","l");
+    leg->AddEntry(graph_2sigma,"  95% CL obs.","l");
+    leg->AddEntry(graphBest,"  Best fit","p");
   }
 
   lumi_13TeV = "138 fb^{-1}";
   extraText = "Preliminary";
   writeExtraText = true;
-  CMS_lumi(canv,4,33); 
+  CMS_lumi(canv,4,0,0.03); 
   canv->SetGridx(true);
   canv->SetGridy(true);
   canv->RedrawAxis();
