@@ -3,17 +3,17 @@
 
 void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
 		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt, btag, 0btag
-		TString Process = "ggA", // process : ggA, bbA
+		TString Process = "bbA", // process : ggA, bbA
 		TString folder = "limits_obs", // input folder (output of macro RunLimits.py)
-		TString postfix = "paper",     // postfix in the name of output png file
+		TString postfix = "pas",     // postfix in the name of output png file
 		float YMin = 0.0,   // lower boundary of Y axis 
-		float YMax = 2.5,   // upper boundary of Y axis
+		float YMax = 1.2,   // upper boundary of Y axis
 		float XMin = 225.,  // lower boundary of X axis
 		float XMax = 1000., // upper boundary of X axis
 		bool logy = false, // log scale of Y axis
 		bool logx = true,  // log scale of X axis
-		float xLeg = 0.60, // x coordinate of the legend box
-		float yLeg = 0.50, // y coordinate of the legend box
+		float xLeg = 0.65, // x coordinate of the legend box
+		float yLeg = 0.6, // y coordinate of the legend box
 		bool BR_AZh = true, // produce results in terms of sigma x BR(A->Zh)
 		bool pb = true,     // limits in picobarn
 		bool blindData = false // blinding observed limit?
@@ -106,7 +106,7 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
   }
 
 
-  std::cout << " mA    -2s    -1s    exp    +1s    +2s   obs " << std::endl; 
+  std::cout << " mA    -2s    -1s    exp    +1s    +2s     obs " << std::endl; 
   //           "225   2.37   3.21   4.57   6.61   9.21  6.50
 
 
@@ -124,13 +124,13 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
       if (pb) {
 	if (blindData) sprintf(strOut,"%4i  %5.3f  %5.3f  %5.3f  %5.3f  %5.3f",
 			       int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i]);
-	else sprintf(strOut,"%4i  %5.3f  %5.3f  %5.3f  %5.3f  %5.3f %5.3f",
+	else sprintf(strOut,"%4i  %5.3f  %5.3f  %5.3f  %5.3f  %5.3f   %5.3f",
 		     int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i],obs[i]);	
       }
       else {
 	if (blindData) sprintf(strOut,"%4i  %5.0f  %5.0f  %5.0f  %5.0f  %5.0f",
 			       int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i]);
-	else sprintf(strOut,"%4i  %5.0f  %5.0f  %5.0f  %5.0f  %5.0f %5.0f",
+	else sprintf(strOut,"%4i  %5.0f  %5.0f  %5.0f  %5.0f  %5.0f   %5.0f",
 		     int(mA[i]),minus2[i],minus1[i],median[i],plus1[i],plus2[i],obs[i]);
       }
     }
@@ -207,9 +207,11 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
   frame->GetYaxis()->SetNdivisions(210);
   frame->GetXaxis()->SetMoreLogLabels(2);
   frame->GetXaxis()->SetNoExponent();
-  frame->GetYaxis()->SetTitleOffset(1.55);  
+  frame->GetYaxis()->SetTitleOffset(1.3);  
   frame->GetYaxis()->SetTitleSize(0.05);  
   
+
+  TString Header = process[Process];
 
   TCanvas *canv = MakeCanvas("canv", "histograms", 700, 600);
 
@@ -221,20 +223,21 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
   if (!blindData)
     obsG->Draw("lpsame");
 
-  TLegend * leg = new TLegend(xLeg,yLeg,xLeg+0.3,yLeg+0.2);
+  TLegend * leg = new TLegend(xLeg,yLeg,xLeg+0.27,yLeg+0.3);
   leg->SetFillColor(0);
   leg->SetTextSize(0.035);
   leg->SetBorderSize(1);
+  leg->SetHeader(Header);
   if (!blindData) 
     leg->AddEntry(obsG,"Observed","lp");
   leg->AddEntry(expG,"Expected","l");
-  leg->AddEntry(innerBand,"#pm1#sigma Expected","f");
-  leg->AddEntry(outerBand,"#pm2#sigma Expected","f");
+  leg->AddEntry(innerBand,"68% expected","f");
+  leg->AddEntry(outerBand,"95% expected","f");
   leg->Draw();
 
   extraText = "Preliminary";
   writeExtraText = true;
-  CMS_lumi(canv,4,33); 
+  CMS_lumi(canv,4,0,0.02); 
   canv->SetLogx(logx);
   canv->SetLogy(logy);
   canv->SetGridx(true);

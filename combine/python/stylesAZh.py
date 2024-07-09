@@ -54,6 +54,7 @@ def SetStyle():
     ROOT.gStyle = HttStyle
     HttStyle.SetOptStat(0000)
     HttStyle.SetOptFit(0000)    
+    HttStyle.SetErrorX(0.5)
 
     # Canvas
     HttStyle.SetCanvasColor     (0)
@@ -304,10 +305,11 @@ def InitLowerPad(pad):
 def CMS_label(pad,**kwargs):
 
     iPeriod = kwargs.get('Period',4)
-    iPosX = kwargs.get('PosX',33)
+    iPosX = kwargs.get('PosX',0)
     writeExtraText = kwargs.get('writeExtraText',True)
     era = kwargs.get('era',"UL2018")
     extraText = kwargs.get('extraText',"Preliminary")
+    space = kwargs.get('space',0.03)
 
     lumiText = eraLumiLabel[era]
 
@@ -318,9 +320,9 @@ def CMS_label(pad,**kwargs):
 
     # text sizes and text offsets with respect to the top frame
     # in unit of the top margin size
-    lumiTextSize     = 0.6
+    lumiTextSize     = 0.65
     lumiTextOffset   = 0.2
-    cmsTextSize      = 0.75
+    cmsTextSize      = 0.80
     cmsTextOffset    = 0.1 # only used in outOfFrame version
     
     relPosX    = 0.045
@@ -328,9 +330,9 @@ def CMS_label(pad,**kwargs):
     relExtraDY = 1.2
 
     # ratio of "CMS" and extra text size
-    extraOverCmsTextSize  = 0.76
+    extraOverCmsTextSize  = 0.85
 
-    outOfFrame    = False
+    outOfFrame    = True
     alignY_=3
     alignX_=2
     if iPosX/10==0: 
@@ -385,7 +387,7 @@ def CMS_label(pad,**kwargs):
     if iPosX%10==3:
         posX_ =  1-r - relPosX*(1-l-r)
 
-    posY_ = 1-t - relPosY*(1-t-b)
+    posY_ = 1-t+lumiTextOffset*t
 
     if not outOfFrame:
         latex.SetTextFont(cmsTextFont)
@@ -400,11 +402,11 @@ def CMS_label(pad,**kwargs):
     elif writeExtraText:
         if iPosX==0: 
             posX_ =   l +  relPosX*(1-l-r)
-            posY_ =   1-t+lumiTextOffset*t
+            posY_ =   1-t+lumiTextOffset*t + 0.04
         latex.SetTextFont(extraTextFont)
         latex.SetTextSize(extraTextSize*t)
         latex.SetTextAlign(align_)
-        latex.DrawLatex(posX_, posY_+0.7, extraText)      
+        latex.DrawLatex(posX_+space, posY_, extraText)      
 
 def zeroBinErrors(hist):
     nbins = hist.GetNbinsX()

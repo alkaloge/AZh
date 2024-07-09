@@ -662,9 +662,9 @@ def PlotTemplate(hists,**kwargs):
 
     print
 
-###############################################
-# plotting final discriminant from datacards 
-                
+##############################################
+# plotting final discriminant from datacards #
+##############################################
 def Plot(hists,fractions,**kwargs):
 
     isBBA = False
@@ -774,7 +774,8 @@ def Plot(hists,fractions,**kwargs):
         
         # filling vectors for data graph and data/MC ratio graph
         xdata.append(xcenter)
-        exdata.append(0.0)
+        binwidth = 0.5*(tot_hist.GetBinLowEdge(ib+1)-tot_hist.GetBinLowEdge(ib))
+        exdata.append(binwidth)
         y_obs = x*binratio
         if logy and x==0:
             y_obs = 1e-8
@@ -839,8 +840,11 @@ def Plot(hists,fractions,**kwargs):
             ymax = bbA_hist.GetMaximum()
 
     if logy:
-        ymin = 1e-3
-        ymax *= 50.
+        if cat=='0btag':
+            ymin = 3e-5
+        else:
+            ymin = 3e-6
+        ymax *= 100.
     else:
         ymin = 0.
         ymax *= 1.1
@@ -859,8 +863,10 @@ def Plot(hists,fractions,**kwargs):
     frameRatio = ROOT.TH2D('frameRatio','',2,xmin,xmax,2,ratiomin,ratiomax)
     styles.InitTotalHist(frameRatio)
     styles.InitRatioHist(frameRatio)
+    #    frameRatio.GetYaxis().SetTitleSize(0.06)
     frameRatio.GetYaxis().SetTitle("obs/bkg")
-    frameRatio.GetXaxis().SetTitle("m_{ll#tau#tau}^{cons} (GeV)")
+    frameRatio.GetXaxis().SetTitleSize(0.14)
+    frameRatio.GetXaxis().SetTitle("#it{m}_{#it{ll#tau#tau}}^{#it{cons}} (GeV)")
 
     if logx:
         frame.GetXaxis().SetNdivisions(505)
@@ -894,11 +900,18 @@ def Plot(hists,fractions,**kwargs):
     if not blind:
         data_graph.Draw('pe1same')
 
-    legTitle = cat;
+    catTitle = {
+        'btag' : 'btag',
+        '0btag': 'no-btag'
+    }
+    
+    legTitle = catTitle[cat];
     if channel in ['et','mt','tt']:
         legTitle + styles.fullchan_map[channel]
 
-    leg = ROOT.TLegend(0.65,0.25,0.90,0.75)
+    leg = ROOT.TLegend(0.65,0.35,0.90,0.75)
+    if logy:
+        leg = ROOT.TLegend(0.65,0.35,0.90,0.75)
     styles.SetLegendStyle(leg)
     leg.SetTextSize(0.055)
     leg.SetHeader(legTitle)

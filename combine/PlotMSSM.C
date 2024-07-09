@@ -37,7 +37,7 @@ float interpolate(int npoints, float * tanb, float * r) {
 
 void PlotMSSM(TString model = "mh125EFT_13",
 	      float YMin = 0.9999, // lower boundary of Y axis
-	      float YMax = 7.00001, // upper boundary of Y axis
+	      float YMax = 6.00001, // upper boundary of Y axis
 	      float XMin = 225., // lower boundary of X axis
 	      float XMax = 400., // upper boundary of X axis
 	      bool logx = false, // log scale of X axis
@@ -54,11 +54,11 @@ void PlotMSSM(TString model = "mh125EFT_13",
 
   TString Title("hMSSM");
   if (model=="hMSSM_13") {
-    Title = "hMSSM";
+    Title = "hMSSM scenario";
     dtanb = 0.2;
   }
   else if (model=="mh125EFT_13") {
-    Title = "m_{h125}^{EFT}";
+    Title = "M_{h,EFT}^{125} scenario";
     dtanb = 0.25;
   }
 
@@ -254,21 +254,21 @@ void PlotMSSM(TString model = "mh125EFT_13",
   float yLegend = 0.41;
   float sizeLeg = 0.27;
 
-  TLegend * leg = new TLegend(0.23,0.2,0.53,0.45);
+  TLegend * leg = new TLegend(0.20,0.2,0.53,0.50);
   leg->SetFillColor(0);
-  leg->SetTextSize(0.035);
+  leg->SetTextSize(0.037);
   leg->SetBorderSize(1);
   leg->SetHeader(Title);
   if (!blindData) 
-    leg->AddEntry(obsG,"Obs","lp");
-  leg->AddEntry(expG,"Exp","l");
-  leg->AddEntry(innerBand,"#pm1#sigma Expected","f");
-  leg->AddEntry(outerBand,"#pm2#sigma Expected","f");
+    leg->AddEntry(obsG,"Observed","lp");
+  leg->AddEntry(expG,"Expected","l");
+  leg->AddEntry(innerBand,"68% expected","f");
+  leg->AddEntry(outerBand,"95% expected","f");
   leg->Draw();
 
   extraText = "Preliminary";
   writeExtraText = true;
-  CMS_lumi(canv,4,33); 
+  CMS_lumi(canv,4,0,0.04); 
   canv->SetLogx(logx);
   canv->SetLogy(logy);
   canv->RedrawAxis();

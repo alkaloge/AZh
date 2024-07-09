@@ -90,7 +90,7 @@ if __name__ == "__main__":
     channels = []
 
     year_legend = year
-    cat_legend = '0-btag'
+    cat_legend = 'no-btag'
     if cat=='btag':
         cat_legend = 'btag'
     channel_legend = channel
