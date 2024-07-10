@@ -221,7 +221,7 @@ def InitData(hist,xtit,ytit):
     hist.SetXTitle(xtit)
     hist.SetYTitle(ytit)
     hist.SetMarkerStyle(20)
-    hist.SetMarkerSize(1.6)
+    hist.SetMarkerSize(1.4)
     hist.SetLineColor(1)
     hist.SetMarkerColor(1)
     hist.SetLineWidth(2)

@@ -691,6 +691,9 @@ def Plot(hists,fractions,**kwargs):
     show_yield = kwargs.get('show_yield',False)
 
     data_hist = hists['data'].Clone('data_hist')
+
+    nbins = data_hist.GetNbinsX()
+        
     ggA_hist = hists['ggA'].Clone('ggA_hist')
     bbA_hist = ggA_hist
     if isBBA: bbA_hist = hists['bbA'].Clone('bbA_hist')
@@ -711,7 +714,7 @@ def Plot(hists,fractions,**kwargs):
     styles.InitHist(ZZ_hist,"","",ROOT.TColor.GetColor("#ffa90e"),1001) #red
     styles.InitHist(fake_hist,"","",ROOT.TColor.GetColor("#e76300"),1001)
     styles.InitHist(other_hist,"","",ROOT.TColor.GetColor("#3f90da"),1001)
-    styles.InitModel(ggA_hist,ROOT.kRed,1)
+    styles.InitModel(ggA_hist,ROOT.kRed+1,1)
     if isBBA: styles.InitModel(bbA_hist,ROOT.kBlue,2)
     styles.InitTotalHist(tot_hist)
 
@@ -738,7 +741,6 @@ def Plot(hists,fractions,**kwargs):
 
     ymin = 0.
     ymax = 0.
-    nbins = data_hist.GetNbinsX()
     xdata = []
     exdata = []
     ydata = []
@@ -805,11 +807,11 @@ def Plot(hists,fractions,**kwargs):
                                               array('d',list(eyhdata_ratio)))
 
     data_graph.SetMarkerStyle(20)
-    data_graph.SetMarkerSize(1.5)
+    data_graph.SetMarkerSize(1.3)
     data_graph.SetMarkerColor(1)
 
     data_graph_ratio.SetMarkerStyle(20)
-    data_graph_ratio.SetMarkerSize(1.5)
+    data_graph_ratio.SetMarkerSize(1.3)
     data_graph_ratio.SetMarkerColor(1)
 
     unit_ratio = createUnitHisto(tot_hist,'unit_ratio')
@@ -847,7 +849,10 @@ def Plot(hists,fractions,**kwargs):
         ymax *= 100.
     else:
         ymin = 0.
-        ymax *= 1.1
+        if cat=='0btag':
+            ymax *= 1.2
+        else:
+            ymax *= 1.25
 
 
     frame = ROOT.TH2D('frame','',2,xmin,xmax,2,ymin,ymax)
@@ -901,8 +906,8 @@ def Plot(hists,fractions,**kwargs):
         data_graph.Draw('pe1same')
 
     catTitle = {
-        'btag' : 'btag',
-        '0btag': 'no-btag'
+        'btag' : '#it{b-tag}',
+        '0btag': '#it{no b-tag}'
     }
     
     legTitle = catTitle[cat];
@@ -915,7 +920,7 @@ def Plot(hists,fractions,**kwargs):
     styles.SetLegendStyle(leg)
     leg.SetTextSize(0.055)
     leg.SetHeader(legTitle)
-    if not blind: leg.AddEntry(data_hist,'data','pe')
+    if not blind: leg.AddEntry(data_hist,'data','ple1')
     leg.AddEntry(ZZ_hist,'ZZ','f')
     leg.AddEntry(fake_hist,'reducible','f')
     leg.AddEntry(other_hist,'other','f')

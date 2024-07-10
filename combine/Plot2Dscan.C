@@ -125,29 +125,59 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // ++++++++++++++++++++++
 // +++ Main subroutine
 // ++++++++++++++++++++++
-// mass    =  250  300  350  400  500  600  800 1000
-// correct =   -1   -1   -1  0.1   -1   -1  1.5   -1
-void Plot2Dscan(TString mass = "1000",
-		double xmax_frame = 0.08,
-		double ymax_frame = 0.08,
+
+void Plot2Dscan(TString mass = "700",
 		bool BR_AZh = true,
 		bool pb = true,
 		bool unblind = true) {
 
   SetStyle();
 
+  map<TString, double> xmax_mass = {
+    {"225",1.2},
+    {"250",1.3},
+    {"275",0.9},
+    {"300",0.8},
+    {"350",0.6},
+    {"400",0.5},
+    {"500",0.25},
+    {"600",0.15},
+    {"700",0.12},
+    {"800",0.10},
+    {"1000",0.08},
+  };
+  
+  map<TString, double> ymax_mass = {
+    {"225",0.9},
+    {"250",1.0},
+    {"275",0.9},
+    {"300",0.7},
+    {"350",0.5},
+    {"400",0.5},
+    {"500",0.25},
+    {"600",0.15},
+    {"700",0.12},
+    {"800",0.10},
+    {"1000",0.08},
+  };
+  
   map<TString, double> corrections = {
+    {"225",-1.},
     {"250",0.1},
+    {"275",1.2},
     {"300",-1.},
     {"350",0.2},
     {"400",0.1},
     {"500",-1.},
     {"600",-1.},
+    {"700",-1.},
     {"800",1.5},
     {"1000",0.3}
   };
 
   double correct = corrections[mass];
+  double xmax_frame = xmax_mass[mass];
+  double ymax_frame = ymax_mass[mass];
   
   double scaleBR = 1.0;
   if (BR_AZh) scaleBR = 1.0/(0.1*0.062);

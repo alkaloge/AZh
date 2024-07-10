@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import AZh.combine.utilsAZh as utils
@@ -10,7 +10,6 @@ parser.add_argument('-sample','--sample',dest='sample',required=True,choices=['2
 parser.add_argument('-indir','--indir',dest='indir',required=True,help=""" output folder where results of limits are stored""")
 parser.add_argument('-mass','--mass',dest='mass',required=True,choices=utils.azh_masses_ext)
 parser.add_argument('-proc','--proc',dest='proc',required=True,choices=['ggA','bbA'])
-parser.add_argument('-obs','--obs',dest='obs',action='store_true')
 parser.add_argument('-quantile','--quantile',dest='quantile',default='obs')
 parser.add_argument('-folder','--folder',dest='folder',default='datacards')
 args = parser.parse_args()

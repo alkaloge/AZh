@@ -3,13 +3,13 @@
 
 void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
 		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt, btag, 0btag
-		TString Process = "bbA", // process : ggA, bbA
+		TString Process = "ggA", // process : ggA, bbA
 		TString folder = "limits_obs", // input folder (output of macro RunLimits.py)
 		TString postfix = "pas",     // postfix in the name of output png file
 		float YMin = 0.0,   // lower boundary of Y axis 
 		float YMax = 1.2,   // upper boundary of Y axis
 		float XMin = 225.,  // lower boundary of X axis
-		float XMax = 1000., // upper boundary of X axis
+		float XMax = 800., // upper boundary of X axis
 		bool logy = false, // log scale of Y axis
 		bool logx = true,  // log scale of X axis
 		float xLeg = 0.65, // x coordinate of the legend box

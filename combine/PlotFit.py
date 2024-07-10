@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import AZh.combine.utilsAZh as utils
 import AZh.combine.stylesAZh as styles
@@ -157,9 +157,11 @@ if __name__ == "__main__":
     templHist = inputfile.Get(dirname+prefix+'ZZ')
     bins = []
     nbins = templHist.GetNbinsX()
-    for ib in range(1,nbins+2):
+    for ib in range(1,nbins+1):
         bins.append(float(templHist.GetBinLowEdge(ib)))
 
+    bins.append(1200.)
+        
     inputfile.Close()
     inputfile_s.Close()
 
@@ -174,7 +176,7 @@ if __name__ == "__main__":
         print('file %s not properly closed'%(fitfile))
         exit()
 
-    print
+    print('')
     print('histogram binning')
     for ib in range(1,nbins+1):
         print('[%4i,%4i]'%(bins[ib-1],bins[ib]))
@@ -182,7 +184,7 @@ if __name__ == "__main__":
     for template in templates:
         hists[template] = ROOT.TH1D(template,'',nbins,array('d',list(bins)))
 
-    print
+    print('')
 
     fractions = {
         'et' : 0,
