@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import AZh.combine.utilsAZh as utils
 import os
@@ -60,7 +60,6 @@ def MakeCommandImpacts(**kwargs):
         command += '--setParameters r_ggA=%s,r_bbA=%s '%(r_ggA,r_bbA)
         command += '--redefineSignalPOIs r_%s '%(proc)
         command += '--job-mode condor --sub-opts=\'+JobFlavour = "workday"\' --merge 4 --doFits ; '
-    #    command += '--doFits ; '
     # return to the original folder
     command += 'cd ../'
 

@@ -16,6 +16,7 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 	    double x2,  // upper boundary of r_qqH
 	    double y1, // lower boundary of r_ggH
 	    double y2, // upper boundar of r_ggH
+	    double correct, // smooth out curve
 	    TTree * limit, // tree
 	    double dnll, // 1sigma = 1, 2ssigma = 4 
 	    double * xbest,
@@ -27,7 +28,8 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 
 
   double deltaY = (y2-y1)/double(nPoints);
-
+  double deltaX = (x2-x1)/double(nPoints);
+  
   TCanvas * dummy = new TCanvas("dummy","",600,500);
   TH2D * hist   = new TH2D("hist",  "",nPoints,x1,x2,nPoints,y1,y2);
   TH2D * update = new TH2D("update","",nPoints,x1,x2,nPoints,y1,y2);
@@ -102,6 +104,17 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
   std::cout << std::endl;
   printf("(x,y) = (%5.3f,%5.3f) DNLL = %5.3f\n",xbest[0],ybest[0],dnllMax);
 
+  if (correct>0.0) {
+    for (int iGraph=0; iGraph<nGraph; ++iGraph) {
+      ymax[iGraph] -= correct*deltaY;
+      ymin[iGraph] -= correct*deltaY;
+      if (ymin[iGraph]<0.0) 
+	ymin[iGraph]=0;
+      if (ymax[iGraph]<0.0) 
+	ymax[iGraph]=0;
+    }
+    //    nGraph -= 1;
+  }
   delete hist;
   delete update;
 
@@ -112,6 +125,8 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // ++++++++++++++++++++++
 // +++ Main subroutine
 // ++++++++++++++++++++++
+// mass    =  250  300  350  400  500  600  800 1000
+// correct =   -1   -1   -1  0.1   -1   -1  1.5   -1
 void Plot2Dscan(TString mass = "1000",
 		double xmax_frame = 0.08,
 		double ymax_frame = 0.08,
@@ -121,6 +136,19 @@ void Plot2Dscan(TString mass = "1000",
 
   SetStyle();
 
+  map<TString, double> corrections = {
+    {"250",0.1},
+    {"300",-1.},
+    {"350",0.2},
+    {"400",0.1},
+    {"500",-1.},
+    {"600",-1.},
+    {"800",1.5},
+    {"1000",0.3}
+  };
+
+  double correct = corrections[mass];
+  
   double scaleBR = 1.0;
   if (BR_AZh) scaleBR = 1.0/(0.1*0.062);
   if (pb) scaleBR *= 1e-3;
@@ -208,14 +236,14 @@ void Plot2Dscan(TString mass = "1000",
   for (unsigned int i=0; i<200; ++i)
     xe[i] = 0;
 
-  int nGraph_1sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,treeE,
+  int nGraph_1sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,correct,treeE,
 			      dnll_1sigma,xbest,ybest,x_1sigma,ylow_1sigma,yhigh_1sigma);
-  int nGraph_2sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,treeE,
+  int nGraph_2sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,correct,treeE,
 			      dnll_2sigma,xbest,ybest,x_2sigma,ylow_2sigma,yhigh_2sigma);
 
-  int nGraphE_1sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,tree,
+  int nGraphE_1sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,correct,tree,
 			       dnll_1sigma,xbestE,ybestE,xE_1sigma,ylowE_1sigma,yhighE_1sigma);
-  int nGraphE_2sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,tree,
+  int nGraphE_2sigma = Find_2D(nPoints,xmin,xmax,ymin,ymax,correct,tree,
 			       dnll_2sigma,xbestE,ybestE,xE_2sigma,ylowE_2sigma,yhighE_2sigma);
 
   for (int i=0; i<nGraph_1sigma; ++i) {
@@ -326,12 +354,12 @@ void Plot2Dscan(TString mass = "1000",
 
   TH2D * frame = new TH2D("frame","",2,xmin_frame,xmax_frame,2,ymin_frame,ymax_frame);
   if (BR_AZh) {
-    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesBR(A#rightarrowZh) ["+unit+"]");
-    frame->GetYaxis()->SetTitle("#sigma(bbA)#timesBR(A#rightarrowZh) ["+unit+"]");
+    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh) ["+unit+"]");
+    frame->GetYaxis()->SetTitle("#sigma(bbA)#timesB(A#rightarrowZh) ["+unit+"]");
   }
   else {
-    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesBR(A#rightarrowZh)#timesBR(Z#rightarrowll)#timesBR(h#rightarrow#tau#tau) ["+unit+"]");
-    frame->GetYaxis()->SetTitle("#sigma(bbA)#timesBR(A#rightarrowZh)#timesBR(Z#rightarrowll)#timesBR(h#rightarrow#tau#tau) ["+unit+"]");
+    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
+    frame->GetYaxis()->SetTitle("#sigma(bbA)#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
   }
 
   frame->GetXaxis()->SetTitleOffset(1.3);
