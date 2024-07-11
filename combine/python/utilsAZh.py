@@ -871,7 +871,7 @@ def Plot(hists,fractions,**kwargs):
     #    frameRatio.GetYaxis().SetTitleSize(0.06)
     frameRatio.GetYaxis().SetTitle("obs/bkg")
     frameRatio.GetXaxis().SetTitleSize(0.14)
-    frameRatio.GetXaxis().SetTitle("#it{m}_{#it{ll#tau#tau}}^{#it{cons}} (GeV)")
+    frameRatio.GetXaxis().SetTitle("#it{m}_{#it{ll#tau#tau}}^{cons} (GeV)")
 
     if logx:
         frame.GetXaxis().SetNdivisions(505)

@@ -179,7 +179,7 @@ void PlotMSSM(TString model = "mh125EFT_13",
     std::cout << strOut << std::endl;
 
   }
-
+  
   float zeros[nPoints];
   float upper[nPoints];
   float lower[nPoints];
@@ -228,7 +228,7 @@ void PlotMSSM(TString model = "mh125EFT_13",
   outerBand->SetLineColor(TColor::GetColor("#FFDF7Fff"));
 
   TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,YMin,YMax);
-  frame->GetXaxis()->SetTitle("m_{A} (GeV)");
+  frame->GetXaxis()->SetTitle("#it{m}_{A} (GeV)");
   frame->GetYaxis()->SetTitle("tan#beta");
   frame->GetXaxis()->SetNdivisions(505);
   frame->GetYaxis()->SetNdivisions(206);

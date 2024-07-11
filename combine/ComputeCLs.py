@@ -18,11 +18,13 @@ inputFolder = utils.BaseFolder + '/' + args.indir
 datacardsFolder = utils.BaseFolder + '/' + args.folder + '_' + args.proc
 datacardsFilename = '%s/%s/%s/ws.root'%(datacardsFolder,args.sample,args.mass)
 
-command = 'combine -d %s -m %s '%(datacardsFilename,args.mass) 
+command = 'cd %s ; '%(inputFolder)
+command += 'combine -d %s -m %s '%(datacardsFilename,args.mass) 
 command += '-M HybridNew --LHCmode LHC-limits --readHybridResults '
 if args.quantile!='obs':
     command += '--expectedFromGrid=%s '%(args.quantile)
     
 gridFile = '%s/limit_%s_%s_%s.root '%(inputFolder,args.sample,args.proc,args.mass)
-command += ' --grid=%s'%(gridFile)
+command += ' --grid=%s ; '%(gridFile)
+command += 'cd - '
 os.system(command)

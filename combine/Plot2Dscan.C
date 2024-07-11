@@ -126,13 +126,14 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // +++ Main subroutine
 // ++++++++++++++++++++++
 
-void Plot2Dscan(TString mass = "700",
+void Plot2Dscan(TString mass = "1000",
 		bool BR_AZh = true,
 		bool pb = true,
 		bool unblind = true) {
 
   SetStyle();
-
+  gROOT->SetBatch(true);
+  
   map<TString, double> xmax_mass = {
     {"225",1.2},
     {"250",1.3},
@@ -421,7 +422,7 @@ void Plot2Dscan(TString mass = "700",
   leg->SetFillColor(0);
   leg->SetBorderSize(1);
   leg->SetTextSize(0.033);
-  leg->SetHeader("  m_{A} = "+mass+" GeV");
+  leg->SetHeader("  #it{m}_{A} = "+mass+" GeV");
   leg->AddEntry(contour_1sigma,"  68% CL exp.","f");
   leg->AddEntry(contour_2sigma,"  95% CL exp.","f");
   if (unblind) {

@@ -3,13 +3,13 @@
 
 void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
 		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt, btag, 0btag
-		TString Process = "ggA", // process : ggA, bbA
+		TString Process = "bbA", // process : ggA, bbA
 		TString folder = "limits_obs", // input folder (output of macro RunLimits.py)
 		TString postfix = "pas",     // postfix in the name of output png file
 		float YMin = 0.0,   // lower boundary of Y axis 
-		float YMax = 1.2,   // upper boundary of Y axis
+		float YMax = 1.4,   // upper boundary of Y axis
 		float XMin = 225.,  // lower boundary of X axis
-		float XMax = 800., // upper boundary of X axis
+		float XMax = 1000., // upper boundary of X axis
 		bool logy = false, // log scale of Y axis
 		bool logx = true,  // log scale of X axis
 		float xLeg = 0.65, // x coordinate of the legend box
@@ -192,7 +192,7 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
   outerBand->SetLineColor(TColor::GetColor("#FFDF7Fff"));
 
   TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,YMin,YMax);
-  frame->GetXaxis()->SetTitle("m_{A} (GeV)");
+  frame->GetXaxis()->SetTitle("#it{m}_{A} (GeV)");
   std::map<TString, TString> process = {
     {"bbA","bbA"},
     {"ggA","gg#rightarrowA"}
