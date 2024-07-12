@@ -843,16 +843,16 @@ def Plot(hists,fractions,**kwargs):
 
     if logy:
         if cat=='0btag':
-            ymin = 3e-5
+            ymin = 4e-4
         else:
-            ymin = 3e-6
+            ymin = 3e-5
         ymax *= 100.
     else:
         ymin = 0.
         if cat=='0btag':
-            ymax *= 1.2
+            ymax *= 1.05
         else:
-            ymax *= 1.25
+            ymax *= 1.15
 
 
     frame = ROOT.TH2D('frame','',2,xmin,xmax,2,ymin,ymax)
@@ -914,9 +914,9 @@ def Plot(hists,fractions,**kwargs):
     if channel in ['et','mt','tt']:
         legTitle + styles.fullchan_map[channel]
 
-    leg = ROOT.TLegend(0.65,0.35,0.90,0.75)
+    leg = ROOT.TLegend(0.65,0.3,0.90,0.75)
     if logy:
-        leg = ROOT.TLegend(0.65,0.35,0.90,0.75)
+        leg = ROOT.TLegend(0.65,0.45,0.90,0.88)
     styles.SetLegendStyle(leg)
     leg.SetTextSize(0.055)
     leg.SetHeader(legTitle)
@@ -929,7 +929,7 @@ def Plot(hists,fractions,**kwargs):
             leg.AddEntry(ggA_hist,'A('+mass+')','l')
         else:
             leg.AddEntry(ggA_hist,'gg#rightarrowA('+mass+')','l')
-            if isBBA: leg.AddEntry(bbA_hist,'bbA('+mass+ ')','l')
+            if isBBA: leg.AddEntry(bbA_hist,'b#bar{b}A('+mass+ ')','l')
     leg.Draw()
     styles.CMS_label(upper,era=year,extraText='Preliminary')
 

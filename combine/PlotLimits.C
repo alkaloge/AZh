@@ -41,7 +41,8 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
   SetStyle();
   gStyle->SetOptFit(0000);
   gStyle->SetErrorX(0.5);
-
+  gROOT->SetBatch(true);
+  
   const int nPoints = 20;
 
   // signal strength limits sigma*BR / sigma*BR (at tanb=30)
@@ -194,7 +195,7 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
   TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,YMin,YMax);
   frame->GetXaxis()->SetTitle("#it{m}_{A} (GeV)");
   std::map<TString, TString> process = {
-    {"bbA","bbA"},
+    {"bbA","b#bar{b}A"},
     {"ggA","gg#rightarrowA"}
   };
   if (BR_AZh) {

@@ -386,11 +386,11 @@ void Plot2Dscan(TString mass = "1000",
   TH2D * frame = new TH2D("frame","",2,xmin_frame,xmax_frame,2,ymin_frame,ymax_frame);
   if (BR_AZh) {
     frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh) ["+unit+"]");
-    frame->GetYaxis()->SetTitle("#sigma(bbA)#timesB(A#rightarrowZh) ["+unit+"]");
+    frame->GetYaxis()->SetTitle("#sigma(b#bar{b}A)#timesB(A#rightarrowZh) ["+unit+"]");
   }
   else {
     frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
-    frame->GetYaxis()->SetTitle("#sigma(bbA)#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
+    frame->GetYaxis()->SetTitle("#sigma(b#bar{b}A)#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
   }
 
   frame->GetXaxis()->SetTitleOffset(1.3);
