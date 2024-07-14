@@ -6,7 +6,7 @@ void PlotComparisonHig18023(TString Era = "2016", // year
 			    TString CompareTo = "hig18023", // HIG-18-023
 			    TString folder = "limits", // folder with output of limit computation
 			    TString folder2 = "limits_hig18023", // HIG-18-023 folder
-			    float YMax = 15, // maximum of Y axis
+			    float YMax = 2.5, // maximum of Y axis
 			    float XMin = 220., // minimum of X axis
 			    float XMax = 400., // maximum of X axis
 			    bool blindData = true) {
@@ -49,7 +49,7 @@ void PlotComparisonHig18023(TString Era = "2016", // year
 
   lumi_13TeV = lumiLabel[Era];
 
-  float scale = 1;
+  double scale = 1e-3/(0.1*0.062);
 
   SetStyle();
   gStyle->SetOptFit(0000);
@@ -176,9 +176,9 @@ void PlotComparisonHig18023(TString Era = "2016", // year
 
   }
 
-  std::cout << " m(A)  -2s   -1s   exp   +1s   +2s   obs " << std::endl; 
-  //           "100  24.1  28.2  33.8  40.8  48.2  23.0
-
+  std::cout << "                HIG-22-004" << std::endl;
+  std::cout << " m(A)   -2s    -1s    exp    +1s    +2s" << std::endl; 
+  std::cout << "---------------------------------------" << std::endl;
 
   for (int i=0; i<counter; ++i) {
 
@@ -196,9 +196,9 @@ void PlotComparisonHig18023(TString Era = "2016", // year
 
   }
   std::cout << std::endl;
-  std::cout << std::endl;
-  std::cout << " m(A)  -2s   -1s   exp   +1s   +2s   obs " << std::endl; 
-  //           "100  24.1  28.2  33.8  40.8  48.2  23.0
+  std::cout << "           JHEP03 (2020) 065" << std::endl;
+  std::cout << " m(A)   -2s    -1s    exp    +1s    +2s" << std::endl; 
+  std::cout << "---------------------------------------" << std::endl;
   for (int i=0; i<counter_H; ++i) {
 
     char strOut[200];
@@ -236,7 +236,7 @@ void PlotComparisonHig18023(TString Era = "2016", // year
   TGraph * expH = new TGraph(nPointsH, mA_H, median_H);
   expH->SetLineWidth(3);
   expH->SetLineColor(4);
-  expH->SetLineStyle(2);
+  expH->SetLineStyle(1);
   expH->SetMarkerSize(0);
 
   TGraph * expG = new TGraph(nPointsX, mA, median);
@@ -259,10 +259,10 @@ void PlotComparisonHig18023(TString Era = "2016", // year
 
   TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,0,YMax);
   frame->GetXaxis()->SetTitle("m_{A} (GeV)");
-  frame->GetYaxis()->SetTitle("#sigma("+Process+")#timesB(A#rightarrowZh) [fb]");
+  frame->GetYaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh) [pb]");
   frame->GetXaxis()->SetNdivisions(505);
   frame->GetYaxis()->SetNdivisions(206);
-  frame->GetYaxis()->SetTitleOffset(1.25);  
+  frame->GetYaxis()->SetTitleOffset(1.45);  
   frame->GetYaxis()->SetTitleSize(0.048);  
   
 
@@ -283,28 +283,33 @@ void PlotComparisonHig18023(TString Era = "2016", // year
   float yLegend = 0.41;
   float sizeLeg = 0.27;
 
-  TLegend * leg = new TLegend(0.20,0.20,0.70,0.40);
+  TLegend * leg = new TLegend(0.16,0.2,0.78,0.33);
   leg->SetFillColor(0);
-  leg->SetTextSize(0.04);
-  leg->SetBorderSize(0);
+  leg->SetTextSize(0.035);
+  leg->SetBorderSize(1.0);
   if (!blindData) 
     leg->AddEntry(obsG,"Observed","lp");
-  leg->AddEntry(expG,"Expected (this analysis)","l");
-  leg->AddEntry(expH,"Expected (HIG-18-023)");
+  leg->AddEntry(expG,"Expected (HIG-22-004)","l");
+  leg->AddEntry(expH,"Expected (JHEP03 (2020) 065)","l");
   //  leg->AddEntry(innerBand,"#pm1#sigma Expected","f");
   //  leg->AddEntry(outerBand,"#pm2#sigma Expected","f");
   leg->Draw();
 
-  lumi_13TeV = "2016, 36.3 fb^{-1}";
-  extraText = "Internal";
-  writeExtraText = true;
-  CMS_lumi(canv,4,33); 
-  canv->RedrawAxis();
+  cmsTextSize = 0.67;
+  lumiTextSize = 0.52;
 
+  lumi_13TeV = "2016, 36.3 fb^{-1}";
+  extraText = "Preliminary";
+  writeExtraText = true;
+  CMS_lumi(canv,4,0,0.03); 
+  canv->SetGridx(true);
+  canv->SetGridy(true);
+  canv->RedrawAxis();
   leg->Draw();
   canv->Update();
   //  TString suffix(fileList);
   //  canv->Print("BR_"+suffix+".pdf","Portrait pdf");
-  canv->Print("figures/Limits_"+Process+"_"+Era+"_ComparedTo_"+CompareTo+".png");
+  TString figurePATH = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine";
+  canv->Print(figurePATH+"/Limits_"+Process+"_"+Era+"_ComparedTo_"+CompareTo+".png");
 
 }

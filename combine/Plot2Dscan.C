@@ -126,13 +126,15 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // +++ Main subroutine
 // ++++++++++++++++++++++
 
-void Plot2Dscan(TString mass = "1000",
+void Plot2Dscan(TString mass = "275",
 		bool BR_AZh = true,
 		bool pb = true,
+		//		double xmax_frame = 5.0,
+		//		double ymax_frame = 5.0,
 		bool unblind = true) {
 
   SetStyle();
-  gROOT->SetBatch(true);
+  //  gROOT->SetBatch(true);
   
   map<TString, double> xmax_mass = {
     {"225",1.2},
@@ -165,7 +167,7 @@ void Plot2Dscan(TString mass = "1000",
   map<TString, double> corrections = {
     {"225",-1.},
     {"250",0.1},
-    {"275",1.2},
+    {"275",1.0},
     {"300",-1.},
     {"350",0.2},
     {"400",0.1},
@@ -187,8 +189,6 @@ void Plot2Dscan(TString mass = "1000",
   if (pb) unit = "pb";
 
   TString folder = "2Dscan_Run2_" + mass;
-
-  //  gROOT->SetBatch(true);
 
   TFile * fileInfo = new TFile(folder+"/Info_2D.root");
   if (fileInfo==NULL || fileInfo->IsZombie()) {
@@ -233,32 +233,32 @@ void Plot2Dscan(TString mass = "1000",
   double dnll_1sigma = 2.28;
   double dnll_2sigma = 5.99;
 
-  double x_1sigma[200];
-  double ylow_1sigma[200];
-  double yhigh_1sigma[200];
-  double ycentre_1sigma[200];
+  double x_1sigma[500];
+  double ylow_1sigma[500];
+  double yhigh_1sigma[500];
+  double ycentre_1sigma[500];
 
-  double x_2sigma[200];
-  double ylow_2sigma[200];
-  double yhigh_2sigma[200];
-  double ycentre_2sigma[200];
+  double x_2sigma[500];
+  double ylow_2sigma[500];
+  double yhigh_2sigma[500];
+  double ycentre_2sigma[500];
   
-  double xE_1sigma[200];
-  double ylowE_1sigma[200];
-  double yhighE_1sigma[200];
-  double ycentreE_1sigma[200];
+  double xE_1sigma[500];
+  double ylowE_1sigma[500];
+  double yhighE_1sigma[500];
+  double ycentreE_1sigma[500];
 
-  double xE_2sigma[200];
-  double ylowE_2sigma[200];
-  double yhighE_2sigma[200];
-  double ycentreE_2sigma[200];
+  double xE_2sigma[500];
+  double ylowE_2sigma[500];
+  double yhighE_2sigma[500];
+  double ycentreE_2sigma[500];
   
   double xbest[1];
   double ybest[1];
   double xbestE[1];
   double ybestE[1];
   
-  double xe[200];
+  double xe[500];
 
   double xmin_frame = 0;
   double ymin_frame = 0;
@@ -441,6 +441,7 @@ void Plot2Dscan(TString mass = "1000",
   leg->Draw();
   canv->Update();
 
-  canv->Print("figures/"+folder+"_"+unit+".png");
+  TString pathFigure = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine/figures/"+folder+"_"+unit+".png";
+  canv->Print(pathFigure);
 
 }

@@ -15,8 +15,8 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
 		float xLeg = 0.65, // x coordinate of the legend box
 		float yLeg = 0.6, // y coordinate of the legend box
 		bool BR_AZh = true, // produce results in terms of sigma x BR(A->Zh)
-		bool pb = true,     // limits in picobarn
-		bool blindData = false // blinding observed limit?
+		bool pb = true,     // limits are shown in picobarn (otherwise in fb)
+		bool blindData = false // blinding observed limit
 		) {
 
 
@@ -248,9 +248,10 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
   leg->Draw();
   canv->Update();
 
+  TString figurePATH = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine";
   if (blindData)
-    canv->Print("figures/Limits_"+Process+"_"+Sample+"_"+postfix+"_exp.png");
+    canv->Print(figurePATH+"/Limits_"+Process+"_"+Sample+"_"+postfix+"_exp.png");
   else 
-    canv->Print("figures/Limits_"+Process+"_"+Sample+"_"+postfix+"_obs.png");
+    canv->Print(figurePATH+"/Limits_"+Process+"_"+Sample+"_"+postfix+"_obs.png");
 
 }

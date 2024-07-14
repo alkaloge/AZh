@@ -45,12 +45,12 @@ if __name__ == "__main__":
 
     from argparse import ArgumentParser
     parser = ArgumentParser()
-    parser.add_argument('-sample','--sample',dest='sample',required=True,choices=['2016','2017','2018','Run2','et','mt','tt'])
+    parser.add_argument('-sample','--sample',dest='sample',default='Run2',choices=['2016','2017','2018','Run2','et','mt','tt'])
     parser.add_argument('-mass','--mass',dest='mass',type=str,required=True)
-    parser.add_argument('-folder','--folder',dest='folder',default="datacards",help=""" input folder twith datacards""")
+    parser.add_argument('-folder','--folder',dest='folder',default='datacards',help=""" input folder twith datacards""")
     parser.add_argument('-r_ggA','--r_ggA',dest='r_ggA',default='10',help=""" Maximum of r_ggA """)
-    parser.add_argument('-r_bbA','--r_bbA',dest='r_bbA',default='10',help=""" Naximum of r_bbA """)
-    parser.add_argument('-npoints','--npoints',dest='npoints',default='100',help=""" number of points per POI""")
+    parser.add_argument('-r_bbA','--r_bbA',dest='r_bbA',default='10',help=""" Maximum of r_bbA """)
+    parser.add_argument('-npoints','--npoints',dest='npoints',default='200',help=""" number of points per POI""")
     parser.add_argument('-npoints_per_job','--npoints_per_job',dest='npoints_per_job',default='200',help=""" number of points per POI""")
     parser.add_argument('-batch','--batch',dest='batch',action='store_true')
     args = parser.parse_args()
