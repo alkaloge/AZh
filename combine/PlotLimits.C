@@ -9,7 +9,7 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
 		float YMin = 0.0,   // lower boundary of Y axis 
 		float YMax = 1.4,   // upper boundary of Y axis
 		float XMin = 225.,  // lower boundary of X axis
-		float XMax = 1000., // upper boundary of X axis
+		float XMax = 800., // upper boundary of X axis
 		bool logy = false, // log scale of Y axis
 		bool logx = true,  // log scale of X axis
 		float xLeg = 0.65, // x coordinate of the legend box
@@ -199,10 +199,10 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
     {"ggA","gg#rightarrowA"}
   };
   if (BR_AZh) {
-    frame->GetYaxis()->SetTitle("#sigma("+process[Process]+")#timesB(A#rightarrowZh) ["+unit+"]");
+    frame->GetYaxis()->SetTitle("#sigma("+process[Process]+")#timesB(A#rightarrowZh) ("+unit+")");
   }
   else {
-    frame->GetYaxis()->SetTitle("#sigma("+process[Process]+")#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
+    frame->GetYaxis()->SetTitle("#sigma("+process[Process]+")#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ("+unit+")");
   }
   frame->GetXaxis()->SetNdivisions(510);
   frame->GetYaxis()->SetNdivisions(210);
@@ -248,7 +248,7 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
   leg->Draw();
   canv->Update();
 
-  TString figurePATH = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine";
+  TString figurePATH = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine/figures";
   if (blindData)
     canv->Print(figurePATH+"/Limits_"+Process+"_"+Sample+"_"+postfix+"_exp.png");
   else 

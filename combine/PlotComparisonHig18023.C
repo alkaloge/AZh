@@ -259,7 +259,7 @@ void PlotComparisonHig18023(TString Era = "2016", // year
 
   TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,0,YMax);
   frame->GetXaxis()->SetTitle("m_{A} (GeV)");
-  frame->GetYaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh) [pb]");
+  frame->GetYaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh) (pb)");
   frame->GetXaxis()->SetNdivisions(505);
   frame->GetYaxis()->SetNdivisions(206);
   frame->GetYaxis()->SetTitleOffset(1.45);  
@@ -309,7 +309,7 @@ void PlotComparisonHig18023(TString Era = "2016", // year
   canv->Update();
   //  TString suffix(fileList);
   //  canv->Print("BR_"+suffix+".pdf","Portrait pdf");
-  TString figurePATH = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine";
+  TString figurePATH = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine/figures";
   canv->Print(figurePATH+"/Limits_"+Process+"_"+Era+"_ComparedTo_"+CompareTo+".png");
 
 }

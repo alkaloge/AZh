@@ -126,7 +126,7 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // +++ Main subroutine
 // ++++++++++++++++++++++
 
-void Plot2Dscan(TString mass = "275",
+void Plot2Dscan(TString mass = "800",
 		bool BR_AZh = true,
 		bool pb = true,
 		//		double xmax_frame = 5.0,
@@ -385,12 +385,12 @@ void Plot2Dscan(TString mass = "275",
 
   TH2D * frame = new TH2D("frame","",2,xmin_frame,xmax_frame,2,ymin_frame,ymax_frame);
   if (BR_AZh) {
-    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh) ["+unit+"]");
-    frame->GetYaxis()->SetTitle("#sigma(b#bar{b}A)#timesB(A#rightarrowZh) ["+unit+"]");
+    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh) ("+unit+")");
+    frame->GetYaxis()->SetTitle("#sigma(b#bar{b}A)#timesB(A#rightarrowZh) ("+unit+")");
   }
   else {
-    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
-    frame->GetYaxis()->SetTitle("#sigma(b#bar{b}A)#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ["+unit+"]");
+    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ("+unit+")");
+    frame->GetYaxis()->SetTitle("#sigma(b#bar{b}A)#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ("+unit+")");
   }
 
   frame->GetXaxis()->SetTitleOffset(1.3);
