@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import AZh.combine.stylesAZh as styles
 import AZh.combine.utilsAZh as utils
@@ -52,11 +52,26 @@ def ComparePlots(hists,**kwargs):
     h_model.GetXaxis().SetMoreLogLabels()
     h_model.GetXaxis().SetNoExponent()
 
+    chi2 = 0
+    mean_weight = h_model.GetSum()/h_model.GetEntries()
+    
+    for ib in range(1,nbins+1):
+        diff = h_model.GetBinContent(ib)-h_relaxed.GetBinContent(ib)
+        err = h_model.GetBinError(ib)
+        if h_model.GetBinContent(ib)<1e-4:
+            err = mean_weight
+        chi2_term = diff*diff/(err*err)
+        chi2 += chi2_term
+        
     prob = h_model.KolmogorovTest(h_relaxed)
     prob_reverse = h_relaxed.KolmogorovTest(h_model)
     label_prob = 'prob(KS) = %4.2f'%(prob)
     label_reverse = 'prob(KS,reverse) = %4.2f'%(prob_reverse)
 
+    prob_chi2 = ROOT.TMath.Prob(chi2,nbins)
+    print('KS   = %4.2f'%(prob))
+    print('chi2/ndf = %4.2f/%4.2f'%(chi2,nbins))
+    
 #    h_model.GetYaxis().SetRangeUser(0.005,10*h_model.GetMaximum())
 
     canv = styles.MakeCanvas("canv","",600,600)
@@ -139,7 +154,8 @@ if __name__ == "__main__":
     print
     print('      %s  %s  %s  %s '%(year,cat,channel,charge))
     print
-    filename = 'root_files/%s/%s_%s_m4l_cons_%s_%s.root'%(folder,channel,cat,charge,year)
+#    filename = 'root_files/%s/%s_%s_m4l_cons_%s_%s.root'%(folder,channel,cat,charge,year)
+    filename = 'root_files/%s_%s_m4l_cons_%s_%s.root'%(channel,cat,charge,year)
     print(filename)
     print
     rootfile = ROOT.TFile(filename)

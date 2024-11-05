@@ -96,25 +96,39 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
       nGraph++;
     }
   }	  
+
+  if (correct>0.0) {
+    for (int iGraph=0; iGraph<nGraph; ++iGraph) {
+      //      ymax[iGraph] -= correct*deltaY;
+      //      ymin[iGraph] -= correct*deltaY;
+      if (ymin[iGraph]<0.001*deltaY) 
+	ymin[iGraph]=0;
+      if (ymax[iGraph]<0.001*deltaY) 
+	ymax[iGraph]=0;
+    }   
+  }
+
+  if (ymax[nGraph-1]>0.0) {
+    double x1 = x[nGraph-2];
+    double x2 = x[nGraph-1];
+    double y1 = ymax[nGraph-2];
+    double y2 = ymax[nGraph-1];
+    double xx = linear_int(x1,x2,y1,y2);
+    x[nGraph] = xx;
+    ymax[nGraph] = 0;
+    ymin[nGraph] = 0;
+    nGraph++;
+  }
+  
   std::cout << std::endl;
   for (unsigned int i=0; i<nGraph; ++i) 
-    printf("%6.3f : %6.3f - %6.3f \n",x[i],ymin[i],ymax[i]);
+    printf("%6.3f : %6.4f - %6.4f \n",x[i],ymin[i],ymax[i]);
   std::cout << std::endl;
 
   std::cout << std::endl;
   printf("(x,y) = (%5.3f,%5.3f) DNLL = %5.3f\n",xbest[0],ybest[0],dnllMax);
 
-  if (correct>0.0) {
-    for (int iGraph=0; iGraph<nGraph; ++iGraph) {
-      ymax[iGraph] -= correct*deltaY;
-      ymin[iGraph] -= correct*deltaY;
-      if (ymin[iGraph]<0.0) 
-	ymin[iGraph]=0;
-      if (ymax[iGraph]<0.0) 
-	ymax[iGraph]=0;
-    }
-    //    nGraph -= 1;
-  }
+
   delete hist;
   delete update;
 
@@ -126,7 +140,7 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 // +++ Main subroutine
 // ++++++++++++++++++++++
 
-void Plot2Dscan(TString mass = "800",
+void Plot2Dscan(TString mass = "400",
 		bool BR_AZh = true,
 		bool pb = true,
 		//		double xmax_frame = 5.0,
@@ -134,7 +148,7 @@ void Plot2Dscan(TString mass = "800",
 		bool unblind = true) {
 
   SetStyle();
-  //  gROOT->SetBatch(true);
+  gROOT->SetBatch(true);
   
   map<TString, double> xmax_mass = {
     {"225",1.2},
@@ -318,6 +332,7 @@ void Plot2Dscan(TString mass = "800",
   contour_2sigma->SetFillColor(TColor::GetColor("#FFDF7Fff"));
   contour_2sigma->SetLineColor(TColor::GetColor("#FFDF7Fff"));
 
+  /*
   int NP = nGraphE_1sigma-1;
   for (int ip=NP; ip>0; --ip) {
     if (ylowE_1sigma[ip]<dy&&ylowE_1sigma[ip]>0) {
@@ -354,7 +369,7 @@ void Plot2Dscan(TString mass = "800",
       
     }
   }
-  
+  */
   for (int iPoint=0; iPoint<nGraphE_1sigma; ++iPoint) {
     xE_1sigma[iPoint] *= scaleBR;
     yhighE_1sigma[iPoint] *= scaleBR;
@@ -383,14 +398,83 @@ void Plot2Dscan(TString mass = "800",
   graphBest->SetMarkerSize(3.);
   graphBest->SetMarkerColor(kBlack);
 
+  // printout
+  ostringstream str;
+  str << "2Dscan_" << mass << ".txt";
+  string nn = str.str();
+  const char * fileHEPData = nn.c_str();
+  ofstream outputHEPData(fileHEPData);
+    
+  outputHEPData << std::endl;
+  outputHEPData << "95% expected" << std::endl;
+  outputHEPData << "ggA     bbA " << std::endl;
+  for (int iP=0; iP<nGraph_2sigma; ++iP) {
+    double xP = x_2sigma[iP];
+    double yP = ycentre_2sigma[iP]+yhigh_2sigma[iP];
+    //    if (iP==nGraph_2sigma-1) {
+    //     yP = 0;
+    //     double yP0 = ycentre_2sigma[iP-1]+yhigh_2sigma[iP-1];
+    //      xP = linear_int(x_2sigma[iP-1],x_2sigma[iP],yP0,yP);
+    //    }
+    char sP[20];
+    sprintf(sP,"%6.4f  %6.4f\n",xP,yP);
+    outputHEPData << sP; 
+  }
+  outputHEPData << std::endl;
+  outputHEPData << "68% expected" << std::endl;
+  outputHEPData << "ggA     bbA " << std::endl;
+  for (int iP=0; iP<nGraph_1sigma; ++iP) {
+    double xP = x_1sigma[iP];
+    double yP = ycentre_1sigma[iP]+yhigh_1sigma[iP];
+    //    if (iP==nGraph_1sigma-1) {
+    //      yP = 0;
+    //      double yP0 = ycentre_1sigma[iP-1]+yhigh_1sigma[iP-1];
+    //      xP = linear_int(x_1sigma[iP-1],x_1sigma[iP],yP0,yP);
+    //    }
+    char sP[20];
+    sprintf(sP,"%6.4f  %6.4f\n",xP,yP);
+    outputHEPData << sP; 
+  }
+  
+  outputHEPData << std::endl;
+  outputHEPData << "95% observed" << std::endl;
+  outputHEPData << "ggA     bbA " << std::endl;
+  for (int iP=0; iP<nGraphE_2sigma; ++iP) {
+    double xP = xE_2sigma[iP];
+    double yP = yhighE_2sigma[iP];
+    //    if (yP==0) break;
+    char sP[20];
+    sprintf(sP,"%6.4f  %6.4f\n",xP,yP);
+    outputHEPData << sP; 
+  }
+  
+  outputHEPData << std::endl;
+  outputHEPData << "68% observed" << std::endl;
+  outputHEPData << "ggA     bbA " << std::endl;
+  for (int iP=0; iP<nGraphE_1sigma; ++iP) {
+    double xP = xE_1sigma[iP];
+    double yP = yhighE_1sigma[iP];
+    //    if (yP==0) break;
+    char sP[20];
+    sprintf(sP,"%6.4f  %6.4f\n",xP,yP);
+    outputHEPData << sP; 
+  }
+  outputHEPData << std::endl;
+  outputHEPData << "Best fit    " << std::endl;
+  outputHEPData << "ggA     bbA " << std::endl;
+  char sP[20];
+  sprintf(sP,"%6.4f  %6.4f\n",xbestE[0],ybestE[0]);
+  outputHEPData << sP;
+  outputHEPData.close();
+  
   TH2D * frame = new TH2D("frame","",2,xmin_frame,xmax_frame,2,ymin_frame,ymax_frame);
   if (BR_AZh) {
-    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh) ("+unit+")");
-    frame->GetYaxis()->SetTitle("#sigma(b#bar{b}A)#timesB(A#rightarrowZh) ("+unit+")");
+    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)B(A#rightarrowZh) ("+unit+")");
+    frame->GetYaxis()->SetTitle("#sigma(b#bar{b}A)B(A#rightarrowZh) ("+unit+")");
   }
   else {
-    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ("+unit+")");
-    frame->GetYaxis()->SetTitle("#sigma(b#bar{b}A)#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ("+unit+")");
+    frame->GetXaxis()->SetTitle("#sigma(gg#rightarrowA)B(A#rightarrowZh)B(Z#rightarrowll)B(h#rightarrow#tau#tau) ("+unit+")");
+    frame->GetYaxis()->SetTitle("#sigma(b#bar{b}A)B(A#rightarrowZh)B(Z#rightarrowll)B(h#rightarrow#tau#tau) ("+unit+")");
   }
 
   frame->GetXaxis()->SetTitleOffset(1.3);
@@ -432,7 +516,7 @@ void Plot2Dscan(TString mass = "800",
   }
 
   lumi_13TeV = "138 fb^{-1}";
-  extraText = "Preliminary";
+  extraText = "";
   writeExtraText = true;
   CMS_lumi(canv,4,0,0.03); 
   canv->SetGridx(true);
@@ -441,7 +525,9 @@ void Plot2Dscan(TString mass = "800",
   leg->Draw();
   canv->Update();
 
-  TString pathFigure = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine/figures/"+folder+"_"+unit+".png";
+  //  TString pathFigure = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine/figures/"+folder+"_"+unit+".png";
+  TString pathFigure = "/nfs/dust/cms/user/rasp/CMSSW/CMSSW_14_1_0_pre4/src/AZh/combine/figures/"+folder+"_"+unit+".pdf";
+  
   canv->Print(pathFigure);
 
 }

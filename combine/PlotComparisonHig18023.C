@@ -258,7 +258,7 @@ void PlotComparisonHig18023(TString Era = "2016", // year
   outerBand->SetLineColor(kYellow);
 
   TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,0,YMax);
-  frame->GetXaxis()->SetTitle("m_{A} (GeV)");
+  frame->GetXaxis()->SetTitle("#it{m}_{A} (GeV)");
   frame->GetYaxis()->SetTitle("#sigma(gg#rightarrowA)#timesB(A#rightarrowZh) (pb)");
   frame->GetXaxis()->SetNdivisions(505);
   frame->GetYaxis()->SetNdivisions(206);

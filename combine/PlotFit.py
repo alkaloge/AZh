@@ -52,7 +52,7 @@ if __name__ == "__main__":
     parser.add_argument('-folder','--folder',dest='folder',default='datacards')
     parser.add_argument('-mass','--mass',dest='mass',required=True)
     parser.add_argument('-xmin','--xmin',dest='xmin',type=float,default=199.9)
-    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1050.1)
+    parser.add_argument('-xmax','--xmax',dest='xmax',type=float,default=1200.0)
     parser.add_argument('-ymin','--ymin',dest='ymin',type=float,default=0.)
     parser.add_argument('-ymax','--ymax',dest='ymax',type=float,default=3.3)
     parser.add_argument('-logx','--logx',dest='logx',action='store_true')
