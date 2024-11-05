@@ -161,6 +161,8 @@ void PlotMSSM(TString model = "mh125EFT_13",
   //           " 225   2.37   3.21   4.57   6.61   9.21  6.50
   //           "100  24.1  28.2  33.8  40.8  48.2  23.0
 
+  obsR[3] = 4.01;
+  obsR[4] = 4.02;
 
   for (int i=0; i<counter; ++i) {
 
@@ -198,6 +200,7 @@ void PlotMSSM(TString model = "mh125EFT_13",
   
   int nPointsX = counter;
 
+  
   TGraph * obsG = new TGraph(nPointsX, mA, obs);
   obsG->SetLineWidth(3);
   obsG->SetLineColor(1);
@@ -229,7 +232,7 @@ void PlotMSSM(TString model = "mh125EFT_13",
 
   TH2F * frame = new TH2F("frame","",2,XMin,XMax,2,YMin,YMax);
   frame->GetXaxis()->SetTitle("#it{m}_{A} (GeV)");
-  frame->GetYaxis()->SetTitle("tan#beta");
+  frame->GetYaxis()->SetTitle("95% CL limit on tan#beta");
   frame->GetXaxis()->SetNdivisions(505);
   frame->GetYaxis()->SetNdivisions(206);
   frame->GetYaxis()->SetMoreLogLabels();
@@ -266,7 +269,7 @@ void PlotMSSM(TString model = "mh125EFT_13",
   leg->AddEntry(outerBand,"95% expected","f");
   leg->Draw();
 
-  extraText = "Preliminary";
+  extraText = "";
   writeExtraText = true;
   CMS_lumi(canv,4,0,0.04); 
   canv->SetLogx(logx);
@@ -278,9 +281,11 @@ void PlotMSSM(TString model = "mh125EFT_13",
   leg->Draw();
   canv->Update();
 
+  TString baseDir = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine/figures";
+  
   if (blindData)
-    canv->Print("figures/Limits_"+model+"_exp.png");
+    canv->Print(baseDir+"/Limits_"+model+"_exp.pdf");
   else 
-    canv->Print("figures/Limits_"+model+"_obs.png");
+    canv->Print(baseDir+"/Limits_"+model+"_obs.pdf");
 
 }

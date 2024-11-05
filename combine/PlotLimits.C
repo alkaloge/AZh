@@ -3,30 +3,34 @@
 
 void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
 		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt, btag, 0btag
-		TString Process = "bbA", // process : ggA, bbA
-		TString folder = "limits_obs", // input folder (output of macro RunLimits.py)
-		TString postfix = "pas",     // postfix in the name of output png file
+		TString Process = "ggA", // process : ggA, bbA
+		TString folder = "limits_CLs", // input folder (output of macro RunLimits.py)
+		TString postfix = "cls",       // postfix in the name of output png file
 		float YMin = 0.0,   // lower boundary of Y axis 
 		float YMax = 1.4,   // upper boundary of Y axis
 		float XMin = 225.,  // lower boundary of X axis
-		float XMax = 800., // upper boundary of X axis
-		bool logy = false, // log scale of Y axis
-		bool logx = true,  // log scale of X axis
-		float xLeg = 0.65, // x coordinate of the legend box
-		float yLeg = 0.6, // y coordinate of the legend box
+		float XMax = 1000., // upper boundary of X axis
+		bool logy = false,  // log scale of Y axis
+		bool logx = true,   // log scale of X axis
+		float xLeg = 0.65,  // x coordinate of the legend box
+		float yLeg = 0.6,   // y coordinate of the legend box
 		bool BR_AZh = true, // produce results in terms of sigma x BR(A->Zh)
 		bool pb = true,     // limits are shown in picobarn (otherwise in fb)
 		bool blindData = false // blinding observed limit
 		) {
 
-
+  TString limitLabel("Frequentist CLs");
+  if (folder=="limits_obs")
+    limitLabel = "Asymptotic";
+  
   double scaleBR = 1.0;
   if (BR_AZh) scaleBR = 1.0/(0.1*0.062);
   if (pb) scaleBR *= 1e-3; 
   TString unit = "fb";
   if (pb) unit = "pb";
 
-  std::vector<TString> masses = {"225","250","275","300","325","350","375","400","450","500","600","700","800","900","1000","1200","1400","1600","1800","2000"};
+  std::vector<double> massesD = {225,250,275,300,325,350,375,400,450,500,600,700,800,900,1000};
+  std::vector<TString> masses = {"225","250","275","300","325","350","375","400","450","500","600","700","800","900","1000"};
 
   std::map<TString,TString> lumiLabel = {
     {"Run2","138 fb^{-1}"},
@@ -36,7 +40,6 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
   };
 
   lumi_13TeV = lumiLabel[Era];
-
 
   SetStyle();
   gStyle->SetOptFit(0000);
@@ -71,6 +74,7 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
     TString fileName = folder + "/higgsCombine.azh_"+Sample+"_"+Process+".AsymptoticLimits.mH"+mass+".root";
     std::cout << fileName << std::endl;
 
+    
     TFile * file = new TFile(fileName);
 
     TTree * tree = (TTree*)file->Get("limit");
@@ -79,8 +83,10 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
     //    std::cout << "tree : " << tree << std::endl;
 
     tree->SetBranchAddress("limit",&LIMIT);
-    tree->SetBranchAddress("mh",&MH);
+    //    tree->SetBranchAddress("mh",&MH);
 
+    MH = double(std::atoi(mass.Data()));
+    
     tree->GetEntry(0);
     mA[counter] = float(MH);
     minus2R[counter] = float(LIMIT)*scaleBR;
@@ -106,7 +112,9 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
       
   }
 
-
+  std::cout << std::endl;
+  std::cout << "          " << limitLabel << " (" << Process << ")" << std::endl;
+  std::cout << "-----------------------------------------------" << std::endl;
   std::cout << " mA    -2s    -1s    exp    +1s    +2s     obs " << std::endl; 
   //           "225   2.37   3.21   4.57   6.61   9.21  6.50
 
@@ -144,7 +152,8 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
     std::cout << strOut << std::endl;
 
   }
-
+  std::cout << std::endl;
+  
   double zeros[nPoints];
   double upper[nPoints];
   double lower[nPoints];
@@ -199,17 +208,17 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
     {"ggA","gg#rightarrowA"}
   };
   if (BR_AZh) {
-    frame->GetYaxis()->SetTitle("#sigma("+process[Process]+")#timesB(A#rightarrowZh) ("+unit+")");
+    frame->GetYaxis()->SetTitle("95% CL limit on #sigma("+process[Process]+")B(A#rightarrowZh) ("+unit+")");
   }
   else {
-    frame->GetYaxis()->SetTitle("#sigma("+process[Process]+")#timesB(A#rightarrowZh)#timesB(Z#rightarrowll)#timesB(h#rightarrow#tau#tau) ("+unit+")");
+    frame->GetYaxis()->SetTitle("95% CL limit on #sigma("+process[Process]+")B(A#rightarrowZh)B(Z#rightarrowll)B(h#rightarrow#tau#tau) ("+unit+")");
   }
   frame->GetXaxis()->SetNdivisions(510);
   frame->GetYaxis()->SetNdivisions(210);
   frame->GetXaxis()->SetMoreLogLabels(2);
   frame->GetXaxis()->SetNoExponent();
   frame->GetYaxis()->SetTitleOffset(1.3);  
-  frame->GetYaxis()->SetTitleSize(0.05);  
+  frame->GetYaxis()->SetTitleSize(0.045);  
   
 
   TString Header = process[Process];
@@ -236,7 +245,8 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
   leg->AddEntry(outerBand,"95% expected","f");
   leg->Draw();
 
-  extraText = "Preliminary";
+  //  extraText = "Preliminary";
+  extraText = "";
   writeExtraText = true;
   CMS_lumi(canv,4,0,0.02); 
   canv->SetLogx(logx);
@@ -250,8 +260,8 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
 
   TString figurePATH = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine/figures";
   if (blindData)
-    canv->Print(figurePATH+"/Limits_"+Process+"_"+Sample+"_"+postfix+"_exp.png");
+    canv->Print(figurePATH+"/Limits_"+Process+"_"+Sample+"_"+postfix+"_exp.pdf");
   else 
-    canv->Print(figurePATH+"/Limits_"+Process+"_"+Sample+"_"+postfix+"_obs.png");
+    canv->Print(figurePATH+"/Limits_"+Process+"_"+Sample+"_"+postfix+"_obs.pdf");
 
 }
