@@ -4,8 +4,9 @@
 void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
 		TString Sample = "Run2", // options : 2016, 2017, 2018, Run2, et, mt, tt, btag, 0btag
 		TString Process = "ggA", // process : ggA, bbA
-		TString folder = "limits_CLs", // input folder (output of macro RunLimits.py)
-		TString postfix = "cls",       // postfix in the name of output png file
+		// TString basefolder = "paper/limits_cls", // input folder (output of macro RunLimits.py)
+		TString basefolder = "paper/limits_asymptotic", // input folder (output of macro RunLimits.py)
+		TString postfix = "asymptotic",       // postfix in the name of output png file
 		float YMin = 0.0,   // lower boundary of Y axis 
 		float YMax = 1.4,   // upper boundary of Y axis
 		float XMin = 225.,  // lower boundary of X axis
@@ -19,8 +20,9 @@ void PlotLimits(TString Era = "Run2",    // dataset : 2016, 2017, 2018, Run2
 		bool blindData = false // blinding observed limit
 		) {
 
+  TString folder = basefolder;
   TString limitLabel("Frequentist CLs");
-  if (folder=="limits_obs")
+  if (folder.Contains("limits_asymptotic"))
     limitLabel = "Asymptotic";
   
   double scaleBR = 1.0;

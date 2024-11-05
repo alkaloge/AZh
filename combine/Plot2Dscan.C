@@ -143,8 +143,7 @@ int Find_2D(int nPoints, // sqrt(number_of_points)
 void Plot2Dscan(TString mass = "400",
 		bool BR_AZh = true,
 		bool pb = true,
-		//		double xmax_frame = 5.0,
-		//		double ymax_frame = 5.0,
+		TString basefolder = "paper",
 		bool unblind = true) {
 
   SetStyle();
@@ -202,7 +201,7 @@ void Plot2Dscan(TString mass = "400",
   TString unit = "fb";
   if (pb) unit = "pb";
 
-  TString folder = "2Dscan_Run2_" + mass;
+  TString folder = basefolder + "/2Dscan_Run2_" + mass;
 
   TFile * fileInfo = new TFile(folder+"/Info_2D.root");
   if (fileInfo==NULL || fileInfo->IsZombie()) {
@@ -525,8 +524,8 @@ void Plot2Dscan(TString mass = "400",
   leg->Draw();
   canv->Update();
 
-  //  TString pathFigure = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine/figures/"+folder+"_"+unit+".png";
-  TString pathFigure = "/nfs/dust/cms/user/rasp/CMSSW/CMSSW_14_1_0_pre4/src/AZh/combine/figures/"+folder+"_"+unit+".pdf";
+  TString pathFigure = TString(std::getenv("CMSSW_BASE"))+"/src/AZh/combine/figures/2Dscan_"+mass+"_"+unit+".pdf";
+  //  TString pathFigure = "/nfs/dust/cms/user/rasp/CMSSW/CMSSW_14_1_0_pre4/src/AZh/combine/figures/"+folder+"_"+unit+".pdf";
   
   canv->Print(pathFigure);
 

@@ -35,7 +35,8 @@ float interpolate(int npoints, float * tanb, float * r) {
 
 }
 
-void PlotMSSM(TString model = "mh125EFT_13",
+void PlotMSSM(TString model = "mh125EFT",
+	      TString basefolder = "paper",
 	      float YMin = 0.9999, // lower boundary of Y axis
 	      float YMax = 6.00001, // upper boundary of Y axis
 	      float XMin = 225., // lower boundary of X axis
@@ -55,19 +56,20 @@ void PlotMSSM(TString model = "mh125EFT_13",
   TString Title("hMSSM");
   if (model=="hMSSM_13") {
     Title = "hMSSM scenario";
-    dtanb = 0.2;
+    dtanb = 0.25;
   }
-  else if (model=="mh125EFT_13") {
+  else if (model=="mh125EFT") {
     Title = "M_{h,EFT}^{125} scenario";
     dtanb = 0.25;
   }
 
   lumi_13TeV = "138 fb^{-1}";
-  TString folder = "models/"+model;
+  TString folder = basefolder+"/"+model;
 
   SetStyle();
   gStyle->SetOptFit(0000);
   gStyle->SetErrorX(0.5);
+  gROOT->SetBatch(true);
 
   const int nPoints = 20;
 
