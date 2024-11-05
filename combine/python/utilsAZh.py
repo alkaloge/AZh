@@ -574,7 +574,8 @@ def PlotTemplate(hists,**kwargs):
         if histUp.GetMaximum()>ymax: ymax = histUp.GetMaximum()
         if histDown.GetMaximum()>ymax: ymax = histDown.GetMaximum()
 
-    hist.GetYaxis().SetRangeUser(0.,1.1*ymax)
+    hist.GetYaxis().SetRangeUser(0.,2*ymax)
+#    if cat=='btag': hist.GetYaxis().SetRangeUser(0.,1.5*ymax)
     hist.GetXaxis().SetRangeUser(xmin,xmax)
 
     if sys.lower()!='none':
@@ -852,7 +853,7 @@ def Plot(hists,fractions,**kwargs):
         if cat=='0btag':
             ymax *= 1.05
         else:
-            ymax *= 1.15
+            ymax *= 1.2
 
 
     frame = ROOT.TH2D('frame','',2,xmin,xmax,2,ymin,ymax)
@@ -911,8 +912,8 @@ def Plot(hists,fractions,**kwargs):
     }
     
     legTitle = catTitle[cat];
-    if channel in ['et','mt','tt']:
-        legTitle + styles.fullchan_map[channel]
+#    if channel in ['et','mt','tt']:
+#        legTitle += '   %s'%(styles.fullchan_map[channel])
 
     leg = ROOT.TLegend(0.65,0.3,0.90,0.75)
     if logy:
@@ -931,7 +932,22 @@ def Plot(hists,fractions,**kwargs):
             leg.AddEntry(ggA_hist,'gg#rightarrowA('+mass+')','l')
             if isBBA: leg.AddEntry(bbA_hist,'b#bar{b}A('+mass+ ')','l')
     leg.Draw()
-    styles.CMS_label(upper,era=year,extraText='Preliminary')
+
+    if channel in ['et','mt','tt']:
+        channel_label = {
+            'et': '#tau_{e}#tau_{h}',
+            'mt': '#tau_{#mu}#tau_{h}',
+            'tt': '#tau_{h}#tau_{h}'
+        }
+        latex_channel = ROOT.TLatex()
+        latex_channel.SetNDC()
+        latex_channel.SetTextAngle(0)
+        latex_channel.SetTextColor(1)
+        latex_channel.SetTextSize(0.08)
+        latex_channel.DrawLatex(0.8,0.83,channel_label[channel])
+
+        
+    styles.CMS_label(upper,era=year,extraText='')
 
     upper.SetLogx(logx)
     upper.SetLogy(logy)
@@ -971,14 +987,14 @@ def Plot(hists,fractions,**kwargs):
         postfix += '_logy'
     if cat=='':
         if channel=='':
-            canv.Print('%s/m4l_%s_%s_%s.png'%(FiguresFolder,year,mass,postfix))
+            canv.Print('%s/m4l_%s_%s_%s.pdf'%(FiguresFolder,year,mass,postfix))
         else:
-            canv.Print('%s/m4l_%s_%s_%s_%s.png'%(FiguresFolder,year,channel,mass,postfix))
+            canv.Print('%s/m4l_%s_%s_%s_%s.pdf'%(FiguresFolder,year,channel,mass,postfix))
     else:
         if channel=='':
-            canv.Print('%s/m4l_%s_%s_%s_%s.png'%(FiguresFolder,year,cat,mass,postfix))
+            canv.Print('%s/m4l_%s_%s_%s_%s.pdf'%(FiguresFolder,year,cat,mass,postfix))
         else:
-            canv.Print('%s/m4l_%s_%s_%s_%s_%s.png'%(FiguresFolder,year,cat,channel,mass,postfix))
+            canv.Print('%s/m4l_%s_%s_%s_%s_%s.pdf'%(FiguresFolder,year,cat,channel,mass,postfix))
 
 ###############################################
 
