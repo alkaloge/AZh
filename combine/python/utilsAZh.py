@@ -715,7 +715,7 @@ def Plot(hists,fractions,**kwargs):
     styles.InitHist(ZZ_hist,"","",ROOT.TColor.GetColor("#ffa90e"),1001) #red
     styles.InitHist(fake_hist,"","",ROOT.TColor.GetColor("#e76300"),1001)
     styles.InitHist(other_hist,"","",ROOT.TColor.GetColor("#3f90da"),1001)
-    styles.InitModel(ggA_hist,ROOT.kRed+1,1)
+    styles.InitModel(ggA_hist,ROOT.kGreen+1,1)
     if isBBA: styles.InitModel(bbA_hist,ROOT.kBlue,2)
     styles.InitTotalHist(tot_hist)
 
@@ -858,7 +858,7 @@ def Plot(hists,fractions,**kwargs):
 
     frame = ROOT.TH2D('frame','',2,xmin,xmax,2,ymin,ymax)
     styles.InitTotalHist(frame)
-    frame.GetYaxis().SetTitle("dN/dm (1/GeV)")
+    frame.GetYaxis().SetTitle("Events/GeV")
     if show_yield:
         frame.GetYaxis().SetTitle("Events / bin")
     frame.GetYaxis().SetTitleOffset(1.2)
@@ -915,7 +915,7 @@ def Plot(hists,fractions,**kwargs):
 #    if channel in ['et','mt','tt']:
 #        legTitle += '   %s'%(styles.fullchan_map[channel])
 
-    leg = ROOT.TLegend(0.65,0.3,0.90,0.75)
+    leg = ROOT.TLegend(0.65,0.28,0.90,0.75)
     if logy:
         leg = ROOT.TLegend(0.65,0.45,0.90,0.88)
     styles.SetLegendStyle(leg)

@@ -286,7 +286,7 @@ if __name__ == "__main__":
                 print
 
 
-    scaleBR = 500.*0.1*0.062 # scale to sigma x BR = 500 fb
+    scaleBR = 1000.*0.1*0.062 # scale to sigma x BR = 500 fb
     scale_ggA = scaleBR
     scale_bbA = scaleBR
 #    if fittype=='prefit' or fittype=='fit_b':
